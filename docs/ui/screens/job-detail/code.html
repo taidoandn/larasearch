@@ -1,0 +1,694 @@
+<!doctype html>
+
+<html class="light" lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            .material-symbols-outlined {
+                font-variation-settings:
+                    'FILL' 0,
+                    'wght' 400,
+                    'GRAD' 0,
+                    'opsz' 24;
+            }
+            body {
+                font-family: 'Inter', sans-serif;
+            }
+            .font-label {
+                font-family: 'Space Grotesk', sans-serif;
+            }
+            .border-ledger {
+                border-bottom: 1px solid rgba(173, 179, 180, 0.2);
+            }
+            .max-w-prose-ch {
+                max-width: 70ch;
+            }
+        </style>
+        <script id="tailwind-config">
+            tailwind.config = {
+                darkMode: 'class',
+                theme: {
+                    extend: {
+                        colors: {
+                            'on-primary-fixed-variant': '#4e44d4',
+                            'surface-dim': '#d4dbdd',
+                            'surface-variant': '#dde4e5',
+                            'surface-container-lowest': '#ffffff',
+                            'primary-dim': '#4338CA',
+                            'primary-fixed': '#e3dfff',
+                            'surface-container-low': '#f8f9f9',
+                            'on-secondary-fixed': '#403f41',
+                            background: '#ffffff',
+                            'on-background': '#18181b',
+                            'on-surface': '#18181b',
+                            'error-dim': '#4f0116',
+                            'inverse-on-surface': '#9c9d9d',
+                            'on-primary-fixed': '#2f1eb8',
+                            'on-error': '#fff7f7',
+                            outline: '#71717a',
+                            'primary-fixed-dim': '#d3d0ff',
+                            'primary-container': '#eef2ff',
+                            'error-container': '#ff8b9a',
+                            'outline-variant': '#e4e4e7',
+                            'tertiary-dim': '#52525b',
+                            'on-tertiary-container': '#5b5b64',
+                            'surface-container-high': '#f4f4f5',
+                            'on-secondary': '#fbf8fb',
+                            'secondary-dim': '#545355',
+                            'surface-tint': '#4338CA',
+                            'surface-container': '#f1f1f1',
+                            secondary: '#605e61',
+                            tertiary: '#5e5e67',
+                            'tertiary-fixed': '#f4f2fd',
+                            'surface-bright': '#ffffff',
+                            'on-error-container': '#782232',
+                            'surface-container-highest': '#e4e4e7',
+                            'inverse-surface': '#09090b',
+                            'secondary-fixed': '#e5e1e4',
+                            'on-primary-container': '#4338ca',
+                            'on-secondary-fixed-variant': '#5c5b5d',
+                            'on-tertiary-fixed-variant': '#65656e',
+                            'secondary-container': '#e5e1e4',
+                            'on-surface-variant': '#52525b',
+                            primary: '#4338CA',
+                            surface: '#ffffff',
+                            error: '#9e3f4e',
+                            'on-tertiary': '#faf8ff',
+                            'on-tertiary-fixed': '#484951',
+                            'on-secondary-container': '#525154',
+                            'tertiary-container': '#f4f2fd',
+                            'secondary-fixed-dim': '#d6d3d6',
+                            'on-primary': '#ffffff',
+                            'inverse-primary': '#8681ff',
+                            'tertiary-fixed-dim': '#e6e4ee',
+                        },
+                        fontFamily: {
+                            headline: ['Inter'],
+                            body: ['Inter'],
+                            label: ['Space Grotesk'],
+                        },
+                        borderRadius: {
+                            DEFAULT: '0px',
+                            lg: '0px',
+                            xl: '0px',
+                            full: '9999px',
+                        },
+                    },
+                },
+            };
+        </script>
+    </head>
+    <body class="text-on-surface bg-background antialiased">
+        <!-- TopNavBar -->
+        <nav
+            class="border-outline-variant sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b bg-white/95 px-8 backdrop-blur-md transition-all duration-200"
+        >
+            <div class="flex items-center gap-12">
+                <span
+                    class="text-lg font-black tracking-tighter text-zinc-900 uppercase"
+                    >LARASEARCH</span
+                >
+                <div class="hidden items-center gap-8 md:flex">
+                    <a
+                        class="font-sans text-xs font-bold tracking-widest text-zinc-500 uppercase transition-all duration-200 hover:text-zinc-900"
+                        href="#"
+                        >Explore</a
+                    >
+                    <a
+                        class="mt-5 border-b-2 border-primary pb-5 font-sans text-xs font-bold tracking-widest text-primary uppercase antialiased"
+                        href="#"
+                        >My Jobs</a
+                    >
+                    <a
+                        class="font-sans text-xs font-bold tracking-widest text-zinc-500 uppercase transition-all duration-200 hover:text-zinc-900"
+                        href="#"
+                        >Messages</a
+                    >
+                    <a
+                        class="font-sans text-xs font-bold tracking-widest text-zinc-500 uppercase transition-all duration-200 hover:text-zinc-900"
+                        href="#"
+                        >Benchmarks</a
+                    >
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <button
+                    class="p-1 text-zinc-400 transition-colors hover:text-zinc-900"
+                >
+                    <span
+                        class="material-symbols-outlined text-[20px]"
+                        data-icon="notifications"
+                        >notifications</span
+                    >
+                </button>
+                <button
+                    class="p-1 text-zinc-400 transition-colors hover:text-zinc-900"
+                >
+                    <span
+                        class="material-symbols-outlined text-[20px]"
+                        data-icon="settings"
+                        >settings</span
+                    >
+                </button>
+                <div
+                    class="border-outline-variant h-8 w-8 overflow-hidden border bg-zinc-100"
+                >
+                    <img
+                        alt="User profile"
+                        class="h-full w-full object-cover grayscale"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAI6g0Qb7gNTV351BKDmZTmkA6JlhEHBnuweQquU0k2SYntfXAKDFZozgJZWiZOTi-BwiiCgdozm4rfrcpiK2ziJLkOsO_Oin5Huq8UIUeH_eCs4bUwZ01M5Sli6KWRwA5mHqZ3JeyKUxiHVgC2Xs7XaU86F2_dl08rJ1L_YKERYcP1o_1djCqu9RY-wJCzoQcOpHQ5anHIuFAqvBmUDlQO5IqQ8V1uUU9l-NEEERw0NLjIn1JyxYVhCqOkH78E3Qj-HtQx1Lj2mYeR"
+                    />
+                </div>
+            </div>
+        </nav>
+        <!-- Sticky Header -->
+        <header
+            class="border-outline-variant sticky top-16 z-40 w-full border-b bg-white"
+        >
+            <div
+                class="mx-auto flex h-24 max-w-[1440px] items-center justify-between px-8"
+            >
+                <div class="flex flex-col gap-1">
+                    <h1 class="text-2xl font-bold tracking-tight text-zinc-900">
+                        Senior Structural Engineer
+                    </h1>
+                    <div class="flex items-center gap-2 text-sm text-zinc-500">
+                        <span class="font-bold text-zinc-900"
+                            >Metropolis Design Group</span
+                        >
+                        <span class="text-zinc-300">•</span>
+                        <span>New York, NY</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button
+                        class="border-outline-variant border px-6 py-3 text-xs font-bold tracking-widest text-zinc-900 uppercase transition-colors hover:bg-zinc-50"
+                    >
+                        Save Job
+                    </button>
+                    <button
+                        class="hover:bg-primary-dim bg-primary px-10 py-3 text-xs font-bold tracking-widest text-white uppercase shadow-sm transition-colors"
+                    >
+                        Apply Now
+                    </button>
+                </div>
+            </div>
+        </header>
+        <main
+            class="mx-auto flex min-h-screen max-w-[1440px] flex-col md:flex-row"
+        >
+            <!-- Main Content Area -->
+            <article class="flex-1 bg-white p-8 md:p-12 lg:p-16">
+                <div class="mx-auto max-w-4xl">
+                    <!-- Back Link -->
+                    <a
+                        class="group mb-12 inline-flex items-center gap-2 text-xs font-bold tracking-widest text-zinc-400 uppercase transition-colors hover:text-primary"
+                        href="#"
+                    >
+                        <span
+                            class="material-symbols-outlined text-[16px] transition-transform group-hover:-translate-x-1"
+                            data-icon="arrow_back"
+                            >arrow_back</span
+                        >
+                        Back to search results
+                    </a>
+                    <section class="space-y-16">
+                        <!-- Performance Benchmark -->
+                        <div
+                            class="bg-primary-container flex items-center justify-between border-l-4 border-primary p-8"
+                        >
+                            <div>
+                                <h3
+                                    class="font-label mb-2 text-[10px] font-black tracking-[0.2em] text-primary uppercase"
+                                >
+                                    Market Benchmark
+                                </h3>
+                                <p
+                                    class="text-on-primary-container text-sm leading-relaxed"
+                                >
+                                    Your profile matches
+                                    <span class="font-bold">94%</span> of top
+                                    performers in this role based on Larasearch
+                                    data.
+                                </p>
+                            </div>
+                            <button
+                                class="hover:bg-primary-dim flex items-center gap-2 bg-primary px-5 py-2.5 text-[10px] font-black tracking-widest text-white uppercase transition-all"
+                            >
+                                <span
+                                    class="material-symbols-outlined text-sm"
+                                    data-icon="analytics"
+                                    >analytics</span
+                                >
+                                View Report
+                            </button>
+                        </div>
+                        <!-- Job Overview -->
+                        <div class="space-y-8">
+                            <h2
+                                class="border-outline-variant border-b pb-4 text-3xl font-black tracking-tight text-zinc-900"
+                            >
+                                Job Overview
+                            </h2>
+                            <div class="max-w-prose-ch">
+                                <p
+                                    class="text-[16px] leading-[1.7] text-zinc-600 antialiased"
+                                >
+                                    We are seeking a visionary Senior Structural
+                                    Engineer to join our Metropolis Design
+                                    Group. In this role, you will be the
+                                    technical lead on high-profile urban
+                                    developments, ranging from sustainable
+                                    high-rise residential projects to iconic
+                                    commercial headquarters. You will bridge the
+                                    gap between architectural ambition and
+                                    engineering reality, ensuring structural
+                                    integrity without compromising aesthetic
+                                    intent.
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Key Responsibilities -->
+                        <div class="space-y-8">
+                            <h2
+                                class="border-outline-variant border-b pb-4 text-3xl font-black tracking-tight text-zinc-900"
+                            >
+                                Key Responsibilities
+                            </h2>
+                            <div class="max-w-prose-ch">
+                                <ul class="list-none space-y-6 p-0">
+                                    <li class="flex gap-6">
+                                        <span
+                                            class="text-xl leading-none font-black text-primary"
+                                            >/</span
+                                        >
+                                        <span
+                                            class="text-[16px] leading-relaxed text-zinc-600"
+                                            >Lead structural design phases for
+                                            projects exceeding $150M in
+                                            valuation.</span
+                                        >
+                                    </li>
+                                    <li class="flex gap-6">
+                                        <span
+                                            class="text-xl leading-none font-black text-primary"
+                                            >/</span
+                                        >
+                                        <span
+                                            class="text-[16px] leading-relaxed text-zinc-600"
+                                            >Perform advanced seismic and wind
+                                            load analysis using proprietary
+                                            Larasearch-AI tools.</span
+                                        >
+                                    </li>
+                                    <li class="flex gap-6">
+                                        <span
+                                            class="text-xl leading-none font-black text-primary"
+                                            >/</span
+                                        >
+                                        <span
+                                            class="text-[16px] leading-relaxed text-zinc-600"
+                                            >Collaborate directly with lead
+                                            architects to develop innovative
+                                            framing solutions.</span
+                                        >
+                                    </li>
+                                    <li class="flex gap-6">
+                                        <span
+                                            class="text-xl leading-none font-black text-primary"
+                                            >/</span
+                                        >
+                                        <span
+                                            class="text-[16px] leading-relaxed text-zinc-600"
+                                            >Mentor junior and mid-level
+                                            engineering staff on technical
+                                            excellence and professional
+                                            standards.</span
+                                        >
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- Technical Requirements -->
+                        <div class="space-y-8">
+                            <h2
+                                class="border-outline-variant border-b pb-4 text-3xl font-black tracking-tight text-zinc-900"
+                            >
+                                Technical Requirements
+                            </h2>
+                            <div
+                                class="bg-outline-variant border-outline-variant grid grid-cols-1 gap-px border sm:grid-cols-2"
+                            >
+                                <div class="bg-white p-8">
+                                    <span
+                                        class="font-label text-[10px] font-black tracking-widest text-primary uppercase"
+                                        >Certification</span
+                                    >
+                                    <p
+                                        class="mt-2 text-sm font-bold text-zinc-900"
+                                    >
+                                        P.E. License (NY State required)
+                                    </p>
+                                </div>
+                                <div class="bg-white p-8">
+                                    <span
+                                        class="font-label text-[10px] font-black tracking-widest text-primary uppercase"
+                                        >Experience</span
+                                    >
+                                    <p
+                                        class="mt-2 text-sm font-bold text-zinc-900"
+                                    >
+                                        8+ Years in Structural Design
+                                    </p>
+                                </div>
+                                <div class="bg-white p-8">
+                                    <span
+                                        class="font-label text-[10px] font-black tracking-widest text-primary uppercase"
+                                        >Software</span
+                                    >
+                                    <p
+                                        class="mt-2 text-sm font-bold text-zinc-900"
+                                    >
+                                        Revit, SAP2000, ETABS, Grasshopper
+                                    </p>
+                                </div>
+                                <div class="bg-white p-8">
+                                    <span
+                                        class="font-label text-[10px] font-black tracking-widest text-primary uppercase"
+                                        >Education</span
+                                    >
+                                    <p
+                                        class="mt-2 text-sm font-bold text-zinc-900"
+                                    >
+                                        M.S. in Civil/Structural Engineering
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Related Jobs -->
+                        <div class="border-outline-variant border-t pt-16">
+                            <h2
+                                class="mb-8 text-2xl font-black tracking-tight text-zinc-900"
+                            >
+                                Related Opportunities
+                            </h2>
+                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                <a
+                                    class="group border-outline-variant border bg-white p-8 transition-all hover:border-primary"
+                                    href="#"
+                                >
+                                    <span
+                                        class="font-label text-[10px] font-bold tracking-[0.2em] text-zinc-400 uppercase transition-colors group-hover:text-primary"
+                                        >Larasearch Enterprise</span
+                                    >
+                                    <h4
+                                        class="mt-3 text-lg font-bold text-zinc-900"
+                                    >
+                                        Project Principal, High-Rise
+                                    </h4>
+                                    <div class="mt-6 flex items-center gap-4">
+                                        <span
+                                            class="font-label bg-zinc-100 px-3 py-1 text-[11px] font-black text-zinc-700"
+                                            >$180k - $220k</span
+                                        >
+                                        <span
+                                            class="font-label text-[11px] font-bold tracking-widest text-zinc-400 uppercase"
+                                            >Chicago, IL</span
+                                        >
+                                    </div>
+                                </a>
+                                <a
+                                    class="group border-outline-variant border bg-white p-8 transition-all hover:border-primary"
+                                    href="#"
+                                >
+                                    <span
+                                        class="font-label text-[10px] font-bold tracking-[0.2em] text-zinc-400 uppercase transition-colors group-hover:text-primary"
+                                        >Skyline Partners</span
+                                    >
+                                    <h4
+                                        class="mt-3 text-lg font-bold text-zinc-900"
+                                    >
+                                        Facade Engineer Specialist
+                                    </h4>
+                                    <div class="mt-6 flex items-center gap-4">
+                                        <span
+                                            class="font-label bg-zinc-100 px-3 py-1 text-[11px] font-black text-zinc-700"
+                                            >$145k - $170k</span
+                                        >
+                                        <span
+                                            class="font-label text-[11px] font-bold tracking-widest text-zinc-400 uppercase"
+                                            >Remote / NYC</span
+                                        >
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </article>
+            <!-- Sidebar -->
+            <aside
+                class="border-outline-variant w-full space-y-16 border-l bg-zinc-50/50 p-8 md:w-[400px] lg:p-12"
+            >
+                <!-- Company Profile -->
+                <section>
+                    <div
+                        class="border-outline-variant mb-8 flex h-20 w-20 items-center justify-center border bg-white shadow-sm"
+                    >
+                        <span
+                            class="text-2xl font-black tracking-tighter text-primary"
+                            >MDG.</span
+                        >
+                    </div>
+                    <h3 class="text-xl font-black text-zinc-900">
+                        Metropolis Design Group
+                    </h3>
+                    <p
+                        class="mt-4 max-w-xs text-sm leading-relaxed text-zinc-500"
+                    >
+                        A global architecture and engineering firm specializing
+                        in sustainable urban infrastructure and ultra-tall
+                        buildings.
+                    </p>
+                    <div class="mt-8 space-y-4">
+                        <div
+                            class="flex items-center gap-4 text-xs font-bold tracking-widest text-zinc-600 uppercase"
+                        >
+                            <span
+                                class="material-symbols-outlined text-lg text-zinc-400"
+                                data-icon="groups"
+                                >groups</span
+                            >
+                            500 - 1,000 Employees
+                        </div>
+                        <div
+                            class="flex items-center gap-4 text-xs font-bold tracking-widest text-primary uppercase"
+                        >
+                            <span
+                                class="material-symbols-outlined text-lg text-zinc-400"
+                                data-icon="language"
+                                >language</span
+                            >
+                            <a class="hover:underline" href="#"
+                                >metropolis-design.com</a
+                            >
+                        </div>
+                        <div
+                            class="flex items-center gap-4 text-xs font-bold tracking-widest text-zinc-600 uppercase"
+                        >
+                            <span
+                                class="material-symbols-outlined text-lg text-zinc-400"
+                                data-icon="verified"
+                                >verified</span
+                            >
+                            Top Tier Employer
+                        </div>
+                    </div>
+                </section>
+                <!-- Metadata Ledger -->
+                <section class="space-y-8">
+                    <h4
+                        class="font-label text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase"
+                    >
+                        Job Specification
+                    </h4>
+                    <div class="space-y-5">
+                        <div
+                            class="border-outline-variant flex items-baseline justify-between border-b pb-3"
+                        >
+                            <span
+                                class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase"
+                                >Salary Range</span
+                            >
+                            <span class="text-sm font-black text-zinc-900"
+                                >$165,000 - $195,000</span
+                            >
+                        </div>
+                        <div
+                            class="border-outline-variant flex items-baseline justify-between border-b pb-3"
+                        >
+                            <span
+                                class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase"
+                                >Bonus Plan</span
+                            >
+                            <span class="text-sm font-black text-zinc-900"
+                                >15% Performance</span
+                            >
+                        </div>
+                        <div
+                            class="border-outline-variant flex items-baseline justify-between border-b pb-3"
+                        >
+                            <span
+                                class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase"
+                                >Work Mode</span
+                            >
+                            <span class="text-sm font-black text-zinc-900"
+                                >Hybrid (3 Days)</span
+                            >
+                        </div>
+                        <div
+                            class="border-outline-variant flex items-baseline justify-between border-b pb-3"
+                        >
+                            <span
+                                class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase"
+                                >Reporting To</span
+                            >
+                            <span class="text-sm font-black text-zinc-900"
+                                >VP of Engineering</span
+                            >
+                        </div>
+                        <div
+                            class="border-outline-variant flex items-baseline justify-between border-b pb-3"
+                        >
+                            <span
+                                class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase"
+                                >Posted Date</span
+                            >
+                            <span class="text-sm font-black text-zinc-900"
+                                >Oct 14, 2023</span
+                            >
+                        </div>
+                    </div>
+                </section>
+                <!-- Location Snapshot -->
+                <section class="space-y-6">
+                    <h4
+                        class="font-label text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase"
+                    >
+                        Location Detail
+                    </h4>
+                    <div
+                        class="border-outline-variant relative h-48 w-full overflow-hidden border bg-zinc-200 brightness-110 contrast-125 grayscale"
+                    >
+                        <img
+                            alt="Location Map"
+                            class="h-full w-full object-cover opacity-60"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXDx2inNNOrPrEeX_jnISYTjvDFj4Ja-pYYsXM8SFWooiXOJEcZq6IlmuefqANXEjpbijsetyrA-DGxDyO3UL0_GLqZV_kQjghRIQ6lCeYx3EyG1So82NYlNuowqDBQVnVPs_F6EjTze5jeWR5WBvN15RGcM-ZJskoWoO2f9SHDNWRSXYbLYT_ZrYfVvp9-GXecnKGxz6R44pUJ-kEUesvMcw3DdIbQN04wmr9R9lThd0OH6NJbqRmPEFOU9KO2VX2Bf9PT3jrpqbS"
+                        />
+                        <div
+                            class="absolute inset-0 flex items-center justify-center"
+                        >
+                            <div
+                                class="h-4 w-4 bg-primary ring-[12px] ring-primary/10"
+                            ></div>
+                        </div>
+                    </div>
+                    <p
+                        class="text-xs leading-relaxed font-medium text-zinc-500"
+                    >
+                        Midtown West, 42nd St Campus. Direct access to Grand
+                        Central Terminal.
+                    </p>
+                </section>
+                <!-- Sticky Apply Button for Sidebar -->
+                <div class="sticky bottom-12 pt-8">
+                    <button
+                        class="hover:bg-primary-dim w-full bg-primary py-4 text-xs font-black tracking-[0.2em] text-white uppercase shadow-xl transition-colors"
+                    >
+                        Apply for this job
+                    </button>
+                </div>
+            </aside>
+        </main>
+        <!-- Footer -->
+        <footer
+            class="border-outline-variant flex flex-col items-center gap-4 border-t bg-white py-16"
+        >
+            <span
+                class="text-lg font-black tracking-tighter text-zinc-900 uppercase"
+                >LARASEARCH</span
+            >
+            <span
+                class="font-label text-[10px] tracking-[0.3em] text-zinc-400 uppercase"
+                >Precise • Ethical • Authoritative</span
+            >
+        </footer>
+        <!-- Mobile Navigation -->
+        <nav
+            class="border-outline-variant fixed bottom-0 left-0 z-50 flex h-16 w-full items-center justify-around border-t bg-white px-4 md:hidden"
+        >
+            <button
+                class="flex flex-col items-center justify-center text-zinc-400"
+            >
+                <span
+                    class="material-symbols-outlined text-[20px]"
+                    data-icon="search"
+                    >search</span
+                >
+                <span
+                    class="mt-1 font-sans text-[9px] font-black tracking-widest uppercase"
+                    >Search</span
+                >
+            </button>
+            <button
+                class="flex flex-col items-center justify-center text-primary"
+            >
+                <span
+                    class="material-symbols-outlined text-[20px]"
+                    data-icon="work"
+                    >work</span
+                >
+                <span
+                    class="mt-1 font-sans text-[9px] font-black tracking-widest uppercase"
+                    >Jobs</span
+                >
+            </button>
+            <button
+                class="flex flex-col items-center justify-center text-zinc-400"
+            >
+                <span
+                    class="material-symbols-outlined text-[20px]"
+                    data-icon="bookmark"
+                    >bookmark</span
+                >
+                <span
+                    class="mt-1 font-sans text-[9px] font-black tracking-widest uppercase"
+                    >Saved</span
+                >
+            </button>
+            <button
+                class="flex flex-col items-center justify-center text-zinc-400"
+            >
+                <span
+                    class="material-symbols-outlined text-[20px]"
+                    data-icon="person"
+                    >person</span
+                >
+                <span
+                    class="mt-1 font-sans text-[9px] font-black tracking-widest uppercase"
+                    >Profile</span
+                >
+            </button>
+        </nav>
+    </body>
+</html>

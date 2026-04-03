@@ -1,0 +1,732 @@
+<!doctype html>
+
+<html class="light" lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,line-clamp"></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=Geist+Mono:wght@100..900&amp;family=Inter:wght@100..900&amp;family=Space+Grotesk:wght@300..700&amp;display=swap"
+            rel="stylesheet"
+        />
+        <script id="tailwind-config">
+            tailwind.config = {
+                darkMode: 'class',
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: '#4338CA',
+                            'on-primary': '#ffffff',
+                            surface: '#f9f9f9',
+                            'on-surface': '#18181b',
+                            'on-surface-variant': '#71717a',
+                            'outline-variant': '#e4e4e7',
+                            'primary-container': '#EEF2FF',
+                        },
+                        fontFamily: {
+                            headline: ['Geist', 'Inter', 'sans-serif'],
+                            body: ['Geist', 'Inter', 'sans-serif'],
+                            label: ['Geist Mono', 'Space Grotesk', 'monospace'],
+                        },
+                        borderRadius: {
+                            DEFAULT: '0px',
+                            lg: '4px',
+                            xl: '8px',
+                            full: '9999px',
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            .material-symbols-outlined {
+                font-variation-settings:
+                    'FILL' 0,
+                    'wght' 400,
+                    'GRAD' 0,
+                    'opsz' 20;
+                vertical-align: middle;
+                line-height: 1;
+                font-size: 20px;
+            }
+            body {
+                font-family: 'Geist', sans-serif;
+                -webkit-font-smoothing: antialiased;
+            }
+            .geist-mono {
+                font-family: 'Geist Mono', monospace;
+            }
+            .search-group-container > *:not(:last-child) {
+                border-right: 1px solid #e4e4e7;
+            }
+        </style>
+    </head>
+    <body
+        class="text-on-surface selection:bg-primary-container bg-white selection:text-primary"
+    >
+        <!-- Top Navigation Shell -->
+        <nav
+            class="sticky top-0 z-50 mx-auto flex h-14 w-full max-w-[1920px] items-center justify-between border-b border-zinc-100 bg-white px-6 font-sans text-sm tracking-tight antialiased"
+        >
+            <div class="flex items-center gap-8">
+                <span
+                    class="text-lg font-black tracking-tighter text-zinc-900 uppercase"
+                    >Larasearch</span
+                >
+                <div class="hidden items-center gap-6 md:flex">
+                    <a
+                        class="mt-1 border-b-2 border-primary pb-1 font-bold text-primary"
+                        href="#"
+                        >Explore</a
+                    >
+                    <a
+                        class="text-zinc-500 transition-all duration-200 hover:text-zinc-900"
+                        href="#"
+                        >My Jobs</a
+                    >
+                    <a
+                        class="text-zinc-500 transition-all duration-200 hover:text-zinc-900"
+                        href="#"
+                        >Messages</a
+                    >
+                    <a
+                        class="text-zinc-500 transition-all duration-200 hover:text-zinc-900"
+                        href="#"
+                        >Benchmarks</a
+                    >
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button
+                    class="p-2 text-zinc-500 transition-all hover:bg-zinc-50 active:scale-[0.98]"
+                >
+                    <span
+                        class="material-symbols-outlined"
+                        data-icon="notifications"
+                        >notifications</span
+                    >
+                </button>
+                <button
+                    class="p-2 text-zinc-500 transition-all hover:bg-zinc-50 active:scale-[0.98]"
+                >
+                    <span class="material-symbols-outlined" data-icon="settings"
+                        >settings</span
+                    >
+                </button>
+                <div class="ml-2 h-8 w-8 bg-zinc-200">
+                    <img
+                        alt="User profile"
+                        class="h-full w-full object-cover"
+                        data-alt="close-up portrait of a professional woman"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlp_QWZ4RnaC-RpVgDczrU7L9yI5_CG-Z11uEQP04IDYp3GseHBWxFzp5IOFHgE1_kugOdkIXsu3p5sXlhM4eJn0shHK1Vhr70hhWot7fV2KyiF7jb4TrDIfRN6ymU3IwWmsl64se3SL032Zh1Sv1YJy6cOGFO6m9hzLH9IAXFlDMpEJrosvXbfOEUJYhb35CH3GRLZCHjcTAK3lRCfJM0l73CCKHLAecU-27Mg2jplwkl-mUmstpzR5UTgGp_dKqcun_Of5SvVlie"
+                    />
+                </div>
+            </div>
+        </nav>
+        <!-- Filter Bar Header -->
+        <header class="sticky top-14 z-40 border-b border-zinc-100 bg-white">
+            <div class="mx-auto max-w-[1920px] px-6 py-4">
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col items-stretch gap-3 md:flex-row">
+                        <!-- Unified Search Container -->
+                        <div
+                            class="search-group-container flex flex-grow items-stretch border border-zinc-200 bg-zinc-50/30 transition-all focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
+                        >
+                            <!-- Keyword -->
+                            <div
+                                class="flex min-w-[160px] flex-1 flex-col px-3 py-1.5"
+                            >
+                                <label
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Keyword</label
+                                >
+                                <input
+                                    class="border-none bg-transparent p-0 text-sm font-medium placeholder:text-zinc-300 focus:ring-0"
+                                    placeholder="Design, Engineering..."
+                                    type="text"
+                                />
+                            </div>
+                            <!-- Location -->
+                            <div
+                                class="flex min-w-[160px] flex-1 flex-col px-3 py-1.5"
+                            >
+                                <label
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Location</label
+                                >
+                                <input
+                                    class="border-none bg-transparent p-0 text-sm font-medium placeholder:text-zinc-300 focus:ring-0"
+                                    placeholder="Remote, NYC..."
+                                    type="text"
+                                />
+                            </div>
+                            <!-- Work Model -->
+                            <div
+                                class="flex min-w-[120px] flex-1 flex-col px-3 py-1.5"
+                            >
+                                <label
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Work Model</label
+                                >
+                                <select
+                                    class="cursor-pointer appearance-none border-none bg-transparent p-0 text-sm font-medium focus:ring-0"
+                                >
+                                    <option>All Models</option>
+                                    <option>Remote</option>
+                                    <option>Hybrid</option>
+                                    <option>On-site</option>
+                                </select>
+                            </div>
+                            <!-- Experience -->
+                            <div
+                                class="flex min-w-[120px] flex-1 flex-col px-3 py-1.5"
+                            >
+                                <label
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Experience</label
+                                >
+                                <select
+                                    class="cursor-pointer appearance-none border-none bg-transparent p-0 text-sm font-medium focus:ring-0"
+                                >
+                                    <option>All Levels</option>
+                                    <option>Senior (5+ yr)</option>
+                                    <option>Lead (8+ yr)</option>
+                                    <option>Director</option>
+                                </select>
+                            </div>
+                            <!-- Salary -->
+                            <div
+                                class="flex min-w-[120px] flex-1 flex-col px-3 py-1.5"
+                            >
+                                <label
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Min Salary</label
+                                >
+                                <select
+                                    class="cursor-pointer appearance-none border-none bg-transparent p-0 text-sm font-medium focus:ring-0"
+                                >
+                                    <option>$120k+</option>
+                                    <option>$150k+</option>
+                                    <option>$180k+</option>
+                                    <option>$220k+</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button
+                            class="bg-primary px-8 py-2 text-xs font-bold tracking-wider whitespace-nowrap text-white uppercase transition-colors hover:bg-indigo-800 active:scale-[0.98]"
+                        >
+                            Search Database
+                        </button>
+                    </div>
+                    <!-- Active Chips -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div
+                            class="group flex cursor-default items-center gap-1.5 border border-zinc-200 bg-zinc-100 px-2 py-0.5"
+                        >
+                            <span
+                                class="text-[9px] font-bold text-zinc-400 uppercase"
+                                >Role:</span
+                            >
+                            <span
+                                class="text-[11px] font-semibold text-zinc-700"
+                                >Principal Architect</span
+                            >
+                            <button
+                                class="material-symbols-outlined ml-1 !text-[14px] text-zinc-400 hover:text-red-600"
+                                data-icon="close"
+                            >
+                                close
+                            </button>
+                        </div>
+                        <div
+                            class="group flex cursor-default items-center gap-1.5 border border-zinc-200 bg-zinc-100 px-2 py-0.5"
+                        >
+                            <span
+                                class="text-[9px] font-bold text-zinc-400 uppercase"
+                                >Remote:</span
+                            >
+                            <span
+                                class="text-[11px] font-semibold text-zinc-700"
+                                >Global</span
+                            >
+                            <button
+                                class="material-symbols-outlined ml-1 !text-[14px] text-zinc-400 hover:text-red-600"
+                                data-icon="close"
+                            >
+                                close
+                            </button>
+                        </div>
+                        <button
+                            class="ml-1 text-[9px] font-bold tracking-widest text-primary uppercase hover:underline"
+                        >
+                            Reset Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Search Results Content -->
+        <main class="mx-auto min-h-screen max-w-[1920px]">
+            <div class="flex w-full flex-col">
+                <!-- Results Toolbar -->
+                <div
+                    class="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 px-6 py-2.5"
+                >
+                    <p
+                        class="geist-mono text-[10px] tracking-widest text-zinc-400 uppercase"
+                    >
+                        Displaying
+                        <span class="font-bold text-zinc-600">142</span> matches
+                        <span class="mx-1 text-zinc-300">/</span> indexed 0.04s
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <span
+                            class="text-[10px] font-bold tracking-widest text-zinc-400 uppercase"
+                            >Sort by:</span
+                        >
+                        <select
+                            class="cursor-pointer bg-transparent text-[11px] font-bold text-zinc-600 focus:outline-none"
+                        >
+                            <option>Precision Match</option>
+                            <option>Salary: High to Low</option>
+                            <option>Most Recent</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="divide-y divide-zinc-100">
+                    <!-- Job Row 1 - ACTIVE STATE -->
+                    <div
+                        class="group bg-primary-container grid cursor-pointer grid-cols-1 items-center gap-4 border-l-4 border-primary px-6 py-3.5 transition-colors md:grid-cols-12"
+                    >
+                        <div class="flex flex-col gap-0.5 md:col-span-5">
+                            <div class="flex items-center gap-2">
+                                <h2
+                                    class="line-clamp-2 text-[14px] font-bold tracking-tight text-zinc-900"
+                                >
+                                    Senior Systems Architect
+                                </h2>
+                                <span
+                                    class="border border-primary/20 bg-primary/5 px-1.5 text-[9px] font-black tracking-tighter text-primary uppercase"
+                                    >New</span
+                                >
+                            </div>
+                            <p
+                                class="flex items-center gap-1.5 text-[12px] font-medium text-zinc-500"
+                            >
+                                Quant Logic Systems
+                                <span
+                                    class="h-0.5 w-0.5 rounded-full bg-zinc-300"
+                                ></span>
+                                Remote, SF
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-10 md:col-span-4">
+                            <div class="flex flex-col">
+                                <span
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Comp</span
+                                >
+                                <span
+                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
+                                    >$190k — $245k</span
+                                >
+                            </div>
+                            <div class="flex flex-col">
+                                <span
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Exp</span
+                                >
+                                <span
+                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
+                                    >8-12 Years</span
+                                >
+                            </div>
+                        </div>
+                        <div
+                            class="flex items-center justify-end gap-4 md:col-span-3"
+                        >
+                            <div class="flex flex-col text-right">
+                                <span
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Added</span
+                                >
+                                <span
+                                    class="geist-mono text-[11px] font-medium text-zinc-400"
+                                    >2h ago</span
+                                >
+                            </div>
+                            <button
+                                class="material-symbols-outlined text-zinc-400 transition-colors hover:text-primary"
+                                data-icon="bookmark_border"
+                            >
+                                bookmark_border
+                            </button>
+                            <button
+                                class="material-symbols-outlined text-zinc-300 transition-colors group-hover:text-primary"
+                                data-icon="chevron_right"
+                            >
+                                chevron_right
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Job Row 2 -->
+                    <div
+                        class="group grid cursor-pointer grid-cols-1 items-center gap-4 border-l-4 border-transparent bg-white px-6 py-3.5 transition-colors hover:bg-zinc-50 md:grid-cols-12"
+                    >
+                        <div class="flex flex-col gap-0.5 md:col-span-5">
+                            <div class="flex items-center gap-2">
+                                <h2
+                                    class="line-clamp-2 text-[14px] font-bold tracking-tight text-zinc-900"
+                                >
+                                    Lead UI Engineer (Design Systems)
+                                </h2>
+                            </div>
+                            <p
+                                class="flex items-center gap-1.5 text-[12px] font-medium text-zinc-500"
+                            >
+                                Vellum Labs
+                                <span
+                                    class="h-0.5 w-0.5 rounded-full bg-zinc-300"
+                                ></span>
+                                Hybrid, London
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-10 md:col-span-4">
+                            <div class="flex flex-col">
+                                <span
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Comp</span
+                                >
+                                <span
+                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
+                                    >£120k — £155k</span
+                                >
+                            </div>
+                            <div class="flex flex-col">
+                                <span
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Exp</span
+                                >
+                                <span
+                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
+                                    >Senior+</span
+                                >
+                            </div>
+                        </div>
+                        <div
+                            class="flex items-center justify-end gap-4 md:col-span-3"
+                        >
+                            <div class="flex flex-col text-right">
+                                <span
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Added</span
+                                >
+                                <span
+                                    class="geist-mono text-[11px] font-medium text-zinc-400"
+                                    >6h ago</span
+                                >
+                            </div>
+                            <button
+                                class="material-symbols-outlined text-primary"
+                                data-icon="bookmark"
+                                style="font-variation-settings: 'FILL' 1"
+                            >
+                                bookmark
+                            </button>
+                            <button
+                                class="material-symbols-outlined text-zinc-300 transition-colors group-hover:text-primary"
+                                data-icon="chevron_right"
+                            >
+                                chevron_right
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Job Row 3 -->
+                    <div
+                        class="group grid cursor-pointer grid-cols-1 items-center gap-4 border-l-4 border-transparent bg-white px-6 py-3.5 transition-colors hover:bg-zinc-50 md:grid-cols-12"
+                    >
+                        <div class="flex flex-col gap-0.5 md:col-span-5">
+                            <div class="flex items-center gap-2">
+                                <h2
+                                    class="line-clamp-2 text-[14px] font-bold tracking-tight text-zinc-900"
+                                >
+                                    Director of Digital Products &amp;
+                                    Innovation Management
+                                </h2>
+                            </div>
+                            <p
+                                class="flex items-center gap-1.5 text-[12px] font-medium text-zinc-500"
+                            >
+                                Atelier Global
+                                <span
+                                    class="h-0.5 w-0.5 rounded-full bg-zinc-300"
+                                ></span>
+                                Remote, Global
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-10 md:col-span-4">
+                            <div class="flex flex-col">
+                                <span
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Comp</span
+                                >
+                                <span
+                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
+                                    >$210k — $280k</span
+                                >
+                            </div>
+                            <div class="flex flex-col">
+                                <span
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Exp</span
+                                >
+                                <span
+                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
+                                    >10+ Years</span
+                                >
+                            </div>
+                        </div>
+                        <div
+                            class="flex items-center justify-end gap-4 md:col-span-3"
+                        >
+                            <div class="flex flex-col text-right">
+                                <span
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Added</span
+                                >
+                                <span
+                                    class="geist-mono text-[11px] font-medium text-zinc-400"
+                                    >1d ago</span
+                                >
+                            </div>
+                            <button
+                                class="material-symbols-outlined text-zinc-400 transition-colors hover:text-primary"
+                                data-icon="bookmark_border"
+                            >
+                                bookmark_border
+                            </button>
+                            <button
+                                class="material-symbols-outlined text-zinc-300 transition-colors group-hover:text-primary"
+                                data-icon="chevron_right"
+                            >
+                                chevron_right
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Job Row 4 -->
+                    <div
+                        class="group grid cursor-pointer grid-cols-1 items-center gap-4 border-l-4 border-transparent bg-white px-6 py-3.5 transition-colors hover:bg-zinc-50 md:grid-cols-12"
+                    >
+                        <div class="flex flex-col gap-0.5 md:col-span-5">
+                            <div class="flex items-center gap-2">
+                                <h2
+                                    class="line-clamp-2 text-[14px] font-bold tracking-tight text-zinc-900"
+                                >
+                                    Staff Frontend Engineer
+                                </h2>
+                            </div>
+                            <p
+                                class="flex items-center gap-1.5 text-[12px] font-medium text-zinc-500"
+                            >
+                                Borealis Infrastructure
+                                <span
+                                    class="h-0.5 w-0.5 rounded-full bg-zinc-300"
+                                ></span>
+                                Hybrid, NYC
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-10 md:col-span-4">
+                            <div class="flex flex-col">
+                                <span
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Comp</span
+                                >
+                                <span
+                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
+                                    >$180k — $230k</span
+                                >
+                            </div>
+                            <div class="flex flex-col">
+                                <span
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Exp</span
+                                >
+                                <span
+                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
+                                    >8-10 Years</span
+                                >
+                            </div>
+                        </div>
+                        <div
+                            class="flex items-center justify-end gap-4 md:col-span-3"
+                        >
+                            <div class="flex flex-col text-right">
+                                <span
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Added</span
+                                >
+                                <span
+                                    class="geist-mono text-[11px] font-medium text-zinc-400"
+                                    >2d ago</span
+                                >
+                            </div>
+                            <button
+                                class="material-symbols-outlined text-zinc-400 transition-colors hover:text-primary"
+                                data-icon="bookmark_border"
+                            >
+                                bookmark_border
+                            </button>
+                            <button
+                                class="material-symbols-outlined text-zinc-300 transition-colors group-hover:text-primary"
+                                data-icon="chevron_right"
+                            >
+                                chevron_right
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Job Row 5 -->
+                    <div
+                        class="group grid cursor-pointer grid-cols-1 items-center gap-4 border-l-4 border-transparent bg-white px-6 py-3.5 transition-colors hover:bg-zinc-50 md:grid-cols-12"
+                    >
+                        <div class="flex flex-col gap-0.5 md:col-span-5">
+                            <div class="flex items-center gap-2">
+                                <h2
+                                    class="line-clamp-2 text-[14px] font-bold tracking-tight text-zinc-900"
+                                >
+                                    Information Security Officer
+                                </h2>
+                            </div>
+                            <p
+                                class="flex items-center gap-1.5 text-[12px] font-medium text-zinc-500"
+                            >
+                                Titan Asset Mgmt
+                                <span
+                                    class="h-0.5 w-0.5 rounded-full bg-zinc-300"
+                                ></span>
+                                On-site, Chicago
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-10 md:col-span-4">
+                            <div class="flex flex-col">
+                                <span
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Comp</span
+                                >
+                                <span
+                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
+                                    >$250k — $310k</span
+                                >
+                            </div>
+                            <div class="flex flex-col">
+                                <span
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Exp</span
+                                >
+                                <span
+                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
+                                    >12+ Years</span
+                                >
+                            </div>
+                        </div>
+                        <div
+                            class="flex items-center justify-end gap-4 md:col-span-3"
+                        >
+                            <div class="flex flex-col text-right">
+                                <span
+                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
+                                    >Added</span
+                                >
+                                <span
+                                    class="geist-mono text-[11px] font-medium text-zinc-400"
+                                    >3d ago</span
+                                >
+                            </div>
+                            <button
+                                class="material-symbols-outlined text-zinc-400 transition-colors hover:text-primary"
+                                data-icon="bookmark_border"
+                            >
+                                bookmark_border
+                            </button>
+                            <button
+                                class="material-symbols-outlined text-zinc-300 transition-colors group-hover:text-primary"
+                                data-icon="chevron_right"
+                            >
+                                chevron_right
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pagination / Load More -->
+                <div
+                    class="flex flex-col items-center gap-4 border-t border-zinc-100 p-10"
+                >
+                    <button
+                        class="border border-zinc-200 px-10 py-2.5 text-[11px] font-black tracking-[0.2em] uppercase transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white active:scale-[0.98]"
+                    >
+                        Load Next Page
+                    </button>
+                    <p
+                        class="geist-mono text-[10px] tracking-widest text-zinc-400 uppercase"
+                    >
+                        Showing 15 of 142 Records
+                    </p>
+                </div>
+            </div>
+        </main>
+        <!-- Mobile Bottom Navigation Shell -->
+        <nav
+            class="fixed bottom-0 left-0 z-50 flex h-14 w-full items-center justify-around border-t border-zinc-100 bg-white px-4 md:hidden"
+        >
+            <button
+                class="flex flex-col items-center justify-center text-primary"
+            >
+                <span class="material-symbols-outlined" data-icon="search"
+                    >search</span
+                >
+                <span
+                    class="mt-1 font-sans text-[9px] font-bold tracking-widest uppercase"
+                    >Search</span
+                >
+            </button>
+            <button
+                class="flex flex-col items-center justify-center text-zinc-400"
+            >
+                <span class="material-symbols-outlined" data-icon="work_outline"
+                    >work_outline</span
+                >
+                <span
+                    class="mt-1 font-sans text-[9px] font-bold tracking-widest uppercase"
+                    >Jobs</span
+                >
+            </button>
+            <button
+                class="flex flex-col items-center justify-center text-zinc-400"
+            >
+                <span
+                    class="material-symbols-outlined"
+                    data-icon="bookmark_border"
+                    >bookmark_border</span
+                >
+                <span
+                    class="mt-1 font-sans text-[9px] font-bold tracking-widest uppercase"
+                    >Saved</span
+                >
+            </button>
+            <button
+                class="flex flex-col items-center justify-center text-zinc-400"
+            >
+                <span class="material-symbols-outlined" data-icon="person"
+                    >person</span
+                >
+                <span
+                    class="mt-1 font-sans text-[9px] font-bold tracking-widest uppercase"
+                    >Me</span
+                >
+            </button>
+        </nav>
+    </body>
+</html>
