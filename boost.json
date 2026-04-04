@@ -1,8 +1,6 @@
 {
     "agents": [
-        "gemini",
-        "codex",
-        "claude_code"
+        "codex"
     ],
     "guidelines": true,
     "herd_mcp": false,
