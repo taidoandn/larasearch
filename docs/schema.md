@@ -159,7 +159,7 @@
 - index(skill_id)
 - index(job_listing_id, weight)
 
-# Phase 1 — Search Analytics & Retention
+# Phase 3 — Search Analytics & Retention
 
 ## `saved_searches`
 
@@ -242,7 +242,7 @@
 | ----------------- | ---------------------------- | -------------------------- |
 | id                | bigint PK                    |                            |
 | email             | varchar(190) unique          |                            |
-| password_hash     | varchar(255)                 | or app auth equivalent     |
+| password          | varchar(255)                 | Laravel default column     |
 | full_name         | varchar(160)                 |                            |
 | phone             | varchar(40) nullable         |                            |
 | avatar_url        | varchar(255) nullable        |                            |
@@ -374,25 +374,13 @@
 
 ## `notifications`
 
-| Field        | Type                         | Notes                                 |
-| ------------ | ---------------------------- | ------------------------------------- |
-| id           | bigint PK                    |                                       |
-| user_id      | bigint FK -> users.id        |                                       |
-| type         | varchar(60)                  | job_alert, application_status, system |
-| channel      | varchar(20)                  | email, in_app, push                   |
-| title        | varchar(180)                 |                                       |
-| body         | text                         |                                       |
-| payload_json | json nullable                |                                       |
-| status       | varchar(20) default 'queued' | queued, sent, delivered, failed, read |
-| scheduled_at | timestamp nullable           |                                       |
-| sent_at      | timestamp nullable           |                                       |
-| read_at      | timestamp nullable           |                                       |
-
-**Indexes**
-
-- index(user_id, created_at)
-- index(status, channel)
-- index(scheduled_at)
+> **Use Laravel's built-in notification system.** Run `php artisan notifications:table` to generate the
+> standard `notifications` migration. This provides the `id`, `type`, `notifiable_type`, `notifiable_id`,
+> `data` (JSON), `read_at`, and `created_at` / `updated_at` columns out of the box.
+>
+> Notification classes (e.g. `ApplicationSubmitted`, `ApplicationStatusChanged`, `SavedSearchAlert`)
+> should extend `Illuminate\Notifications\Notification` and use the `database` + `mail` channels as needed.
+> No custom table schema is required.
 
 ## `company_reviews`
 
@@ -414,7 +402,7 @@
 - index(company_id, review_status)
 - index(company_id, rating)
 
-# Phase 3 — Resume & Matching Readiness
+# Phase 4 — Resume & Matching Readiness
 
 ## `resumes`
 
@@ -481,8 +469,8 @@
 # Implementation Notes
 
 1. **Phase order matters**  
-   Phase 0 and Phase 1 are enough to deliver the Elasticsearch MBO.  
-   Phase 2 and Phase 3 prevent redesign when the product evolves.
+   Phase 0 and Phase 1 (search MVP) are enough to deliver the Elasticsearch MBO.  
+   Phase 2, Phase 3, and Phase 4 prevent redesign when the product evolves.
 
 2. **Denormalize for Elasticsearch, normalize for MySQL**  
    MySQL should remain relational and clean.  

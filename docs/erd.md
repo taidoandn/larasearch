@@ -68,16 +68,6 @@ categories (1) ───────< categories.parent_id (self reference)
 - One job listing can have many categories.
 - One job listing can have many skills.
 
-## Phase 1 — Search Analytics
-
-```text
-users (0..1) ────────< saved_searches
-users (0..1) ────────< search_queries
-search_queries (0..1) ────────< job_impressions >──────── job_listings
-search_queries (0..1) ────────< job_clicks >───────────── job_listings
-search_queries (0..1) ──────── clicked_job_listing_id ───> job_listings
-```
-
 ## Phase 2 — Marketplace Core
 
 ```text
@@ -90,11 +80,21 @@ users >────────< followed_companies >─────────
 
 job_listings (1) ────────< applications >────── users
 applications (1) ────────< application_status_histories
-users (1) ────────< notifications
+users (1) ────────< notifications (Laravel built-in)
 companies (1) ────────< company_reviews >────── users
 ```
 
-## Phase 3 — Resume & Matching Readiness
+## Phase 3 — Search Analytics
+
+```text
+users (0..1) ────────< saved_searches
+users (0..1) ────────< search_queries
+search_queries (0..1) ────────< job_impressions >──────── job_listings
+search_queries (0..1) ────────< job_clicks >───────────── job_listings
+search_queries (0..1) ──────── clicked_job_listing_id ───> job_listings
+```
+
+## Phase 4 — Resume & Matching Readiness
 
 ```text
 users (1) ────────< resumes

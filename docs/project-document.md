@@ -8,6 +8,18 @@ The short-term goal is to deliver a working MVP focused on **job search** with m
 
 ---
 
+## Companion Documentation
+
+| File | Description |
+|------|-------------|
+| [prd.md](prd.md) | Product Requirements Document — canonical phase definitions, scope, user flows, functional/non-functional requirements, KPIs, and release strategy |
+| [erd.md](erd.md) | Entity-Relationship Diagram — text-based domain model with phase-based relationship maps and cardinality summary |
+| [schema.md](schema.md) | Database Schema — phased relational table definitions, column specs, indexes, and implementation notes |
+| [task.md](task.md) | Task Plan — phase-aligned execution checklist with milestone exit criteria and definition of done |
+| [reference.md](reference.md) | Technical Reference — Elasticsearch mapping examples, service skeletons, query DSL samples, and alias flow patterns |
+
+---
+
 ## 2. Short-term MBO (2–4 weeks)
 
 ## 2.1 Objective
@@ -295,6 +307,8 @@ Even in Docker and local development, teams should think like production:
 ---
 
 ## 4. Product Requirement Document (PRD)
+
+> **Note:** This section is the original draft PRD. The canonical, up-to-date version is [`docs/prd.md`](prd.md). Refer to that file for current phase definitions, scope, and requirements.
 
 ## 4.1 Product Title
 
@@ -593,6 +607,8 @@ Expected: Only matching jobs are returned.
 ---
 
 ## 5. Long-term MBO (Expansion Plan)
+
+> **Note:** Long-term phases are now defined in [`docs/prd.md`](prd.md) (Phases 3–4) and [`docs/task.md`](task.md). This section retains the original expansion themes for reference.
 
 ## 5.1 Long-term Objective
 

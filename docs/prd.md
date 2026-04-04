@@ -156,10 +156,9 @@ Turn the search MVP into a usable hiring platform.
 - application status tracking
 - saved jobs
 - followed companies
-- notifications
+- notifications (via Laravel built-in notifications)
 - company pages
 - basic company reviews
-- saved searches + email alerts
 
 ### Out of Scope
 
@@ -168,7 +167,27 @@ Turn the search MVP into a usable hiring platform.
 - recruiter CRM automation
 - billing/payments
 
-## Phase 3 — Talent Intelligence & Matching
+## Phase 3 — Growth Features
+
+### Objective
+
+Strengthen retention, discovery, and employer value through analytics and saved-search workflows.
+
+### In Scope
+
+- saved searches and email alerts
+- search analytics (query tracking, impressions, clicks)
+- zero-result query tracking
+- recommendation prep (rule-based "jobs for you")
+- synonym management and relevance tuning
+- performance and operations (alias-based reindexing, caching, monitoring)
+
+### Out of Scope
+
+- AI/ML-based matching
+- vector/semantic search
+
+## Phase 4 — Talent Intelligence & Matching
 
 ### Objective
 
@@ -350,9 +369,10 @@ The original search MVP schema is not enough for:
 So the schema is split into phases:
 
 - **Phase 0**: tables required to seed and search jobs
-- **Phase 1**: search logs and saved-search support
+- **Phase 1**: search MVP and core search features (no new tables)
 - **Phase 2**: candidate/employer/application workflows
-- **Phase 3**: resume and recommendation readiness
+- **Phase 3**: search analytics, saved searches, and growth features
+- **Phase 4**: resume and recommendation readiness
 
 ## 9. KPIs
 
@@ -365,7 +385,7 @@ So the schema is split into phases:
 | Precision@5             | better than DB baseline       |
 | Zero-result rate        | tracked and reduced over time |
 | Apply conversion        | tracked in later phases       |
-| Saved-search activation | tracked in Phase 2            |
+| Saved-search activation | tracked in Phase 3            |
 
 ## 10. Risks and Mitigations
 
