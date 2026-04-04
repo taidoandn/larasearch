@@ -11,7 +11,7 @@
     "packages": [
         "laravel/fortify"
     ],
-    "sail": false,
+    "sail": true,
     "skills": [
         "wayfinder-development",
         "pest-testing",

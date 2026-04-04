@@ -1,4 +1,4 @@
 [mcp_servers.laravel-boost]
-command = "wsl.exe"
-args = ["/home/king/.config/herd-lite/bin/php", "/home/king/code/larasearch/artisan", "boost:mcp"]
-cwd = "/home/king/code/larasearch"
+command = "vendor/bin/sail"
+args = ["artisan", "boost:mcp"]
+cwd = "/var/www/html"
