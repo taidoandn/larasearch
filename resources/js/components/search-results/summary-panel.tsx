@@ -1,12 +1,10 @@
 import { Link } from '@inertiajs/react';
 import { ArrowRight, MapPin } from 'lucide-react';
 import type { SearchResult } from '@/components/search/mock-search-data';
-import {
-    getCompanyMark,
-    sectionLabelClassName,
-} from '@/components/search/shared';
+import { sectionLabelClassName } from '@/components/search/shared';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { useInitials } from '@/hooks/use-initials';
 
 export function SearchSummarySheet({
     job,
@@ -30,11 +28,13 @@ export function SearchSummarySheet({
 }
 
 function SummaryPanel({ job }: { job: SearchResult }) {
+    const getInitials = useInitials();
+
     return (
         <div className="bg-zinc-50 dark:bg-zinc-950">
             <div className="mx-auto max-w-3xl space-y-8 p-6 lg:p-10">
                 <div className="space-y-3">
-                    <span className="text-[11px] font-semibold tracking-[0.3em] text-indigo-700 uppercase dark:text-indigo-300">
+                    <span className="text-[11px] font-semibold tracking-[0.3em] text-primary uppercase dark:text-accent-foreground">
                         Job Overview
                     </span>
                     <div className="space-y-3">
@@ -43,7 +43,7 @@ function SummaryPanel({ job }: { job: SearchResult }) {
                         </h1>
                         <div className="flex items-center gap-3">
                             <div className="flex size-11 items-center justify-center bg-zinc-900 text-sm font-semibold text-white dark:bg-zinc-100 dark:text-zinc-950">
-                                {getCompanyMark(job.company)}
+                                {getInitials(job.company)}
                             </div>
                             <div>
                                 <p className="font-medium text-zinc-800 dark:text-zinc-100">
@@ -99,13 +99,13 @@ function SummaryPanel({ job }: { job: SearchResult }) {
                 </section>
 
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <Button className="h-auto rounded-none bg-indigo-700 px-8 py-4 text-[11px] font-semibold tracking-[0.28em] text-white uppercase shadow-none hover:bg-indigo-800">
+                    <Button className="h-auto rounded-none bg-primary px-8 py-4 text-[11px] font-semibold tracking-[0.28em] text-primary-foreground uppercase shadow-none hover:bg-primary/90">
                         Apply For Position
                     </Button>
                     <Button
                         asChild
                         variant="ghost"
-                        className="h-auto rounded-none px-0 py-0 text-[11px] font-semibold tracking-[0.28em] text-zinc-400 uppercase shadow-none hover:bg-transparent hover:text-indigo-700 dark:text-zinc-500 dark:hover:text-indigo-300"
+                        className="h-auto rounded-none px-0 py-0 text-[11px] font-semibold tracking-[0.28em] text-zinc-400 uppercase shadow-none hover:bg-transparent hover:text-primary dark:text-zinc-500 dark:hover:text-accent-foreground"
                     >
                         <Link href={`/search/jobs/${job.id}`}>
                             View Full Details
@@ -115,7 +115,7 @@ function SummaryPanel({ job }: { job: SearchResult }) {
                 </div>
 
                 <div className="space-y-4 bg-white p-3 dark:bg-zinc-900">
-                    <div className="flex h-48 items-end justify-between bg-[linear-gradient(135deg,rgba(99,102,241,0.12),rgba(24,24,27,0.05))] px-5 py-5 dark:bg-[linear-gradient(135deg,rgba(99,102,241,0.18),rgba(255,255,255,0.04))]">
+                    <div className="flex h-48 items-end justify-between bg-linear-to-br from-accent to-background px-5 py-5 dark:from-accent/30 dark:to-card">
                         <div className="space-y-2">
                             <p className={sectionLabelClassName}>
                                 Office Location
@@ -124,7 +124,7 @@ function SummaryPanel({ job }: { job: SearchResult }) {
                                 {job.mapLabel}
                             </p>
                         </div>
-                        <MapPin className="size-8 text-indigo-700 dark:text-indigo-300" />
+                        <MapPin className="size-8 text-primary dark:text-accent-foreground" />
                     </div>
                 </div>
             </div>

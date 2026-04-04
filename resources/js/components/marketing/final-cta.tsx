@@ -16,7 +16,7 @@ export function FinalCtaSection({
                 </h2>
                 <Button
                     asChild
-                    className="h-8 rounded-none bg-indigo-700 px-5 text-[9px] font-semibold tracking-[0.18em] text-white uppercase shadow-none hover:bg-indigo-800"
+                    className="h-8 rounded-none bg-primary px-5 text-[9px] font-semibold tracking-[0.18em] text-primary-foreground uppercase shadow-none hover:bg-primary/90"
                 >
                     <Link href={ctaHref}>Start exploring jobs now</Link>
                 </Button>

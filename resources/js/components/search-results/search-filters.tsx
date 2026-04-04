@@ -81,7 +81,7 @@ export function SearchFilters() {
                     ))}
                 </div>
 
-                <Button className="h-auto rounded-none bg-indigo-700 px-6 py-3 text-[11px] font-semibold tracking-[0.22em] text-white uppercase shadow-none hover:bg-indigo-800">
+                <Button className="h-auto rounded-none bg-primary px-6 py-3 text-[11px] font-semibold tracking-[0.22em] text-primary-foreground uppercase shadow-none hover:bg-primary/90">
                     Search Database
                 </Button>
             </div>
@@ -102,7 +102,7 @@ export function SearchFilters() {
                 <Button
                     variant="ghost"
                     onClick={resetFilters}
-                    className="h-auto rounded-none px-0 py-0 text-[10px] font-semibold tracking-[0.24em] text-indigo-700 uppercase shadow-none hover:bg-transparent hover:text-indigo-800 dark:text-indigo-300 dark:hover:text-indigo-200"
+                    className="h-auto rounded-none px-0 py-0 text-[10px] font-semibold tracking-[0.24em] text-primary uppercase shadow-none hover:bg-transparent hover:text-primary/80 dark:text-primary"
                 >
                     Reset Filters
                 </Button>

@@ -4,7 +4,7 @@ import {
     getSearchJobById,
     searchResults,
 } from '@/components/search/mock-search-data';
-import AppLayout from '@/layouts/app-layout';
+import SearchLayout from '@/layouts/search-layout';
 import type { BreadcrumbItem } from '@/types';
 
 type Props = {
@@ -21,9 +21,9 @@ export default function JobDetailPage({ jobId }: Props) {
     ];
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <SearchLayout breadcrumbs={breadcrumbs}>
             <Head title={job.title} />
             <JobDetailContent job={job} />
-        </AppLayout>
+        </SearchLayout>
     );
 }

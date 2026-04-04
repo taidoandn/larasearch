@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { SearchResultsContent } from '@/components/search-results';
-import AppLayout from '@/layouts/app-layout';
+import SearchLayout from '@/layouts/search-layout';
 import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -16,9 +16,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function SearchResultsPage() {
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <SearchLayout breadcrumbs={breadcrumbs}>
             <Head title="Larasearch Search Results" />
             <SearchResultsContent />
-        </AppLayout>
+        </SearchLayout>
     );
 }

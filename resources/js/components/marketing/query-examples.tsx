@@ -21,7 +21,7 @@ export function QueryExamplesSection() {
                             <p className="font-mono text-xs tracking-[0.2em] text-zinc-400 uppercase dark:text-zinc-500">
                                 Query 0{index + 1}
                             </p>
-                            <p className="mt-2 text-sm leading-5 text-indigo-700 dark:text-indigo-300">
+                            <p className="mt-2 text-sm leading-5 text-primary dark:text-accent-foreground">
                                 {query}
                             </p>
                         </article>

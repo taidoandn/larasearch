@@ -55,7 +55,7 @@ function ResultRow({
                 'relative grid h-auto w-full rounded-none border-b border-l-4 border-zinc-100 px-4 py-4 text-left shadow-none sm:px-6 md:grid-cols-12 md:items-center',
                 'justify-start whitespace-normal hover:bg-zinc-50 dark:border-zinc-900 dark:hover:bg-zinc-900/70',
                 isSelected
-                    ? 'border-l-indigo-700 bg-indigo-50 dark:border-l-indigo-400 dark:bg-indigo-950/40'
+                    ? 'border-l-primary bg-accent dark:border-l-primary dark:bg-accent/30'
                     : 'border-l-transparent bg-white dark:bg-zinc-950',
             )}
         >
@@ -65,7 +65,7 @@ function ResultRow({
                         {job.title}
                     </h2>
                     {job.isNew && (
-                        <span className="bg-indigo-100 px-1.5 py-0.5 text-[9px] font-bold tracking-[0.18em] text-indigo-700 uppercase dark:bg-indigo-500/15 dark:text-indigo-300">
+                        <span className="bg-accent px-1.5 py-0.5 text-[9px] font-bold tracking-[0.18em] text-primary uppercase dark:bg-accent/30 dark:text-accent-foreground">
                             New
                         </span>
                     )}
@@ -95,7 +95,7 @@ function ResultRow({
                     className={cn(
                         'size-4',
                         job.isSaved
-                            ? 'fill-indigo-700 text-indigo-700 dark:fill-indigo-300 dark:text-indigo-300'
+                            ? 'fill-primary text-primary dark:fill-primary dark:text-primary'
                             : 'text-zinc-300 dark:text-zinc-600',
                     )}
                 />

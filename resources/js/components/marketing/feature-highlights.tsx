@@ -20,7 +20,7 @@ export function FeatureHighlightsSection() {
                             className="flex min-h-32 flex-col gap-4 bg-zinc-100/70 px-5 py-5 dark:bg-zinc-900/60"
                         >
                             <div className="flex items-center gap-2">
-                                <Icon className="size-3.5 text-indigo-600 dark:text-indigo-300" />
+                                <Icon className="size-3.5 text-primary dark:text-accent-foreground" />
                                 <span className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
                                     {feature.title}
                                 </span>

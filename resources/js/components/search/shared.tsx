@@ -13,7 +13,7 @@ export function DetailSection({
 }) {
     return (
         <section className="space-y-8">
-            <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+            <h2 className="border-b border-zinc-200 pb-4 text-3xl font-black tracking-tight text-zinc-950 dark:border-zinc-800 dark:text-zinc-50">
                 {title}
             </h2>
             {children}
@@ -47,12 +47,4 @@ export function MetadataRow({ icon, text }: { icon: ReactNode; text: string }) {
             <span>{text}</span>
         </div>
     );
-}
-
-export function getCompanyMark(company: string): string {
-    return company
-        .split(' ')
-        .slice(0, 2)
-        .map((part) => part[0])
-        .join('');
 }

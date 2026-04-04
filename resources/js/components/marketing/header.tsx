@@ -37,7 +37,7 @@ export function MarketingHeader({
                     {isAuthenticated ? (
                         <Button
                             asChild
-                            className="h-7 rounded-none bg-indigo-700 px-3 text-[9px] font-semibold tracking-[0.18em] text-white uppercase shadow-none hover:bg-indigo-800"
+                            className="h-7 rounded-none bg-primary px-3 text-[9px] font-semibold tracking-[0.18em] text-primary-foreground uppercase shadow-none hover:bg-primary/90"
                         >
                             <Link href={searchResults()}>Open Search</Link>
                         </Button>
@@ -53,7 +53,7 @@ export function MarketingHeader({
                             {canRegister ? (
                                 <Button
                                     asChild
-                                    className="h-7 rounded-none bg-indigo-700 px-3 text-[9px] font-semibold tracking-[0.18em] text-white uppercase shadow-none hover:bg-indigo-800"
+                                    className="h-7 rounded-none bg-primary px-3 text-[9px] font-semibold tracking-[0.18em] text-primary-foreground uppercase shadow-none hover:bg-primary/90"
                                 >
                                     <Link href={register()}>Sign Up</Link>
                                 </Button>

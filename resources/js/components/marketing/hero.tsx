@@ -50,7 +50,7 @@ export function HeroSection({
 
                             <Button
                                 asChild
-                                className="h-10 rounded-none bg-indigo-700 px-4 text-xs font-semibold tracking-[0.2em] text-white uppercase shadow-none hover:bg-indigo-800 sm:self-stretch"
+                                className="h-10 rounded-none bg-primary px-4 text-xs font-semibold tracking-[0.2em] text-primary-foreground uppercase shadow-none hover:bg-primary/90 sm:self-stretch"
                             >
                                 <Link href={ctaHref}>{ctaLabel}</Link>
                             </Button>

@@ -11,7 +11,7 @@ type Props = {
 export function AppShell({ children, variant = 'sidebar' }: Props) {
     const isOpen = usePage().props.sidebarOpen;
 
-    if (variant === 'header') {
+    if (variant === 'header' || variant === 'search') {
         return (
             <div className="flex min-h-screen w-full flex-col">{children}</div>
         );
