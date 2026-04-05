@@ -32,13 +32,13 @@ Enable users to find relevant jobs faster and more accurately than with database
 
 ## 2.3 Scope of MVP
 
-The MVP will focus only on the core candidate search journey:
+The MVP will focus only on the core authenticated candidate search journey:
 
 - Search jobs by keyword
 - Filter by skill, location, salary range
 - Sort and rank by relevance and freshness
 - Sync job data from Laravel application database to Elasticsearch
-- Expose search results through REST API
+- Expose normalized search results through the app-owned API contract
 - Render results in React/Inertia UI
 - Measure search latency and relevance quality
 
@@ -57,10 +57,10 @@ The short-term MBO is considered successful if the team can demonstrate all of t
 
 ### Functional success
 
-- Users can search jobs by free-text keyword
+- Authenticated users can search jobs by free-text keyword
 - Users can filter by skill, city/location, and salary range
 - Search results are ranked in a way that feels better than plain database search
-- Search API can support pagination and sorting
+- Search API can support pagination and sorting through normalized result payloads with pagination metadata
 
 ### Technical success
 
@@ -72,7 +72,7 @@ The short-term MBO is considered successful if the team can demonstrate all of t
 ### Measurement success
 
 - Search latency for common queries is acceptable, ideally under 150–300 ms in local/staging conditions
-- Test data volume reaches at least 10,000 jobs, ideally 10,000–50,000 jobs
+- Test data volume reaches at least 5,000 jobs, with larger datasets used later as needed
 - Team documents relevance findings and trade-offs
 
 ## 2.5 Deliverables
@@ -132,6 +132,8 @@ By the end of the short-term MBO, the following deliverables should exist:
 | Seed data is unrealistic                      | Evaluation becomes misleading | Generate structured fake jobs with varied titles, skills, cities, salary ranges |
 | Index sync becomes inconsistent               | Results become stale          | Implement reindex command and event-based partial sync                          |
 | Overengineering ranking logic too early       | Delays MVP                    | Start with simple weighted relevance + freshness                                |
+
+Search responses should stay provider-agnostic: Elasticsearch is a read backend, while controllers and UI consume a normalized job-result contract owned by the application.
 
 ---
 
@@ -438,7 +440,7 @@ The search UI should persist keyword and filters in the URL.
 
 ### Scalability
 
-- Design should support at least 10,000–50,000 job documents for MVP testing
+- Design should support at least 5,000 job documents for MVP testing
 - Architecture should be extensible to much larger scale later
 
 ### Reliability
@@ -660,14 +662,14 @@ Introduce measurement loops:
 
 ## 5.3 Suggested Long-term Roadmap
 
-### Phase 1 — Stabilize MVP
+### Stage 1 — Stabilize MVP
 
 - Harden indexing pipeline
 - Improve observability
 - Add test coverage for search service
 - Tune field weights and analyzers
 
-### Phase 2 — Search quality improvements
+### Stage 2 — Search quality improvements
 
 - Add autocomplete
 - Add synonym support
@@ -675,20 +677,20 @@ Introduce measurement loops:
 - Add aggregations for facet counts
 - Add highlighted matches in results
 
-### Phase 3 — Personalization
+### Stage 3 — Personalization
 
 - Track click and apply events
 - Create candidate preference profile
 - Re-rank search results per user profile
 - Build saved searches and smart alerts
 
-### Phase 4 — Candidate / CV search
+### Stage 4 — Candidate / CV search
 
 - Index candidate profiles and parsed resumes
 - Create employer-facing candidate discovery tools
 - Add permission-based visibility and privacy rules
 
-### Phase 5 — Recommendation and matching engine
+### Stage 5 — Recommendation and matching engine
 
 - Use search features plus embeddings / ML ranking later
 - Match jobs to candidates and candidates to jobs

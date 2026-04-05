@@ -109,14 +109,33 @@
 ```php
 class JobSearchService
 {
-    public function search(array $params)
+    public function search(array $params): array
     {
         $query = (new JobSearchQueryBuilder())->build($params);
-
-        return app('elasticsearch')->search([
+        $response = app('elasticsearch')->search([
             'index' => config('elasticsearch.job_listings_alias'),
             'body' => $query,
         ]);
+
+        return $this->normalizeResults($response, $params);
+    }
+
+    protected function normalizeResults(array $response, array $params): array
+    {
+        $page = (int) ($params['page'] ?? 1);
+        $perPage = (int) ($params['per_page'] ?? 15);
+        $total = (int) ($response['hits']['total']['value'] ?? 0);
+
+        return [
+            'items' => [],
+            'pagination' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'total_pages' => max(1, (int) ceil($total / max(1, $perPage))),
+                'has_more' => ($page * $perPage) < $total,
+            ],
+        ];
     }
 }
 ```

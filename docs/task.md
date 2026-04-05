@@ -4,7 +4,15 @@
 > Source of truth: MySQL → async sync → Elasticsearch.
 > Stack: Laravel 12 · React 19 + Inertia v2 · Tailwind v4 · MySQL 8.4 · Elasticsearch 8.x · Docker · Redis
 
-## Phase 0 — Foundation & Search Domain
+## Phase Definitions
+
+- Phase 0: Search Core
+- Milestone: Search MVP (built on Phase 0)
+- Phase 1: Marketplace Core
+- Phase 2: Search Analytics
+- Phase 3: Resume & Matching Readiness
+
+## Phase 0 — Search Core
 > Objective: bootable local environment, initial schema, seed data, ES connectivity, search-ready core domain.
 
 ### Learning & Exploration
@@ -14,46 +22,51 @@
 - [ ] Explore analyzers (standard, lowercase, custom, edge_ngram for autocomplete)
 
 ### Environment & Docker
-- [ ] Add Elasticsearch 8.x + Kibana services to `compose.yaml`
-- [ ] Add `ELASTICSEARCH_*` env vars to `.env` / `.env.example`
-- [ ] Create `config/elasticsearch.php`
-- [ ] Verify all services boot correctly: app, MySQL, Redis, ES, Kibana
+- [x] Add Elasticsearch 8.x + Kibana services to `compose.yaml`
+- [x] Add `ELASTICSEARCH_*` env vars to `.env` / `.env.example`
+- [x] Create `config/elasticsearch.php`
+- [x] Verify all services boot correctly: app, MySQL, Redis, ES, Kibana
 
 ### Elasticsearch Client & Ops
-- [ ] Install `elasticsearch/elasticsearch`
-- [ ] Create `App\Services\ElasticsearchClient`
-- [ ] Add `es:health` artisan command
+- [x] Install `elasticsearch/elasticsearch`
+- [x] Create `App\Services\ElasticsearchClient`
+- [x] Add `es:health` artisan command
 - [ ] Define alias strategy:
-  - [ ] `job_listings_v1` (versioned index)
-  - [ ] `job_listings_current` (alias used by app)
-- [ ] Create `es:create-index` command
-- [ ] Create `es:delete-index` command
-- [ ] Create `es:switch-alias` command
+  - [x] `job_listings_v1` (versioned index)
+  - [x] `job_listings_current` (alias used by app)
+- [x] Create `es:create-index` command
+- [x] Create `es:delete-index` command
+- [x] Create `es:switch-alias` command
+- [x] Support bulk indexing to an explicit versioned index before alias switch
 
 ### Phase 0 Schema & Models
-- [ ] Create `companies` table + model
-- [ ] Create `categories` table + model
-- [ ] Create `skills` table + model
-- [ ] Create `locations` table + model
-- [ ] Create `job_listings` table + model
-- [ ] Create pivot `category_job_listing`
-- [ ] Create pivot `job_listing_skill`
-- [ ] Define Eloquent relationships
-- [ ] Create factories for company, category, skill, location, job listing
-- [ ] Seed 10k–50k realistic jobs
+- [x] Create `companies` table + model
+- [x] Create `categories` table + model
+- [x] Create `skills` table + model
+- [x] Create `locations` table + model
+- [x] Create `job_listings` table + model
+- [x] Create pivot `category_job_listing`
+- [x] Create pivot `job_listing_skill`
+- [x] Define Eloquent relationships
+- [x] Create factories for company, category, skill, location, job listing
+- [x] Seed at least 5k realistic jobs
 
 ### Search Architecture Scaffolding
-- [ ] Create `SearchServiceInterface`
-- [ ] Create `ElasticsearchSearchService`
-- [ ] Create `DatabaseSearchService` for benchmark baseline (optional)
-- [ ] Register binding in service provider
-- [ ] Create `SyncJobListingToElasticsearch` queued job
-- [ ] Create `JobListingObserver`
-- [ ] Dispatch sync only after DB commit
-- [ ] Create bulk command `es:index-job-listings` with chunked progress
+- [x] Create `SearchServiceInterface`
+- [x] Create `ElasticsearchSearchService`
+- [x] Create `DatabaseSearchService` for benchmark baseline (optional)
+- [x] Register binding in service provider
+- [x] Create `SyncJobListingToElasticsearch` queued job
+- [x] Create `JobListingObserver`
+- [x] Dispatch sync only after DB commit
+- [x] Create bulk command `es:index-job-listings` with chunked progress
+- [x] Dispatch delete syncs before company cascade deletes so Elasticsearch does not retain stale listings
+- [ ] TODO later: reindex denormalized taxonomy/admin edits when category, skill, or job-listing pivot edits become part of the supported write flows
 
-## Phase 1 — Search MVP (MBO Focus)
+## Search MVP Milestone (MBO Focus)
 > Objective: prove Elasticsearch value with measurable job discovery experience.
+
+Authenticated users access the search experience in the current MVP scope.
 
 ### Elasticsearch Mapping & Indexing
 - [ ] Create versioned ES mapping JSON file (e.g. `config/elasticsearch/job_listings_mapping.json`)
@@ -70,7 +83,7 @@
 - [ ] Implement filters: location, category, job type, salary range, work model, experience level, skills
 - [ ] Implement aggregations/facets for filter counts
 - [ ] Implement sorting: best match, newest, salary asc/desc
-- [ ] Implement pagination
+- [ ] Implement pagination with normalized result metadata
 - [ ] Implement highlighting for matched terms
 - [ ] Add relevance boosting:
   - [ ] Boost title field (highest)
@@ -97,12 +110,14 @@
 - [ ] Build active filter chips
 - [ ] Add empty/loading/skeleton states
 - [ ] Bind search state to URL params
+- [ ] Keep search consumers isolated from raw Elasticsearch response shapes
 
 ### Testing
 - [ ] Add feature tests for search controller
 - [ ] Add unit tests for query building
-- [ ] Add tests for index sync flows
+- [x] Add tests for index sync flows
 - [ ] Test autocomplete queries (partial inputs like `lar`, `rea`, `jav`)
+- [x] Add live Elasticsearch E2E coverage for create/sync and delete-sync flows
 
 ### Benchmarking (optional)
 - [ ] Build `benchmark:search` command
@@ -110,7 +125,7 @@
 - [ ] Define benchmark query set and relevance evaluation set
 - [ ] Track p50 / p95 / result quality
 
-## Phase 2 — Marketplace Core
+## Phase 1 — Marketplace Core
 > Objective: introduce real candidate, employer, and application workflows.
 
 ### Authentication & User Roles
@@ -143,7 +158,7 @@
 - [ ] Add candidate application history page
 
 ### Notifications (Laravel Built-in)
-- [ ] Run `php artisan notifications:table` and migrate
+- [ ] Run `vendor/bin/sail artisan notifications:table --no-interaction` and migrate
 - [ ] Create notification classes (e.g. `ApplicationSubmitted`, `ApplicationStatusChanged`)
 - [ ] Queue transactional notifications via `database` + `mail` channels
 - [ ] Add in-app notification feed or placeholder
@@ -155,7 +170,7 @@
 - [ ] Add moderation-ready review status field
 - [ ] Show company jobs and basic ratings
 
-## Phase 3 — Growth Features
+## Phase 2 — Search Analytics
 > Objective: strengthen retention, discovery, and employer value.
 
 ### Saved Searches & Alerts
@@ -185,7 +200,7 @@
 - [ ] Monitor query performance and slow logs
 - [ ] Write rollback guide for alias switching
 
-## Phase 4 — Resume Intelligence & Matching
+## Phase 3 — Resume & Matching Readiness
 > Objective: prepare for AI Match-style workflows without blocking current delivery.
 
 ### Resume Domain
@@ -209,21 +224,21 @@
 
 ## Milestone Exit Criteria
 
-### Exit Phase 1
+### Exit Search MVP Milestone
 - Search UI works end-to-end
 - ES beats DB baseline on agreed query set
 - Reindex and sync flows are reliable
 
-### Exit Phase 2
+### Exit Phase 1
 - Candidate can apply to jobs
 - Recruiter can review applications
 - Core notifications are working
 
-### Exit Phase 3
+### Exit Phase 2
 - Saved searches and analytics are live
 - Relevance tuning has measurable inputs
 
-### Exit Phase 4
+### Exit Phase 3
 - Resume model supports future matching
 - Privacy boundaries are clearly enforced
 
@@ -234,7 +249,7 @@
 - [ ] Elasticsearch fully integrated with Laravel
 - [ ] Job search works with keyword + filters via Inertia pages
 - [ ] UI fully functional for search experience
-- [ ] Dataset ≥ 10,000 jobs indexed
+- [ ] Dataset ≥ 5,000 jobs indexed
 - [ ] Performance benchmark documented
 - [ ] Relevance evaluation completed
 - [ ] Demo ready for presentation

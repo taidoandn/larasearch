@@ -48,14 +48,22 @@ Build a **modular job platform** where:
 
 The product is successful when it can:
 
-1. Search 10k–50k jobs with low-latency faceted search
+1. Search 5k+ jobs with low-latency faceted search
 2. Support realistic core hiring workflows end-to-end
 3. Keep schema and architecture extensible for future recommendation and CV matching
 4. Demonstrate measurable search quality improvement over DB-only search
 
 ## 3. Product Scope by Phase
 
-## Phase 0 — Foundation
+### Phase Definitions
+
+- Phase 0: Search Core
+- Milestone: Search MVP (built on Phase 0)
+- Phase 1: Marketplace Core
+- Phase 2: Search Analytics
+- Phase 3: Resume & Matching Readiness
+
+## Phase 0 — Search Core
 
 ### Objective
 
@@ -82,11 +90,11 @@ Set up local environment, schema, seed data, Elasticsearch connectivity, and arc
 
 - bootable local stack
 - relational schema + migrations
-- 10k–50k seeded jobs
+- 5k+ seeded jobs
 - initial ES index + alias
 - health check + indexing commands
 
-## Phase 1 — Search MVP (MBO Focus)
+## Search MVP Milestone (MBO Focus)
 
 ### Objective
 
@@ -94,7 +102,7 @@ Prove Elasticsearch value through a real job-search experience.
 
 ### Primary Users
 
-- candidate / visitor searching jobs
+- authenticated candidate searching jobs
 - internal evaluator benchmarking relevance and speed
 
 ### In Scope
@@ -103,7 +111,8 @@ Prove Elasticsearch value through a real job-search experience.
 - filters
 - facets / aggregations
 - sorting
-- pagination
+- pagination via app-owned normalized results
+- result payloads with pagination metadata
 - autocomplete
 - highlighting
 - related jobs
@@ -127,6 +136,7 @@ Prove Elasticsearch value through a real job-search experience.
 5. Search analytics baseline
 6. Async DB → ES sync
 7. Benchmark report
+8. Normalized search result contract consumed independently of Elasticsearch internals
 
 ### Key Results
 
@@ -135,8 +145,9 @@ Prove Elasticsearch value through a real job-search experience.
 - autocomplete p95 < 120ms
 - Precision@5 / Hit@10 shows visible improvement over DB search
 - index sync works for create/update/delete flows
+- search responses include stable pagination metadata without exposing raw Elasticsearch hits
 
-## Phase 2 — Core Marketplace Domain
+## Phase 1 — Marketplace Core
 
 ### Objective
 
@@ -167,7 +178,7 @@ Turn the search MVP into a usable hiring platform.
 - recruiter CRM automation
 - billing/payments
 
-## Phase 3 — Growth Features
+## Phase 2 — Search Analytics
 
 ### Objective
 
@@ -187,7 +198,7 @@ Strengthen retention, discovery, and employer value through analytics and saved-
 - AI/ML-based matching
 - vector/semantic search
 
-## Phase 4 — Talent Intelligence & Matching
+## Phase 3 — Resume & Matching Readiness
 
 ### Objective
 
@@ -214,7 +225,7 @@ Prepare the platform for recommendation and sourcing.
 
 | Actor          | Description                | Core Permissions                                          |
 | -------------- | -------------------------- | --------------------------------------------------------- |
-| Visitor        | Unauthenticated job seeker | Browse jobs, search, view public company data             |
+| Visitor        | Unauthenticated visitor    | View marketing and authentication entry points            |
 | Candidate      | Authenticated job seeker   | Save jobs, upload resume, apply, manage profile, alerts   |
 | Employer User  | Recruiter/hiring manager   | Manage company jobs, review applications, update statuses |
 | Company Admin  | Employer with admin rights | Manage company members, branding, jobs, workflows         |
@@ -224,7 +235,7 @@ Prepare the platform for recommendation and sourcing.
 
 ### 5.1 Candidate Job Search Flow
 
-1. User lands on search page
+1. User signs in and lands on search page
 2. Enters keyword and applies filters
 3. Reviews results with highlighted snippets and facets
 4. Opens job detail
@@ -369,10 +380,10 @@ The original search MVP schema is not enough for:
 So the schema is split into phases:
 
 - **Phase 0**: tables required to seed and search jobs
-- **Phase 1**: search MVP and core search features (no new tables)
-- **Phase 2**: candidate/employer/application workflows
-- **Phase 3**: search analytics, saved searches, and growth features
-- **Phase 4**: resume and recommendation readiness
+- **Search MVP milestone**: search UI and Elasticsearch search capabilities on top of Phase 0
+- **Phase 1**: candidate, employer, and application workflows
+- **Phase 2**: search analytics, saved searches, and growth features
+- **Phase 3**: resume and recommendation readiness
 
 ## 9. KPIs
 
@@ -385,7 +396,7 @@ So the schema is split into phases:
 | Precision@5             | better than DB baseline       |
 | Zero-result rate        | tracked and reduced over time |
 | Apply conversion        | tracked in later phases       |
-| Saved-search activation | tracked in Phase 3            |
+| Saved-search activation | tracked in Phase 2            |
 
 ## 10. Risks and Mitigations
 
@@ -393,7 +404,7 @@ So the schema is split into phases:
 | --------------------------- | --------------------------- | ------------------------------------------- |
 | Mapping lock-in             | Expensive reindexing        | Use versioned indices + aliases             |
 | Schema too narrow           | Blocks future features      | Add phased marketplace schema now           |
-| Over-engineering early      | Slows MBO delivery          | Keep Phase 1 search-first                   |
+| Over-engineering early      | Slows MBO delivery          | Keep Search MVP milestone tightly scoped    |
 | Relevance tuning complexity | Weak demo quality           | Define benchmark query set early            |
 | Queue/index drift           | Inconsistent search results | Use after-commit dispatch + re-sync command |
 | Resume/PII security gaps    | High trust risk             | Private object storage + signed URLs        |

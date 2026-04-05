@@ -11,6 +11,7 @@ categories (1) --- (N) category_job_listing
 Optional:
 search_queries --- job_impressions --- job_listings
 search_queries --- job_clicks --- job_listings
+search_queries.clicked_job_listing_id --- job_listings (derived shortcut, optional)
 
 # ERD — Text-based Domain Model (Long-term)
 
@@ -52,6 +53,13 @@ users (1) ──────── (0..1) candidate_profiles
 
 ## 2. Phase-based ERD
 
+### Phase Definitions
+
+- Phase 0: Search Core
+- Phase 1: Marketplace Core
+- Phase 2: Search Analytics
+- Phase 3: Resume & Matching Readiness
+
 ## Phase 0 — Search Core
 
 ```text
@@ -68,7 +76,7 @@ categories (1) ───────< categories.parent_id (self reference)
 - One job listing can have many categories.
 - One job listing can have many skills.
 
-## Phase 2 — Marketplace Core
+## Phase 1 — Marketplace Core
 
 ```text
 users (1) ──────── (0..1) candidate_profiles
@@ -84,7 +92,7 @@ users (1) ────────< notifications (Laravel built-in)
 companies (1) ────────< company_reviews >────── users
 ```
 
-## Phase 3 — Search Analytics
+## Phase 2 — Search Analytics
 
 ```text
 users (0..1) ────────< saved_searches
@@ -94,7 +102,7 @@ search_queries (0..1) ────────< job_clicks >──────�
 search_queries (0..1) ──────── clicked_job_listing_id ───> job_listings
 ```
 
-## Phase 4 — Resume & Matching Readiness
+## Phase 3 — Resume & Matching Readiness
 
 ```text
 users (1) ────────< resumes
@@ -127,7 +135,13 @@ applications (0..N) ────────> resumes
 | user -> notifications                       | one-to-many            |
 | user -> resumes                             | one-to-many            |
 
-## 4. Search Read Model vs Relational Model
+## 4. Event Model Notes
+
+- `search_queries`, `job_impressions`, and `job_clicks` are analytics tables and should still carry both `created_at` and `updated_at` for consistency with the rest of the schema.
+- Anonymous analytics should still retain attribution via `session_id` when `user_id` is null.
+- `search_queries.clicked_job_listing_id` is a denormalized convenience field and should represent the latest clicked job for that query if the application keeps it.
+
+## 5. Search Read Model vs Relational Model
 
 ```text
 MySQL relational model
@@ -151,7 +165,7 @@ Elasticsearch read model
     - searchable text
 ```
 
-## 5. Suggested Future Extensions
+## 6. Suggested Future Extensions
 
 ```text
 job_listings >────────< job_listing_locations >──────── locations

@@ -6,8 +6,24 @@
 
 - Use `job_listings` instead of `jobs` to avoid conflict with Laravel queue tables.
 - Use bigint unsigned primary keys.
-- Add `created_at` and `updated_at` to all mutable entities unless noted otherwise.
+- Add `created_at` and `updated_at` to every documented table.
+- Always list `created_at` and `updated_at` as the final two rows in each table definition.
 - Use soft deletes only where business recovery is useful; otherwise keep explicit `status` fields.
+
+## Phase Definitions
+
+- Phase 0: Search Core
+- Phase 1: Marketplace Core
+- Phase 2: Search Analytics
+- Phase 3: Resume & Matching Readiness
+
+## Cross-cutting Rules
+
+- Framework-owned tables may be exceptions to the bigint PK convention. Laravel's `notifications` table is one such exception.
+- Every documented table should include both `created_at` and `updated_at`, including pivots and analytics tables.
+- Analytics tables must record at least one actor key: `user_id` or `session_id`.
+- Denormalized helper fields must declare their source of truth. `search_queries.clicked_job_listing_id` is derived from click activity and should represent the latest clicked job for that query.
+- Foreign key delete behavior must be declared in migrations. Use `cascadeOnDelete()` for hard-dependent pivots, `nullOnDelete()` for optional references, and `restrictOnDelete()` or soft-delete parents for historical records that should survive.
 
 # Phase 0 — Core Search Domain
 
@@ -28,6 +44,8 @@
 | country_code | char(2) nullable             | ISO country               |
 | is_verified  | boolean default false        |                           |
 | status       | varchar(30) default 'active' | active, hidden, suspended |
+| created_at   | timestamp                    |                           |
+| updated_at   | timestamp                    |                           |
 
 **Indexes**
 
@@ -44,6 +62,8 @@
 | slug      | varchar(120) unique                 |                       |
 | name      | varchar(120)                        |                       |
 | is_active | boolean default true                |                       |
+| created_at | timestamp                          |                       |
+| updated_at | timestamp                          |                       |
 
 **Indexes**
 
@@ -60,6 +80,8 @@
 | name         | varchar(120) unique  |                           |
 | category     | varchar(80) nullable | backend, frontend, devops |
 | aliases_json | json nullable        | future synonyms           |
+| created_at   | timestamp            |                           |
+| updated_at   | timestamp            |                           |
 
 **Indexes**
 
@@ -79,6 +101,8 @@
 | latitude      | decimal(10,7) nullable | future geo |
 | longitude     | decimal(10,7) nullable | future geo |
 | is_active     | boolean default true   |            |
+| created_at    | timestamp              |            |
+| updated_at    | timestamp              |            |
 
 **Indexes**
 
@@ -109,9 +133,9 @@
 | application_url     | varchar(255) nullable              | external apply URL              |
 | is_featured         | boolean default false              |                                 |
 | is_active           | boolean default true               |                                 |
+| source_type         | varchar(30) default 'direct'       | direct, imported                |
 | published_at        | timestamp nullable                 |                                 |
 | expires_at          | timestamp nullable                 |                                 |
-| source_type         | varchar(30) default 'direct'       | direct, imported                |
 | created_at          | timestamp                          |                                 |
 | updated_at          | timestamp                          |                                 |
 
@@ -132,6 +156,8 @@
 | -------------- | ---------------------------- | ----- |
 | category_id    | bigint FK -> categories.id   |       |
 | job_listing_id | bigint FK -> job_listings.id |       |
+| created_at     | timestamp                    |       |
+| updated_at     | timestamp                    |       |
 
 **Primary Key**
 
@@ -149,6 +175,8 @@
 | skill_id       | bigint FK -> skills.id       |                             |
 | is_primary     | boolean default false        |                             |
 | weight         | smallint default 1           | higher means more important |
+| created_at     | timestamp                    |                             |
+| updated_at     | timestamp                    |                             |
 
 **Primary Key**
 
@@ -159,82 +187,7 @@
 - index(skill_id)
 - index(job_listing_id, weight)
 
-# Phase 3 — Search Analytics & Retention
-
-## `saved_searches`
-
-| Field            | Type                        | Notes                              |
-| ---------------- | --------------------------- | ---------------------------------- |
-| id               | bigint PK                   |                                    |
-| user_id          | bigint FK -> users.id       | created in Phase 2 app auth domain |
-| name             | varchar(120) nullable       | optional label                     |
-| keyword          | varchar(255) nullable       |                                    |
-| filters_json     | json                        | normalized filters payload         |
-| sort_by          | varchar(30) nullable        |                                    |
-| frequency        | varchar(20) default 'daily' | daily, weekly                      |
-| is_active        | boolean default true        |                                    |
-| last_notified_at | timestamp nullable          |                                    |
-
-**Indexes**
-
-- index(user_id, is_active)
-- index(frequency)
-
-## `search_queries`
-
-| Field                  | Type                                  | Notes             |
-| ---------------------- | ------------------------------------- | ----------------- |
-| id                     | bigint PK                             |                   |
-| user_id                | bigint FK nullable -> users.id        | anonymous allowed |
-| session_id             | varchar(100) nullable                 |                   |
-| keyword                | varchar(255) nullable                 |                   |
-| filters_json           | json nullable                         |                   |
-| result_count           | integer default 0                     |                   |
-| latency_ms             | integer nullable                      |                   |
-| clicked_job_listing_id | bigint FK nullable -> job_listings.id |                   |
-| created_at             | timestamp                             | event time        |
-
-**Indexes**
-
-- index(user_id)
-- index(created_at)
-- index(clicked_job_listing_id)
-
-## `job_impressions`
-
-| Field           | Type                                    | Notes |
-| --------------- | --------------------------------------- | ----- |
-| id              | bigint PK                               |       |
-| user_id         | bigint FK nullable -> users.id          |       |
-| session_id      | varchar(100) nullable                   |       |
-| search_query_id | bigint FK nullable -> search_queries.id |       |
-| job_listing_id  | bigint FK -> job_listings.id            |       |
-| rank_position   | integer nullable                        |       |
-| created_at      | timestamp                               |       |
-
-**Indexes**
-
-- index(job_listing_id, created_at)
-- index(search_query_id)
-
-## `job_clicks`
-
-| Field           | Type                                    | Notes |
-| --------------- | --------------------------------------- | ----- |
-| id              | bigint PK                               |       |
-| user_id         | bigint FK nullable -> users.id          |       |
-| session_id      | varchar(100) nullable                   |       |
-| search_query_id | bigint FK nullable -> search_queries.id |       |
-| job_listing_id  | bigint FK -> job_listings.id            |       |
-| rank_position   | integer nullable                        |       |
-| created_at      | timestamp                               |       |
-
-**Indexes**
-
-- index(job_listing_id, created_at)
-- index(search_query_id)
-
-# Phase 2 — User, Employer, and Application Domain
+# Phase 1 — User, Employer, and Application Domain
 
 ## `users`
 
@@ -250,6 +203,8 @@
 | status            | varchar(20) default 'active' | active, suspended, pending |
 | email_verified_at | timestamp nullable           |                            |
 | last_login_at     | timestamp nullable           |                            |
+| created_at        | timestamp                    |                            |
+| updated_at        | timestamp                    |                            |
 
 **Indexes**
 
@@ -271,6 +226,8 @@
 | preferred_work_model    | varchar(20) nullable               |       |
 | open_to_work            | boolean default false              |       |
 | searchable_by_employers | boolean default false              |       |
+| created_at              | timestamp                          |       |
+| updated_at              | timestamp                          |       |
 
 **Indexes**
 
@@ -286,6 +243,8 @@
 | user_id      | bigint FK -> users.id     |                         |
 | company_role | varchar(20)               | owner, admin, recruiter |
 | is_active    | boolean default true      |                         |
+| created_at   | timestamp                 |                         |
+| updated_at   | timestamp                 |                         |
 
 **Indexes**
 
@@ -302,6 +261,8 @@
 | proficiency_level | varchar(20) nullable   | beginner, intermediate, advanced |
 | years_experience  | decimal(4,1) nullable  |                                  |
 | last_used_year    | smallint nullable      |                                  |
+| created_at        | timestamp              |                                  |
+| updated_at        | timestamp              |                                  |
 
 **Primary Key**
 
@@ -313,18 +274,20 @@
 
 ## `applications`
 
-| Field                  | Type                             | Notes                                                                             |
-| ---------------------- | -------------------------------- | --------------------------------------------------------------------------------- |
-| id                     | bigint PK                        |                                                                                   |
-| job_listing_id         | bigint FK -> job_listings.id     |                                                                                   |
-| user_id                | bigint FK -> users.id            | candidate                                                                         |
-| resume_id              | bigint FK nullable -> resumes.id | added in Phase 4                                                                  |
-| cover_letter           | text nullable                    |                                                                                   |
-| source                 | varchar(30) default 'site_apply' | site_apply, referral, imported                                                    |
+| Field                  | Type                             | Notes |
+| ---------------------- | -------------------------------- | ----- |
+| id                     | bigint PK                        |       |
+| job_listing_id         | bigint FK -> job_listings.id     |       |
+| user_id                | bigint FK -> users.id            | candidate |
+| resume_id              | bigint FK nullable -> resumes.id | added in Phase 3 |
+| cover_letter           | text nullable                    |       |
+| source                 | varchar(30) default 'site_apply' | site_apply, referral, imported |
 | status                 | varchar(30) default 'submitted'  | submitted, viewed, shortlisted, interviewing, offered, hired, rejected, withdrawn |
-| employer_notes         | text nullable                    | internal use                                                                      |
-| applied_at             | timestamp                        |                                                                                   |
-| last_status_changed_at | timestamp nullable               |                                                                                   |
+| employer_notes         | text nullable                    | internal use |
+| applied_at             | timestamp                        |       |
+| last_status_changed_at | timestamp nullable               |       |
+| created_at             | timestamp                        |       |
+| updated_at             | timestamp                        |       |
 
 **Indexes**
 
@@ -343,6 +306,7 @@
 | changed_by_user_id | bigint FK nullable -> users.id |       |
 | note               | text nullable                  |       |
 | created_at         | timestamp                      |       |
+| updated_at         | timestamp                      |       |
 
 **Indexes**
 
@@ -355,6 +319,7 @@
 | user_id        | bigint FK -> users.id        |       |
 | job_listing_id | bigint FK -> job_listings.id |       |
 | created_at     | timestamp                    |       |
+| updated_at     | timestamp                    |       |
 
 **Primary Key**
 
@@ -367,6 +332,7 @@
 | user_id    | bigint FK -> users.id     |       |
 | company_id | bigint FK -> companies.id |       |
 | created_at | timestamp                 |       |
+| updated_at | timestamp                 |       |
 
 **Primary Key**
 
@@ -374,9 +340,11 @@
 
 ## `notifications`
 
-> **Use Laravel's built-in notification system.** Run `php artisan notifications:table` to generate the
+> **Use Laravel's built-in notification system.** Run `vendor/bin/sail artisan notifications:table --no-interaction` to generate the
 > standard `notifications` migration. This provides the `id`, `type`, `notifiable_type`, `notifiable_id`,
 > `data` (JSON), `read_at`, and `created_at` / `updated_at` columns out of the box.
+>
+> This table is a framework exception to the bigint PK convention above.
 >
 > Notification classes (e.g. `ApplicationSubmitted`, `ApplicationStatusChanged`, `SavedSearchAlert`)
 > should extend `Illuminate\Notifications\Notification` and use the `database` + `mail` channels as needed.
@@ -396,13 +364,95 @@
 | employment_status    | varchar(30) nullable           | current_employee, former_employee, candidate |
 | review_status        | varchar(20) default 'pending'  | pending, published, rejected, hidden         |
 | published_at         | timestamp nullable             |                                              |
+| created_at           | timestamp                      |                                              |
+| updated_at           | timestamp                      |                                              |
 
 **Indexes**
 
 - index(company_id, review_status)
 - index(company_id, rating)
 
-# Phase 4 — Resume & Matching Readiness
+# Phase 2 — Search Analytics & Retention
+
+## `saved_searches`
+
+| Field            | Type                        | Notes                              |
+| ---------------- | --------------------------- | ---------------------------------- |
+| id               | bigint PK                   |                                    |
+| user_id          | bigint FK -> users.id       | created in Phase 1 app auth domain |
+| name             | varchar(120) nullable       | optional label                     |
+| keyword          | varchar(255) nullable       |                                    |
+| filters_json     | json                        | normalized filters payload         |
+| sort_by          | varchar(30) nullable        |                                    |
+| frequency        | varchar(20) default 'daily' | daily, weekly                      |
+| is_active        | boolean default true        |                                    |
+| last_notified_at | timestamp nullable          |                                    |
+| created_at       | timestamp                   |                                    |
+| updated_at       | timestamp                   |                                    |
+
+**Indexes**
+
+- index(user_id, is_active)
+- index(frequency)
+
+## `search_queries`
+
+| Field                  | Type                                  | Notes             |
+| ---------------------- | ------------------------------------- | ----------------- |
+| id                     | bigint PK                             |                   |
+| user_id                | bigint FK nullable -> users.id        | anonymous allowed |
+| session_id             | varchar(100) nullable                 |                   |
+| keyword                | varchar(255) nullable                 |                   |
+| filters_json           | json nullable                         |                   |
+| result_count           | integer default 0                     |                   |
+| latency_ms             | integer nullable                      |                   |
+| clicked_job_listing_id | bigint FK nullable -> job_listings.id |                   |
+| created_at             | timestamp                             | event time        |
+| updated_at             | timestamp                             |                   |
+
+**Indexes**
+
+- index(user_id)
+- index(created_at)
+- index(clicked_job_listing_id)
+
+## `job_impressions`
+
+| Field           | Type                                    | Notes |
+| --------------- | --------------------------------------- | ----- |
+| id              | bigint PK                               |       |
+| user_id         | bigint FK nullable -> users.id          |       |
+| session_id      | varchar(100) nullable                   |       |
+| search_query_id | bigint FK nullable -> search_queries.id |       |
+| job_listing_id  | bigint FK -> job_listings.id            |       |
+| rank_position   | integer nullable                        |       |
+| created_at      | timestamp                               |       |
+| updated_at      | timestamp                               |       |
+
+**Indexes**
+
+- index(job_listing_id, created_at)
+- index(search_query_id)
+
+## `job_clicks`
+
+| Field           | Type                                    | Notes |
+| --------------- | --------------------------------------- | ----- |
+| id              | bigint PK                               |       |
+| user_id         | bigint FK nullable -> users.id          |       |
+| session_id      | varchar(100) nullable                   |       |
+| search_query_id | bigint FK nullable -> search_queries.id |       |
+| job_listing_id  | bigint FK -> job_listings.id            |       |
+| rank_position   | integer nullable                        |       |
+| created_at      | timestamp                               |       |
+| updated_at      | timestamp                               |       |
+
+**Indexes**
+
+- index(job_listing_id, created_at)
+- index(search_query_id)
+
+# Phase 3 — Resume & Matching Readiness
 
 ## `resumes`
 
@@ -420,6 +470,8 @@
 | parsed_text     | longtext nullable             |                                 |
 | parsed_json     | json nullable                 |                                 |
 | uploaded_at     | timestamp                     |                                 |
+| created_at      | timestamp                     |                                 |
+| updated_at      | timestamp                     |                                 |
 
 **Indexes**
 
@@ -441,6 +493,8 @@
 | preferred_locations_json | json nullable         |                        |
 | preferred_roles_json     | json nullable         |                        |
 | vector_status            | varchar(20) nullable  | future embedding state |
+| created_at               | timestamp             |                        |
+| updated_at               | timestamp             |                        |
 
 **Indexes**
 
@@ -458,8 +512,9 @@
 | related_job_listing_id | bigint FK nullable -> job_listings.id |                                      |
 | status                 | varchar(20) default 'pending'         | pending, approved, declined, expired |
 | message                | text nullable                         |                                      |
-| created_at             | timestamp                             |                                      |
 | responded_at           | timestamp nullable                    |                                      |
+| created_at             | timestamp                             |                                      |
+| updated_at             | timestamp                             |                                      |
 
 **Indexes**
 
@@ -469,8 +524,8 @@
 # Implementation Notes
 
 1. **Phase order matters**  
-   Phase 0 and Phase 1 (search MVP) are enough to deliver the Elasticsearch MBO.  
-   Phase 2, Phase 3, and Phase 4 prevent redesign when the product evolves.
+   Phase 0 is enough to deliver the Elasticsearch MVP.  
+   Phases 1, 2, and 3 prevent redesign when the product evolves.
 
 2. **Denormalize for Elasticsearch, normalize for MySQL**  
    MySQL should remain relational and clean.  
@@ -487,3 +542,7 @@
 5. **Duplicate apply rule**  
    Keep `unique(job_listing_id, user_id)` at first.  
    Relax later only if multiple applications per job become a product requirement.
+
+6. **Review and identity constraints**
+   Decide whether company reviews should be one-per-user-per-company or allow multiple submissions over time, then encode that in a unique index or explicit policy.
+   For analytics events, enforce the `user_id` or `session_id` requirement in application validation and, where practical, database constraints.
