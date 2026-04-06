@@ -9,14 +9,27 @@ class DatabaseSearchService implements SearchServiceInterface
 {
     public function search(array $params): array
     {
+        $page = max(1, (int) ($params['page'] ?? 1));
+        $perPage = min(50, max(1, (int) ($params['per_page'] ?? 20)));
+
         return [
-            'hits' => [
-                'total' => [
-                    'value' => 0,
-                ],
-                'hits' => [],
+            'items' => [],
+            'pagination' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total' => 0,
+                'total_pages' => 0,
+                'has_more' => false,
             ],
-            'params' => $params,
+            'facets' => [
+                'locations' => [],
+                'categories' => [],
+                'skills' => [],
+                'job_types' => [],
+                'work_models' => [],
+                'experience_levels' => [],
+            ],
+            'sort' => (string) ($params['sort'] ?? 'best_match'),
         ];
     }
 

@@ -105,6 +105,8 @@ Prove Elasticsearch value through a real job-search experience.
 - authenticated candidate searching jobs
 - internal evaluator benchmarking relevance and speed
 
+Search MVP is authenticated-only. Public visitor job browsing is out of scope for this milestone.
+
 ### In Scope
 
 - keyword search
@@ -116,7 +118,7 @@ Prove Elasticsearch value through a real job-search experience.
 - autocomplete
 - highlighting
 - related jobs
-- benchmark comparison: Elasticsearch vs MySQL (optional)
+- benchmark comparison: Elasticsearch vs MySQL baseline (optional)
 - job detail page
 - company snippets on job pages
 
@@ -146,6 +148,14 @@ Prove Elasticsearch value through a real job-search experience.
 - Precision@5 / Hit@10 shows visible improvement over DB search
 - index sync works for create/update/delete flows
 - search responses include stable pagination metadata without exposing raw Elasticsearch hits
+
+### Search Implementation Rules
+
+- MySQL is the transactional source of truth.
+- Elasticsearch is the user-facing search backend.
+- `DatabaseSearchService` exists only for benchmark comparison and does not define product behavior.
+- The canonical request and response contract is defined in [`reference.md`](reference.md).
+- Search consumers must not depend on raw Elasticsearch payloads such as `hits`, `_source`, or highlight arrays.
 
 ## Phase 1 — Marketplace Core
 

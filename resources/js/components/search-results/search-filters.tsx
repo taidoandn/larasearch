@@ -1,13 +1,7 @@
-import { useState } from 'react';
-import {
-    activeFilterChips,
-    searchFilters,
-} from '@/components/search/mock-search-data';
-import type {
-    SearchFilterChip,
-    SearchFilterField,
-} from '@/components/search/mock-search-data';
+import { router } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import { sectionLabelClassName } from '@/components/search/shared';
+import type { SearchFilters as SearchFiltersState } from '@/components/search-results/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,75 +13,148 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
-type FilterState = Record<string, string>;
-
 const controlClassName =
     'h-7 rounded-none border-0 bg-transparent px-0 py-0 text-sm leading-none font-medium text-zinc-900 shadow-none ring-0 focus-visible:ring-0 dark:bg-transparent dark:text-zinc-100';
 
 const selectControlClassName = `${controlClassName} [&_[data-slot=select-value]]:flex [&_[data-slot=select-value]]:items-center [&_[data-slot=select-value]]:leading-none [&_[data-slot=select-value]]:min-h-0`;
+const workModelOptions = [
+    { label: 'All Models', value: '' },
+    { label: 'Remote', value: 'remote' },
+    { label: 'Hybrid', value: 'hybrid' },
+    { label: 'Onsite', value: 'onsite' },
+];
+
+const experienceLevelOptions = [
+    { label: 'All Levels', value: '' },
+    { label: 'Entry', value: 'entry' },
+    { label: 'Mid', value: 'mid' },
+    { label: 'Senior', value: 'senior' },
+    { label: 'Lead', value: 'lead' },
+];
+
+const jobTypeOptions = [
+    { label: 'All Types', value: '' },
+    { label: 'Full-Time', value: 'full-time' },
+    { label: 'Contract', value: 'contract' },
+    { label: 'Internship', value: 'internship' },
+];
 
 const chipLabelMap: Record<string, string> = {
-    keyword: 'Role',
-    location: 'Remote',
-    'work-model': 'Work Model',
-    experience: 'Experience',
-    salary: 'Min Salary',
+    q: 'Keyword',
+    location: 'Location',
+    job_type: 'Job Type',
+    work_model: 'Work Model',
+    experience_level: 'Experience',
 };
 
-export function SearchFilters() {
-    const initialValues: FilterState = Object.fromEntries(
-        searchFilters.map((filter) => [filter.id, filter.value]),
-    );
-    const [values, setValues] = useState<FilterState>(initialValues);
-    const chips: SearchFilterChip[] = Object.entries(values)
-        .filter(([, value]) => value.trim().length > 0)
-        .filter(([id, value]) => {
-            if (id === 'work-model' && value === 'All Models') {
-                return false;
-            }
+export function SearchFilters({
+    filters,
+}: {
+    filters: SearchFiltersState;
+}) {
+    const [values, setValues] = useState<SearchFiltersState>(filters);
 
-            if (id === 'experience' && value === 'All Levels') {
-                return false;
-            }
+    useEffect(() => {
+        setValues(filters);
+    }, [filters]);
 
-            return true;
-        })
-        .slice(0, 4)
+    const chips = Object.entries(values)
+        .filter(([key, value]) => ['q', 'location', 'job_type', 'work_model', 'experience_level'].includes(key))
+        .filter(([, value]) => typeof value === 'string' && value.trim().length > 0)
         .map(([id, value]) => ({
             id,
             label: chipLabelMap[id] ?? id,
-            value,
+            value: String(value),
         }));
 
-    const updateValue = (id: string, value: string) => {
-        setValues((current) => ({ ...current, [id]: value }));
+    const updateValue = (id: keyof SearchFiltersState, value: string) => {
+        setValues((current) => ({
+            ...current,
+            [id]: value,
+        }));
+    };
+
+    const submitFilters = () => {
+        router.get('/search', {
+            ...values,
+            page: 1,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
     };
 
     const resetFilters = () => {
-        setValues(initialValues);
+        const nextValues = {
+            ...filters,
+            q: '',
+            location: '',
+            category: '',
+            skills: [],
+            job_type: '',
+            work_model: '',
+            experience_level: '',
+            salary_min: null,
+            salary_max: null,
+            sort: 'best_match',
+            page: 1,
+            per_page: 20,
+        };
+
+        setValues(nextValues);
+
+        router.get('/search', {}, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
     };
 
     return (
         <div className="space-y-5 px-4 py-4 sm:px-6">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-stretch">
                 <div className="grid flex-1 gap-px overflow-hidden border border-zinc-200 bg-zinc-200 md:grid-cols-2 xl:grid-cols-5 dark:border-zinc-800 dark:bg-zinc-800">
-                    {searchFilters.map((filter) => (
-                        <FilterField
-                            key={filter.id}
-                            filter={filter}
-                            value={values[filter.id] ?? ''}
-                            onValueChange={updateValue}
-                        />
-                    ))}
+                    <TextFilterField
+                        label="Keyword"
+                        value={values.q}
+                        onValueChange={(value) => updateValue('q', value)}
+                    />
+                    <TextFilterField
+                        label="Location"
+                        value={values.location}
+                        onValueChange={(value) => updateValue('location', value)}
+                    />
+                    <SelectFilterField
+                        label="Work Model"
+                        value={values.work_model}
+                        options={workModelOptions}
+                        onValueChange={(value) => updateValue('work_model', value)}
+                    />
+                    <SelectFilterField
+                        label="Experience"
+                        value={values.experience_level}
+                        options={experienceLevelOptions}
+                        onValueChange={(value) => updateValue('experience_level', value)}
+                    />
+                    <SelectFilterField
+                        label="Job Type"
+                        value={values.job_type}
+                        options={jobTypeOptions}
+                        onValueChange={(value) => updateValue('job_type', value)}
+                    />
                 </div>
 
-                <Button className="h-auto rounded-none bg-primary px-6 py-3 text-[11px] font-semibold tracking-[0.22em] text-primary-foreground uppercase shadow-none hover:bg-primary/90">
-                    Search Database
+                <Button
+                    onClick={submitFilters}
+                    className="h-auto rounded-none bg-primary px-6 py-3 text-[11px] font-semibold tracking-[0.22em] text-primary-foreground uppercase shadow-none hover:bg-primary/90"
+                >
+                    Search
                 </Button>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-                {(chips.length > 0 ? chips : activeFilterChips).map((chip) => (
+                {chips.map((chip) => (
                     <div
                         key={chip.id}
                         className="inline-flex items-center gap-2 bg-zinc-100 px-2.5 py-1 text-[11px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
@@ -111,51 +178,57 @@ export function SearchFilters() {
     );
 }
 
-function FilterField({
-    filter,
+function TextFilterField({
+    label,
     value,
     onValueChange,
 }: {
-    filter: SearchFilterField;
+    label: string;
     value: string;
-    onValueChange: (id: string, value: string) => void;
+    onValueChange: (value: string) => void;
 }) {
     return (
         <div className="space-y-1 bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-            <Label className={sectionLabelClassName}>{filter.label}</Label>
+            <Label className={sectionLabelClassName}>{label}</Label>
+            <Input
+                value={value}
+                onChange={(event) => onValueChange(event.target.value)}
+                className={controlClassName}
+            />
+        </div>
+    );
+}
 
-            {filter.options ? (
-                <Select
-                    value={value}
-                    onValueChange={(nextValue) =>
-                        onValueChange(filter.id, nextValue)
-                    }
+function SelectFilterField({
+    label,
+    value,
+    options,
+    onValueChange,
+}: {
+    label: string;
+    value: string;
+    options: Array<{ label: string; value: string }>;
+    onValueChange: (value: string) => void;
+}) {
+    return (
+        <div className="space-y-1 bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+            <Label className={sectionLabelClassName}>{label}</Label>
+
+            <Select value={value} onValueChange={onValueChange}>
+                <SelectTrigger className={`${selectControlClassName} w-full`}>
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent
+                    align="start"
+                    className="rounded-none border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"
                 >
-                    <SelectTrigger
-                        className={`${selectControlClassName} w-full`}
-                    >
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent
-                        align="start"
-                        className="rounded-none border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"
-                    >
-                        {filter.options.map((option) => (
-                            <SelectItem key={option} value={option}>
-                                {option}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            ) : (
-                <Input
-                    value={value}
-                    onChange={(event) =>
-                        onValueChange(filter.id, event.target.value)
-                    }
-                    className={controlClassName}
-                />
-            )}
+                    {options.map((option) => (
+                        <SelectItem key={option.label} value={option.value}>
+                            {option.label}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
         </div>
     );
 }

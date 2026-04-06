@@ -7,7 +7,6 @@ use App\Models\Company;
 use App\Models\JobListing;
 use App\Observers\CompanyObserver;
 use App\Observers\JobListingObserver;
-use App\Services\DatabaseSearchService;
 use App\Services\ElasticsearchClient;
 use App\Services\ElasticsearchSearchService;
 use Carbon\CarbonImmutable;
@@ -41,10 +40,6 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(SearchServiceInterface::class, function ($app): SearchServiceInterface {
-            if (! config('elasticsearch.enabled', true)) {
-                return new DatabaseSearchService;
-            }
-
             return new ElasticsearchSearchService(
                 client: $app->make(ElasticsearchClient::class),
             );

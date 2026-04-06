@@ -1,4 +1,8 @@
-# ERD (SEARCH MVP) (Short-term)
+# ERD — Current and Future Domain Model
+
+> If you are implementing the current MVP, read the Search MVP and Phase 0 sections first. The later sections describe future phases and extensions.
+
+## Search MVP (Current)
 
 companies (1) --- (N) job_listings
 job_listings (N) --- (N) skills (via job_listing_skill)
@@ -12,8 +16,6 @@ Optional:
 search_queries --- job_impressions --- job_listings
 search_queries --- job_clicks --- job_listings
 search_queries.clicked_job_listing_id --- job_listings (derived shortcut, optional)
-
-# ERD — Text-based Domain Model (Long-term)
 
 ## 1. High-level ERD
 
@@ -157,9 +159,15 @@ MySQL relational model
 Elasticsearch read model
   job_listings_current
     - company_name
-    - location_display
+    - company_slug
+    - locations
+    - location_labels
     - category_names
-    - skill_names
+    - skills
+    - skills_text
+    - job_type
+    - work_model
+    - experience_level
     - salary fields
     - ranking signals
     - searchable text

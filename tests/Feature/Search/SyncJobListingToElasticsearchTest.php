@@ -9,6 +9,9 @@ use Database\Seeders\JobMarketplaceSeeder;
 use Illuminate\Support\Facades\Queue;
 
 it('maps a job listing into the expected elasticsearch document shape', function () {
+    // JobListing observers queue sync jobs on create; suppress them so this test stays focused on document mapping.
+    Queue::fake();
+
     $jobListing = JobListing::factory()->create([
         'slug' => 'staff-search-platform-engineer-sync-test',
         'title' => 'Staff Search Platform Engineer',
@@ -36,12 +39,17 @@ it('maps a job listing into the expected elasticsearch document shape', function
         ->and($document['slug'])->toBe('staff-search-platform-engineer-sync-test')
         ->and($document['title'])->toBe('Staff Search Platform Engineer')
         ->and($document['company_name'])->toBe($jobListing->company->name)
-        ->and($document['locations'])->toBe([$jobListing->primaryLocation->display_name])
+        ->and($document['company_slug'])->toBe($jobListing->company->slug)
+        ->and($document['locations'])->toBe([$jobListing->primaryLocation->city_name])
+        ->and($document['location_labels'])->toBe([$jobListing->primaryLocation->display_name])
         ->and(collect($document['category_names'])->sort()->values()->all())->toBe(['Platform Engineering', 'Search Infrastructure'])
-        ->and(collect($document['skills'])->sort()->values()->all())->toBe(['elasticsearch', 'laravel']);
+        ->and(collect($document['skills'])->sort()->values()->all())->toBe(['Elasticsearch', 'Laravel']);
 });
 
 it('sync job indexes the loaded job listing document', function () {
+    // Suppress observer-driven sync dispatch during factory setup; this test exercises the job handle path directly.
+    Queue::fake();
+
     $jobListing = JobListing::factory()->create();
 
     $searchService = Mockery::mock(SearchServiceInterface::class);

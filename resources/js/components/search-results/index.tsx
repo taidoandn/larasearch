@@ -1,38 +1,30 @@
-import { useState } from 'react';
-import { getSearchJobById } from '@/components/search/mock-search-data';
 import { ResultsList } from '@/components/search-results/results-list';
 import { ResultsToolbar } from '@/components/search-results/results-toolbar';
 import { SearchFilters } from '@/components/search-results/search-filters';
-import { SearchSummarySheet } from '@/components/search-results/summary-panel';
+import type {
+    SearchFilters as SearchFiltersState,
+    SearchResultsPayload,
+} from '@/components/search-results/types';
 
-export function SearchResultsContent() {
-    const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-
-    const selectedJob = selectedJobId
-        ? (getSearchJobById(selectedJobId) ?? null)
-        : null;
-
+export function SearchResultsContent({
+    results,
+    filters,
+}: {
+    results: SearchResultsPayload;
+    filters: SearchFiltersState;
+}) {
     return (
         <div className="flex flex-1 flex-col bg-zinc-50/50 dark:bg-zinc-950">
             <div className="border-b border-zinc-200 bg-white/95 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/90">
-                <SearchFilters />
+                <SearchFilters filters={filters} />
             </div>
 
-            <ResultsToolbar />
-            <ResultsList
-                selectedJobId={selectedJobId}
-                onSelectJob={setSelectedJobId}
+            <ResultsToolbar
+                total={results.pagination.total}
+                sort={results.sort}
+                filters={filters}
             />
-
-            <SearchSummarySheet
-                job={selectedJob}
-                open={!!selectedJob}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setSelectedJobId(null);
-                    }
-                }}
-            />
+            <ResultsList items={results.items} pagination={results.pagination} filters={filters} />
         </div>
     );
 }

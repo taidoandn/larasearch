@@ -168,11 +168,13 @@ it('creates a job listing, dispatches sync, and indexes the document in elastics
         ->and(data_get($document, '_source.slug'))->toBe("staff-search-platform-engineer-{$suffix}")
         ->and(data_get($document, '_source.title'))->toBe("Staff Search Platform Engineer {$suffix}")
         ->and(data_get($document, '_source.company_name'))->toBe("Search Test Co {$suffix}")
+        ->and(data_get($document, '_source.company_slug'))->toBe("search-test-co-{$suffix}")
         ->and(data_get($document, '_source.locations'))->toBe(["Bangkok Test {$suffix}"])
+        ->and(data_get($document, '_source.location_labels'))->toBe(["Bangkok Test {$suffix}"])
         ->and(data_get($document, '_source.category_names'))->toBe(["Search Infra {$suffix}", "Platform {$suffix}"])
         ->and(collect(data_get($document, '_source.skills'))->sort()->values()->all())->toBe([
-            "elasticsearch-{$suffix}",
-            "laravel-{$suffix}",
+            "Elasticsearch {$suffix}",
+            "Laravel {$suffix}",
         ]);
 
     cleanupLiveTestIndex($client, $index, $alias, $jobListing->id);

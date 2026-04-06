@@ -54,7 +54,7 @@
 ### Search Architecture Scaffolding
 - [x] Create `SearchServiceInterface`
 - [x] Create `ElasticsearchSearchService`
-- [x] Create `DatabaseSearchService` for benchmark baseline (optional)
+- [x] Create `DatabaseSearchService` for benchmark baseline only
 - [x] Register binding in service provider
 - [x] Create `SyncJobListingToElasticsearch` queued job
 - [x] Create `JobListingObserver`
@@ -67,6 +67,8 @@
 > Objective: prove Elasticsearch value with measurable job discovery experience.
 
 Authenticated users access the search experience in the current MVP scope.
+
+The canonical search payload and Elasticsearch document shape are defined in `docs/reference.md`.
 
 ### Elasticsearch Mapping & Indexing
 - [ ] Create versioned ES mapping JSON file (e.g. `config/elasticsearch/job_listings_mapping.json`)
@@ -83,7 +85,7 @@ Authenticated users access the search experience in the current MVP scope.
 - [ ] Implement filters: location, category, job type, salary range, work model, experience level, skills
 - [ ] Implement aggregations/facets for filter counts
 - [ ] Implement sorting: best match, newest, salary asc/desc
-- [ ] Implement pagination with normalized result metadata
+- [ ] Implement the canonical `items` / `pagination` / `facets` / `sort` result contract
 - [ ] Implement highlighting for matched terms
 - [ ] Add relevance boosting:
   - [ ] Boost title field (highest)
@@ -91,7 +93,7 @@ Authenticated users access the search experience in the current MVP scope.
   - [ ] Description match (lowest)
   - [ ] Freshness decay via `function_score`
   - [ ] Featured job boost
-- [ ] Create `SearchRequest` FormRequest for input validation
+- [x] Create `SearchRequest` FormRequest for input validation
 
 ### Suggestions & Related Jobs
 - [ ] Implement autocomplete/suggest endpoint
@@ -100,7 +102,7 @@ Authenticated users access the search experience in the current MVP scope.
 - [ ] Implement related jobs query (more-like-this or similar)
 
 ### Search UI (React + Inertia)
-- [ ] Create search page (`resources/js/pages/Jobs/Search.tsx`)
+- [x] Create search page (`resources/js/pages/search-results.tsx`)
 - [ ] Create job detail page
 - [ ] Build search bar with debounced autocomplete + keyboard navigation
 - [ ] Build filter sidebar
@@ -110,10 +112,10 @@ Authenticated users access the search experience in the current MVP scope.
 - [ ] Build active filter chips
 - [ ] Add empty/loading/skeleton states
 - [ ] Bind search state to URL params
-- [ ] Keep search consumers isolated from raw Elasticsearch response shapes
+- [ ] Keep search consumers isolated from raw Elasticsearch response shapes and internal ES helper fields
 
 ### Testing
-- [ ] Add feature tests for search controller
+- [x] Add feature tests for search controller
 - [ ] Add unit tests for query building
 - [x] Add tests for index sync flows
 - [ ] Test autocomplete queries (partial inputs like `lar`, `rea`, `jav`)
@@ -121,7 +123,7 @@ Authenticated users access the search experience in the current MVP scope.
 
 ### Benchmarking (optional)
 - [ ] Build `benchmark:search` command
-- [ ] Compare Elasticsearch vs MySQL: keyword, filtered, aggregations
+- [ ] Compare Elasticsearch vs MySQL baseline: keyword, filtered, aggregations
 - [ ] Define benchmark query set and relevance evaluation set
 - [ ] Track p50 / p95 / result quality
 

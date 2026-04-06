@@ -64,7 +64,9 @@ return [
                         ],
                     ],
                 ],
+                'company_slug' => ['type' => 'keyword'],
                 'locations' => ['type' => 'keyword'],
+                'location_labels' => ['type' => 'keyword'],
                 'category_names' => ['type' => 'keyword'],
                 'skills' => ['type' => 'keyword'],
                 'skills_text' => [
