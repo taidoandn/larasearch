@@ -12,7 +12,7 @@
 
 ## Current Implementation Notes
 
-- The authenticated `/search` page is served by `SearchResultsController` and rendered through the Inertia page at `resources/js/pages/search-results.tsx`.
+- The authenticated `/jobs` page is served by `JobsController` and rendered through the Inertia page at `resources/js/pages/jobs/index.tsx`.
 - Query validation is handled by `SearchRequest`.
 - `ElasticsearchSearchService` normalizes backend responses into the canonical search contract before the page consumes them.
 

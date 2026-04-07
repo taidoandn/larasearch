@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CompanyStatus;
 use Database\Factories\CompanyFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -33,6 +34,17 @@ class Company extends Model
         'is_verified',
         'status',
     ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'is_verified' => 'boolean',
+            'status' => CompanyStatus::class,
+        ];
+    }
 
     public function jobListings(): HasMany
     {

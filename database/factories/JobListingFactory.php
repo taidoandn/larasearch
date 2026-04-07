@@ -2,6 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Enums\ExperienceLevel;
+use App\Enums\JobListingSourceType;
+use App\Enums\JobType;
+use App\Enums\WorkModel;
 use App\Models\Company;
 use App\Models\JobListing;
 use App\Models\Location;
@@ -41,9 +45,9 @@ class JobListingFactory extends Factory
             'description' => fake()->paragraphs(4, true),
             'requirements' => fake()->paragraphs(2, true),
             'benefits' => fake()->paragraphs(2, true),
-            'job_type' => fake()->randomElement(['full-time', 'contract', 'internship']),
-            'work_model' => fake()->randomElement(['onsite', 'hybrid', 'remote']),
-            'experience_level' => fake()->randomElement(['entry', 'mid', 'senior', 'lead']),
+            'job_type' => fake()->randomElement(JobType::cases()),
+            'work_model' => fake()->randomElement(WorkModel::cases()),
+            'experience_level' => fake()->randomElement(ExperienceLevel::cases()),
             'salary_min' => $salaryMin,
             'salary_max' => $salaryMax,
             'salary_currency' => fake()->randomElement(['USD', 'VND', 'SGD']),
@@ -53,7 +57,7 @@ class JobListingFactory extends Factory
             'is_active' => true,
             'published_at' => $publishedAt,
             'expires_at' => (clone $publishedAt)->modify('+30 days'),
-            'source_type' => fake()->randomElement(['direct', 'imported']),
+            'source_type' => fake()->randomElement(JobListingSourceType::cases()),
         ];
     }
 }

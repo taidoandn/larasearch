@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\ExperienceLevel;
+use App\Enums\JobListingSourceType;
+use App\Enums\JobType;
+use App\Enums\WorkModel;
 use Database\Factories\JobListingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -44,6 +48,10 @@ class JobListing extends Model
     protected function casts(): array
     {
         return [
+            'job_type' => JobType::class,
+            'work_model' => WorkModel::class,
+            'experience_level' => ExperienceLevel::class,
+            'source_type' => JobListingSourceType::class,
             'salary_is_visible' => 'boolean',
             'is_featured' => 'boolean',
             'is_active' => 'boolean',
@@ -95,9 +103,9 @@ class JobListing extends Model
             'category_names' => $this->categories->pluck('name')->values()->all(),
             'skills' => $this->skills->pluck('name')->values()->all(),
             'skills_text' => $this->skills->pluck('name')->implode(' '),
-            'job_type' => $this->job_type,
-            'work_model' => $this->work_model,
-            'experience_level' => $this->experience_level,
+            'job_type' => $this->job_type?->value,
+            'work_model' => $this->work_model?->value,
+            'experience_level' => $this->experience_level?->value,
             'salary_min' => $this->salary_min,
             'salary_max' => $this->salary_max,
             'salary_currency' => $this->salary_currency,

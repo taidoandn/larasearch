@@ -102,7 +102,7 @@ The canonical search payload and Elasticsearch document shape are defined in `do
 - [ ] Implement related jobs query (more-like-this or similar)
 
 ### Search UI (React + Inertia)
-- [x] Create search page (`resources/js/pages/search-results.tsx`)
+- [x] Create jobs index page (`resources/js/pages/jobs/index.tsx`)
 - [ ] Create job detail page
 - [ ] Build search bar with debounced autocomplete + keyboard navigation
 - [ ] Build filter sidebar

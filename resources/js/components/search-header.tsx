@@ -20,7 +20,7 @@ import {
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn } from '@/lib/utils';
 import { home } from '@/routes';
-import { searchResults } from '@/routes/larasearch';
+import { index as jobsIndex } from '@/routes/jobs';
 import { edit as editProfile } from '@/routes/profile';
 import type { BreadcrumbItem } from '@/types';
 
@@ -33,7 +33,7 @@ type Props = {
 const navItems = [
     {
         title: 'Explore',
-        href: searchResults(),
+        href: jobsIndex(),
     },
 ];
 
@@ -101,7 +101,7 @@ export function SearchHeader({ breadcrumbs = [] }: Props) {
                                             asChild
                                             className="h-11 w-full justify-start rounded-xl px-3"
                                         >
-                                            <Link href={searchResults()}>
+                                            <Link href={jobsIndex()}>
                                                 <Search className="size-4" />
                                                 Search database
                                             </Link>
@@ -160,7 +160,7 @@ export function SearchHeader({ breadcrumbs = [] }: Props) {
 
                     <div className="ml-auto flex items-center gap-2">
                         <Link
-                            href={searchResults()}
+                            href={jobsIndex()}
                             className="hidden h-10 min-w-56 items-center gap-3 rounded-full border border-zinc-200 bg-zinc-50 px-4 text-sm text-zinc-500 transition-colors hover:border-zinc-300 hover:text-zinc-900 lg:flex dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-zinc-100"
                         >
                             <Search className="size-4" />

@@ -13,13 +13,13 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { searchResults } from '@/routes/larasearch';
+import { index as jobsIndex } from '@/routes/jobs';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Search',
-        href: searchResults(),
+        href: jobsIndex(),
         icon: Search,
     },
 ];
@@ -44,7 +44,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={searchResults()} prefetch>
+                            <Link href={jobsIndex()} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

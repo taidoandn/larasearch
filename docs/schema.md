@@ -24,6 +24,9 @@
 - Analytics tables must record at least one actor key: `user_id` or `session_id`.
 - Denormalized helper fields must declare their source of truth. `search_queries.clicked_job_listing_id` is derived from click activity and should represent the latest clicked job for that query.
 - Foreign key delete behavior must be declared in migrations. Use `cascadeOnDelete()` for hard-dependent pivots, `nullOnDelete()` for optional references, and `restrictOnDelete()` or soft-delete parents for historical records that should survive.
+- Enum storage is a project-level convention, not a per-table preference. Future schema changes should follow the same rule unless the schema docs are explicitly updated.
+- Use `varchar` plus PHP string-backed enums for every enum-like application-owned column, including statuses, roles, types, states, filters, labels, preferences, and source-like values.
+- Do not use database enums for application-owned columns in this schema.
 
 # Phase 0 — Core Search Domain
 
@@ -43,7 +46,7 @@
 | founded_year | smallint nullable            |                           |
 | country_code | char(2) nullable             | ISO country               |
 | is_verified  | boolean default false        |                           |
-| status       | varchar(30) default 'active' | active, hidden, suspended |
+| status       | varchar(30) default 'active' | PHP string-backed enum: active, hidden, suspended |
 | created_at   | timestamp                    |                           |
 | updated_at   | timestamp                    |                           |
 
@@ -133,7 +136,7 @@
 | application_url     | varchar(255) nullable              | external apply URL              |
 | is_featured         | boolean default false              |                                 |
 | is_active           | boolean default true               |                                 |
-| source_type         | varchar(30) default 'direct'       | direct, imported                |
+| source_type         | varchar(30) default 'direct'       | PHP string-backed enum: direct, imported |
 | published_at        | timestamp nullable                 |                                 |
 | expires_at          | timestamp nullable                 |                                 |
 | created_at          | timestamp                          |                                 |
@@ -199,8 +202,8 @@
 | full_name         | varchar(160)                 |                            |
 | phone             | varchar(40) nullable         |                            |
 | avatar_url        | varchar(255) nullable        |                            |
-| role              | varchar(20)                  | candidate, employer, admin |
-| status            | varchar(20) default 'active' | active, suspended, pending |
+| role              | varchar(20)                  | PHP string-backed enum: candidate, employer, admin |
+| status            | varchar(20) default 'active' | PHP string-backed enum: active, suspended, pending |
 | email_verified_at | timestamp nullable           |                            |
 | last_login_at     | timestamp nullable           |                            |
 | created_at        | timestamp                    |                            |
@@ -241,7 +244,7 @@
 | id           | bigint PK                 |                         |
 | company_id   | bigint FK -> companies.id |                         |
 | user_id      | bigint FK -> users.id     |                         |
-| company_role | varchar(20)               | owner, admin, recruiter |
+| company_role | varchar(20)               | PHP string-backed enum: owner, admin, recruiter |
 | is_active    | boolean default true      |                         |
 | created_at   | timestamp                 |                         |
 | updated_at   | timestamp                 |                         |
@@ -282,7 +285,7 @@
 | resume_id              | bigint FK nullable -> resumes.id | added in Phase 3 |
 | cover_letter           | text nullable                    |       |
 | source                 | varchar(30) default 'site_apply' | site_apply, referral, imported |
-| status                 | varchar(30) default 'submitted'  | submitted, viewed, shortlisted, interviewing, offered, hired, rejected, withdrawn |
+| status                 | varchar(30) default 'submitted'  | PHP string-backed enum: submitted, viewed, shortlisted, interviewing, offered, hired, rejected, withdrawn |
 | employer_notes         | text nullable                    | internal use |
 | applied_at             | timestamp                        |       |
 | last_status_changed_at | timestamp nullable               |       |
@@ -301,8 +304,8 @@
 | ------------------ | ------------------------------ | ----- |
 | id                 | bigint PK                      |       |
 | application_id     | bigint FK -> applications.id   |       |
-| old_status         | varchar(30) nullable           |       |
-| new_status         | varchar(30)                    |       |
+| old_status         | varchar(30) nullable           | PHP string-backed enum matching applications.status |
+| new_status         | varchar(30)                    | PHP string-backed enum matching applications.status |
 | changed_by_user_id | bigint FK nullable -> users.id |       |
 | note               | text nullable                  |       |
 | created_at         | timestamp                      |       |
@@ -362,7 +365,7 @@
 | cons                 | text nullable                  |                                              |
 | advice_to_management | text nullable                  |                                              |
 | employment_status    | varchar(30) nullable           | current_employee, former_employee, candidate |
-| review_status        | varchar(20) default 'pending'  | pending, published, rejected, hidden         |
+| review_status        | varchar(20) default 'pending'  | PHP string-backed enum: pending, published, rejected, hidden |
 | published_at         | timestamp nullable             |                                              |
 | created_at           | timestamp                      |                                              |
 | updated_at           | timestamp                      |                                              |
@@ -466,7 +469,7 @@
 | file_size_bytes | integer                       |                                 |
 | is_default      | boolean default false         |                                 |
 | visibility      | varchar(20) default 'private' | private, apply_only, searchable |
-| parser_status   | varchar(20) default 'pending' | pending, success, failed        |
+| parser_status   | varchar(20) default 'pending' | PHP string-backed enum: pending, success, failed |
 | parsed_text     | longtext nullable             |                                 |
 | parsed_json     | json nullable                 |                                 |
 | uploaded_at     | timestamp                     |                                 |
@@ -492,7 +495,7 @@
 | total_years_experience   | decimal(4,1) nullable |                        |
 | preferred_locations_json | json nullable         |                        |
 | preferred_roles_json     | json nullable         |                        |
-| vector_status            | varchar(20) nullable  | future embedding state |
+| vector_status            | varchar(20) nullable  | PHP string-backed enum for future embedding state |
 | created_at               | timestamp             |                        |
 | updated_at               | timestamp             |                        |
 
@@ -510,7 +513,7 @@
 | company_id             | bigint FK -> companies.id             |                                      |
 | requested_by_user_id   | bigint FK -> users.id                 | recruiter                            |
 | related_job_listing_id | bigint FK nullable -> job_listings.id |                                      |
-| status                 | varchar(20) default 'pending'         | pending, approved, declined, expired |
+| status                 | varchar(20) default 'pending'         | PHP string-backed enum: pending, approved, declined, expired |
 | message                | text nullable                         |                                      |
 | responded_at           | timestamp nullable                    |                                      |
 | created_at             | timestamp                             |                                      |
@@ -531,9 +534,10 @@
    MySQL should remain relational and clean.  
    Elasticsearch documents should flatten company, skill, category, and location data for fast search.
 
-3. **Enums vs varchar**  
-   Use app-level enums or DB enums only if the team is comfortable managing schema evolution.  
-   For faster iteration, varchar + constants/backed enums in code is often safer early.
+3. **Enum storage convention**  
+   This project defaults to PHP enums in code for bounded values.
+   Use `varchar` plus PHP string-backed enums for every enum-like application-owned column, including statuses, roles, types, states, filters, labels, preferences, and source-like values.
+   Do not use database enums for application-owned columns unless this schema doc is explicitly revised first.
 
 4. **Multi-location jobs**  
    Start with `primary_location_id`.  

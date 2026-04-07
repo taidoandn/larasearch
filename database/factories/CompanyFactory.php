@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\CompanyStatus;
 use App\Models\Company;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -29,7 +30,7 @@ class CompanyFactory extends Factory
             'founded_year' => fake()->numberBetween(1998, 2024),
             'country_code' => fake()->randomElement(['US', 'VN', 'SG', 'TH']),
             'is_verified' => fake()->boolean(35),
-            'status' => 'active',
+            'status' => CompanyStatus::ACTIVE,
         ];
     }
 }

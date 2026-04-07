@@ -1,0 +1,26 @@
+import { Link } from '@inertiajs/react';
+import type { ComponentProps } from 'react';
+import { Button } from '@/components/ui/button';
+import { LandingSection } from './section-shell';
+
+export function FinalCtaSection({
+    ctaHref,
+}: {
+    ctaHref: ComponentProps<typeof Link>['href'];
+}) {
+    return (
+        <LandingSection className="px-6 py-12 sm:px-8 lg:px-10 lg:py-14">
+            <div className="flex flex-col items-center gap-4 text-center">
+                <h2 className="max-w-2xl text-[1.9rem] font-semibold tracking-[-0.03em] text-zinc-950 dark:text-zinc-50">
+                    Ready to upgrade your search?
+                </h2>
+                <Button
+                    asChild
+                    className="h-8 rounded-none bg-primary px-5 text-[9px] font-semibold tracking-[0.18em] text-primary-foreground uppercase shadow-none hover:bg-primary/90"
+                >
+                    <Link href={ctaHref}>Start exploring jobs now</Link>
+                </Button>
+            </div>
+        </LandingSection>
+    );
+}

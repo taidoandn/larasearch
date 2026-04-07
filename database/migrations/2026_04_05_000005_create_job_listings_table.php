@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\JobListingSourceType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -31,7 +32,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamp('published_at')->nullable();
             $table->timestamp('expires_at')->nullable();
-            $table->string('source_type', 30)->default('direct');
+            $table->string('source_type', 30)->default(JobListingSourceType::DIRECT->value);
             $table->timestamps();
 
             $table->index('company_id');

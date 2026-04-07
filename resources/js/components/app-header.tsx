@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
-import { searchResults } from '@/routes/larasearch';
+import { index as jobsIndex } from '@/routes/jobs';
 import type { BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
@@ -35,7 +35,7 @@ type Props = {
 const mainNavItems: NavItem[] = [
     {
         title: 'Search',
-        href: searchResults(),
+        href: jobsIndex(),
         icon: Search,
     },
 ];
@@ -125,7 +125,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                     </div>
 
                     <Link
-                        href={searchResults()}
+                        href={jobsIndex()}
                         prefetch
                         className="flex items-center space-x-2"
                     >
