@@ -1,15 +1,11 @@
 import { Bookmark, ChevronRight, SlidersHorizontal } from 'lucide-react';
-import { activeFilterChips, LedgerMetric, searchResults } from '@/features/jobs';
 import { cn } from '@/lib/utils';
+import {
+    previewFilters,
+    previewResults,
+    previewSignalChips,
+} from '../data/search-preview-data';
 import { LandingSection, SectionEyebrow } from './section-shell';
-
-const previewResults = searchResults.slice(0, 3);
-const previewFilters = [
-    { label: 'Keyword', value: 'Senior Laravel' },
-    { label: 'Location', value: 'Da Nang' },
-    { label: 'Experience', value: '5+ years' },
-    { label: 'Type', value: 'Last 30 days' },
-] as const;
 
 export function SearchPreviewSection() {
     return (
@@ -45,7 +41,7 @@ export function SearchPreviewSection() {
                             <div className="space-y-3">
                                 <SectionEyebrow>Signals</SectionEyebrow>
                                 <div className="flex flex-wrap gap-2">
-                                    {activeFilterChips.map((chip) => (
+                                    {previewSignalChips.map((chip) => (
                                         <span
                                             key={chip.id}
                                             className="bg-white px-2 py-1 text-xs font-medium tracking-[0.16em] text-zinc-600 uppercase dark:bg-zinc-900 dark:text-zinc-300"
@@ -110,18 +106,18 @@ export function SearchPreviewSection() {
                                     </div>
 
                                     <div className="flex gap-6 md:col-span-4">
-                                        <LedgerMetric
+                                        <PreviewLedgerMetric
                                             label="Comp"
                                             value={job.salary}
                                         />
-                                        <LedgerMetric
+                                        <PreviewLedgerMetric
                                             label="Type"
                                             value={job.workModel}
                                         />
                                     </div>
 
                                     <div className="flex items-center justify-between gap-3 md:col-span-2 md:justify-end">
-                                        <LedgerMetric
+                                        <PreviewLedgerMetric
                                             align="right"
                                             label="Added"
                                             value={job.postedAt}
@@ -143,5 +139,26 @@ export function SearchPreviewSection() {
                 </div>
             </div>
         </LandingSection>
+    );
+}
+
+function PreviewLedgerMetric({
+    label,
+    value,
+    align = 'left',
+}: {
+    label: string;
+    value: string;
+    align?: 'left' | 'right';
+}) {
+    return (
+        <div className={cn('space-y-1', align === 'right' && 'text-right')}>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-400 dark:text-zinc-500">
+                {label}
+            </p>
+            <p className="font-mono text-xs font-semibold tracking-tight text-zinc-700 dark:text-zinc-300">
+                {value}
+            </p>
+        </div>
     );
 }

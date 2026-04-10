@@ -7,6 +7,7 @@ use App\Models\JobListing;
 use App\Models\Skill;
 use Database\Seeders\JobMarketplaceSeeder;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 
 it('maps a job listing into the expected elasticsearch document shape', function () {
     // JobListing observers queue sync jobs on create; suppress them so this test stays focused on document mapping.
@@ -15,6 +16,7 @@ it('maps a job listing into the expected elasticsearch document shape', function
     $jobListing = JobListing::factory()->create([
         'slug' => 'staff-search-platform-engineer-sync-test',
         'title' => 'Staff Search Platform Engineer',
+        'application_url' => 'https://jobs.example.test/apply/staff-search-platform-engineer',
     ]);
 
     $categories = Category::factory()->count(2)->sequence(
@@ -35,14 +37,18 @@ it('maps a job listing into the expected elasticsearch document shape', function
 
     $document = $jobListing->fresh()->toSearchDocument();
 
-    expect($document['id'])->toBe((string) $jobListing->id)
+    expect($document['id'])->toBe($jobListing->id)
         ->and($document['slug'])->toBe('staff-search-platform-engineer-sync-test')
         ->and($document['title'])->toBe('Staff Search Platform Engineer')
+        ->and($document['application_url'])->toBe('https://jobs.example.test/apply/staff-search-platform-engineer')
         ->and($document['company_name'])->toBe($jobListing->company->name)
         ->and($document['company_slug'])->toBe($jobListing->company->slug)
-        ->and($document['locations'])->toBe([$jobListing->primaryLocation->city_name])
+        ->and($document['company_website'])->toBe($jobListing->company->website_url)
+        ->and($document['location_slugs'])->toBe([Str::slug($jobListing->primaryLocation->city_name)])
         ->and($document['location_labels'])->toBe([$jobListing->primaryLocation->display_name])
+        ->and(collect($document['category_slugs'])->sort()->values()->all())->toBe(['platform-engineering', 'search-infrastructure'])
         ->and(collect($document['category_names'])->sort()->values()->all())->toBe(['Platform Engineering', 'Search Infrastructure'])
+        ->and(collect($document['skill_slugs'])->sort()->values()->all())->toBe(['elasticsearch', 'laravel'])
         ->and(collect($document['skills'])->sort()->values()->all())->toBe(['Elasticsearch', 'Laravel']);
 });
 

@@ -24,24 +24,25 @@ The Search Results screen is the primary browsing surface inside the existing La
 ## Component Structure
 
 - `resources/js/pages/jobs/index.tsx`
-  Page entry using the default `AppLayout`.
-- `resources/js/features/jobs/components/index-content.tsx`
-  Screen orchestrator for selection state and sheet open/close behavior.
-- `resources/js/features/jobs/components/index/search-filters.tsx`
-  Controlled filter inputs/selects and dynamic chip rendering.
-- `resources/js/features/jobs/components/index/results-toolbar.tsx`
+  Page entry using the search layout and jobs feature composition.
+- `resources/js/features/jobs/hooks/use-job-search.ts`
+  Screen-level Inertia navigation, selection state, and summary-sheet coordination.
+- `resources/js/features/jobs/components/jobs-filters.tsx`
+  Controlled filter inputs/selects, dynamic chip rendering, and explicit search submission.
+- `resources/js/features/jobs/hooks/use-job-suggestions.ts`
+  Debounced keyword suggestion fetching, stale-request protection, and combobox interaction state.
+- `resources/js/features/jobs/components/jobs-results-toolbar.tsx`
   Controlled sort select.
-- `resources/js/features/jobs/components/index/results-list.tsx`
+- `resources/js/features/jobs/components/jobs-results-list.tsx`
   Reusable mapped row rendering and pagination footer.
-- `resources/js/features/jobs/components/index/summary-panel.tsx`
+- `resources/js/features/jobs/components/job-summary-sheet.tsx`
   Sheet-hosted summary panel shown for any selected job.
-- `resources/js/features/jobs/data/mock-search-data.ts`
-  Mock data source shared by results and detail screens.
 
 ## Input And Select Behavior
 
 - Keyword and location are controlled `Input` components using the same visual height and typography baseline as the `Select` triggers.
 - Work model, experience, salary, and sort use shadcn `Select`.
+- Keyword suggestions are debounced and keyboard navigable through the live `/jobs/suggest` endpoint.
 - Filter chips are derived from current control values instead of being static markup.
 - Reset restores the initial filter values and chip set.
 
@@ -60,5 +61,5 @@ The Search Results screen is the primary browsing surface inside the existing La
 
 ## Out Of Scope
 
-- No backend search, filter, save, apply, or pagination logic yet.
+- No save/apply persistence yet.
 - No layout-level changes to the Laravel starter shell.

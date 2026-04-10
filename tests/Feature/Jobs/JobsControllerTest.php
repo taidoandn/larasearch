@@ -2,6 +2,7 @@
 
 use App\Contracts\SearchServiceInterface;
 use App\Models\User;
+use App\Services\JobSuggestService;
 
 it('renders the jobs index page with canonical job props', function () {
     $user = User::factory()->create();
@@ -32,7 +33,9 @@ it('renders the jobs index page with canonical job props', function () {
                     'company' => [
                         'name' => 'Acme Tech',
                         'slug' => 'acme-tech',
+                        'website' => 'https://acme.example.test',
                     ],
+                    'application_url' => 'https://jobs.example.test/apply/senior-laravel-backend-engineer',
                     'primary_location' => 'Da Nang',
                     'locations' => ['Da Nang'],
                     'skills' => ['Laravel', 'PHP'],
@@ -56,6 +59,8 @@ it('renders the jobs index page with canonical job props', function () {
                 'page' => 2,
                 'per_page' => 10,
                 'total' => 42,
+                'from' => 11,
+                'to' => 11,
                 'total_pages' => 5,
                 'has_more' => true,
             ],
@@ -83,8 +88,12 @@ it('renders the jobs index page with canonical job props', function () {
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
         ->component('jobs/index')
+        ->where('results.items.0.application_url', 'https://jobs.example.test/apply/senior-laravel-backend-engineer')
+        ->where('results.items.0.company.website', 'https://acme.example.test')
         ->where('results.pagination.page', 2)
         ->where('results.pagination.per_page', 10)
+        ->where('results.pagination.from', 11)
+        ->where('results.pagination.to', 11)
         ->where('results.sort', 'newest')
         ->where('filters.q', 'laravel')
         ->where('filters.location', 'da-nang')
@@ -92,6 +101,67 @@ it('renders the jobs index page with canonical job props', function () {
         ->where('filters.page', 2)
         ->where('filters.per_page', 10),
     );
+});
+
+it('preserves the active category filter when category facets are empty', function () {
+    $user = User::factory()->create();
+
+    $searchService = Mockery::mock(SearchServiceInterface::class);
+    $searchService->shouldReceive('search')
+        ->once()
+        ->with([
+            'q' => '',
+            'location' => '',
+            'category' => 'platform-engineering',
+            'skills' => [],
+            'job_type' => '',
+            'work_model' => '',
+            'experience_level' => '',
+            'salary_min' => null,
+            'salary_max' => null,
+            'sort' => 'best_match',
+            'page' => 1,
+            'per_page' => 20,
+        ])
+        ->andReturn([
+            'items' => [],
+            'pagination' => [
+                'page' => 1,
+                'per_page' => 20,
+                'total' => 0,
+                'from' => 0,
+                'to' => 0,
+                'total_pages' => 0,
+                'has_more' => false,
+            ],
+            'facets' => [
+                'locations' => [],
+                'categories' => [],
+                'skills' => [],
+                'job_types' => [],
+                'work_models' => [],
+                'experience_levels' => [],
+            ],
+            'sort' => 'best_match',
+        ]);
+
+    app()->instance(SearchServiceInterface::class, $searchService);
+
+    $response = $this->actingAs($user)->get(route('jobs.index', [
+        'category' => 'platform-engineering',
+    ]));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('jobs/index')
+        ->where('filters.category', 'platform-engineering')
+        ->where('results.facets.categories', []),
+    );
+});
+
+it('redirects guests away from job suggestions', function () {
+    $this->get(route('jobs.suggest', ['q' => 'lar']))
+        ->assertRedirect(route('login'));
 });
 
 it('rejects invalid enum-backed search filters', function () {
@@ -111,4 +181,42 @@ it('rejects invalid enum-backed search filters', function () {
         'work_model',
         'experience_level',
     ]);
+});
+
+it('returns normalized job suggestions for authenticated users', function () {
+    $user = User::factory()->create();
+
+    $suggestService = Mockery::mock(JobSuggestService::class);
+    $suggestService->shouldReceive('suggest')
+        ->once()
+        ->with('lar')
+        ->andReturn([
+            'items' => [
+                ['label' => 'Senior Laravel Backend Engineer', 'type' => 'job_title'],
+                ['label' => 'Laravel', 'type' => 'skill'],
+            ],
+        ]);
+
+    app()->instance(JobSuggestService::class, $suggestService);
+
+    $response = $this->actingAs($user)
+        ->getJson(route('jobs.suggest', ['q' => 'lar']));
+
+    $response->assertOk()
+        ->assertJson([
+            'items' => [
+                ['label' => 'Senior Laravel Backend Engineer', 'type' => 'job_title'],
+                ['label' => 'Laravel', 'type' => 'skill'],
+            ],
+        ]);
+});
+
+it('validates oversized job suggestion queries', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)
+        ->getJson(route('jobs.suggest', ['q' => str_repeat('a', 256)]));
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['q']);
 });

@@ -4,7 +4,7 @@
 
 **Goal:** Build the Phase 0 search foundation: local Elasticsearch/Kibana wiring, the core job-search schema and factories, and the Laravel services and commands needed to create, alias, and sync the first Elasticsearch index.
 
-**Architecture:** MySQL remains the transactional source of truth and Elasticsearch is introduced as the user-facing read model behind an app-owned Laravel service boundary. The implementation is split into environment/config, relational domain, and Elasticsearch operations/sync so each slice can be tested independently and then composed. Search responses should be normalized by the application contract, while any database-backed search remains benchmark-only.
+**Architecture:** MySQL remains the transactional source of truth and Elasticsearch is introduced as the user-facing read model behind an app-owned Laravel service boundary. The implementation is split into environment/config, relational domain, and Elasticsearch operations/sync so each slice can be tested independently and then composed. Search responses should be normalized by the application contract.
 
 **Operational Notes:** Bulk indexing must support an explicit versioned target index for alias-based reindex flows. Search sync must also account for company-driven cascade deletes so Elasticsearch does not retain stale listing data. Denormalized taxonomy/admin edit reindexing is deferred until those write flows are in scope.
 

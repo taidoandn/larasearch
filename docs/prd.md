@@ -103,7 +103,7 @@ Prove Elasticsearch value through a real job-search experience.
 ### Primary Users
 
 - authenticated candidate searching jobs
-- internal evaluator benchmarking relevance and speed
+- internal evaluator reviewing relevance and speed
 
 Search MVP is authenticated-only. Public visitor job browsing is out of scope for this milestone.
 
@@ -118,7 +118,6 @@ Search MVP is authenticated-only. Public visitor job browsing is out of scope fo
 - autocomplete
 - highlighting
 - related jobs
-- benchmark comparison: Elasticsearch vs MySQL baseline (optional)
 - job detail page
 - company snippets on job pages
 
@@ -137,15 +136,13 @@ Search MVP is authenticated-only. Public visitor job browsing is out of scope fo
 4. Related jobs
 5. Search analytics baseline
 6. Async DB → ES sync
-7. Benchmark report
-8. Normalized search result contract consumed independently of Elasticsearch internals
+7. Normalized search result contract consumed independently of Elasticsearch internals
 
 ### Key Results
 
 - p50 search latency < 150ms on seeded dataset
 - p95 search latency < 350ms on main query set
 - autocomplete p95 < 120ms
-- Precision@5 / Hit@10 shows visible improvement over DB search
 - index sync works for create/update/delete flows
 - search responses include stable pagination metadata without exposing raw Elasticsearch hits
 
@@ -153,7 +150,6 @@ Search MVP is authenticated-only. Public visitor job browsing is out of scope fo
 
 - MySQL is the transactional source of truth.
 - Elasticsearch is the user-facing search backend.
-- `DatabaseSearchService` exists only for benchmark comparison and does not define product behavior.
 - The canonical request and response contract is defined in [`reference.md`](reference.md).
 - Search consumers must not depend on raw Elasticsearch payloads such as `hits`, `_source`, or highlight arrays.
 
@@ -341,7 +337,7 @@ Prepare the platform for recommendation and sourcing.
 - query tracking
 - click-through tracking
 - zero-result queries
-- benchmark reporting
+- search reporting
 
 ## 7. Non-Functional Requirements
 
@@ -349,7 +345,7 @@ Prepare the platform for recommendation and sourcing.
 
 - low-latency search and autocomplete
 - queue-based indexing and notifications
-- scalable seed volume for benchmarking
+- scalable seed volume for search evaluation
 
 ### Reliability
 
@@ -415,7 +411,7 @@ So the schema is split into phases:
 | Mapping lock-in             | Expensive reindexing        | Use versioned indices + aliases             |
 | Schema too narrow           | Blocks future features      | Add phased marketplace schema now           |
 | Over-engineering early      | Slows MBO delivery          | Keep Search MVP milestone tightly scoped    |
-| Relevance tuning complexity | Weak demo quality           | Define benchmark query set early            |
+| Relevance tuning complexity | Weak demo quality           | Define relevance evaluation cases early     |
 | Queue/index drift           | Inconsistent search results | Use after-commit dispatch + re-sync command |
 | Resume/PII security gaps    | High trust risk             | Private object storage + signed URLs        |
 
@@ -423,7 +419,7 @@ So the schema is split into phases:
 
 ### Release 1
 
-- Search MVP demo with benchmark report
+- Search MVP demo with search relevance notes
 
 ### Release 2
 

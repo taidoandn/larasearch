@@ -7,10 +7,12 @@ use App\Enums\JobListingSourceType;
 use App\Enums\JobType;
 use App\Enums\WorkModel;
 use Database\Factories\JobListingFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
 
 class JobListing extends Model
 {
@@ -83,24 +85,52 @@ class JobListing extends Model
             ->withTimestamps();
     }
 
+    public function scopeVisibleInSearch(Builder $query): void
+    {
+        $query->where('is_active', true)
+            ->where('published_at', '<=', now())
+            ->where(function (Builder $builder): void {
+                $builder->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            });
+    }
+
+    public function isVisibleInSearch(): bool
+    {
+        $now = now();
+
+        return $this->is_active
+            && $this->published_at !== null
+            && $this->published_at->lessThanOrEqualTo($now)
+            && ($this->expires_at === null || $this->expires_at->greaterThan($now));
+    }
+
     /**
      * @return array<string, mixed>
      */
     public function toSearchDocument(): array
     {
         $this->loadMissing(['company', 'primaryLocation', 'categories', 'skills']);
+        $locationLabel = $this->primaryLocation?->display_name;
+        $locationKey = $this->primaryLocation?->city_name === null
+            ? null
+            : Str::slug($this->primaryLocation->city_name);
 
         return [
-            'id' => (string) $this->getKey(),
+            'id' => $this->getKey(),
             'slug' => $this->slug,
             'title' => $this->title,
             'description' => $this->description,
             'short_description' => $this->short_description,
+            'application_url' => $this->application_url,
             'company_name' => $this->company?->name,
             'company_slug' => $this->company?->slug,
-            'locations' => $this->primaryLocation === null ? [] : [$this->primaryLocation->city_name],
-            'location_labels' => $this->primaryLocation === null ? [] : [$this->primaryLocation->display_name],
+            'company_website' => $this->company?->website_url,
+            'location_slugs' => $locationKey === null ? [] : [$locationKey],
+            'location_labels' => $locationLabel === null ? [] : [$locationLabel],
+            'category_slugs' => $this->categories->pluck('slug')->values()->all(),
             'category_names' => $this->categories->pluck('name')->values()->all(),
+            'skill_slugs' => $this->skills->pluck('slug')->values()->all(),
             'skills' => $this->skills->pluck('name')->values()->all(),
             'skills_text' => $this->skills->pluck('name')->implode(' '),
             'job_type' => $this->job_type?->value,

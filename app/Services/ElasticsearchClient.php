@@ -41,6 +41,16 @@ class ElasticsearchClient
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    public function refreshIndex(string $index): array
+    {
+        return $this->client->indices()->refresh([
+            'index' => $index,
+        ])->asArray();
+    }
+
+    /**
      * @param  array<int, array<string, mixed>>  $actions
      * @return array<string, mixed>
      */

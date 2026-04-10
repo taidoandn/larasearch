@@ -11,19 +11,13 @@
 - Controller: `JobsController`
 - Inertia page: `resources/js/pages/jobs/index.tsx`
 - Inertia page: `resources/js/pages/jobs/show.tsx`
-- Jobs feature entry: `JobsIndexContent`
-- Jobs feature entry: `JobShowContent`
-
-## Legacy Redirects
-
-- `/search` redirects to `/jobs`
-- `/search/jobs/{job}` redirects to `/jobs/{job}`
+- Jobs list components live under `resources/js/features/jobs/components/`
+- Job detail components live under `resources/js/features/jobs/components/`
 
 ## Rules
 
 - Use `/jobs` as the only canonical discovery path.
 - Keep filter and sorting state in query parameters on `/jobs`.
-- Do not nest job detail under `/search`.
 - Keep Laravel starter-kit auth and settings URLs unchanged.
 
 ## Examples

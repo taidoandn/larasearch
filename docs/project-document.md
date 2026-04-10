@@ -16,7 +16,7 @@ The short-term goal is to deliver a working MVP focused on **job search** with m
 | [erd.md](erd.md) | Entity-Relationship Diagram — text-based domain model with phase-based relationship maps and cardinality summary |
 | [schema.md](schema.md) | Database Schema — phased relational table definitions, column specs, indexes, and implementation notes |
 | [task.md](task.md) | Task Plan — phase-aligned execution checklist with milestone exit criteria and definition of done |
-| [reference.md](reference.md) | Technical Reference — Elasticsearch mapping examples, service skeletons, query DSL samples, and alias flow patterns |
+| [reference.md](reference.md) | Technical Reference — Elasticsearch mapping examples, service skeletons, query DSL samples, alias flow patterns, and the canonical run/reindex/test workflow |
 
 ---
 
@@ -86,7 +86,7 @@ By the end of the short-term MBO, the following deliverables should exist:
 5. Seed dataset with realistic fake jobs
 6. Index mapping and query design documentation
 7. Relevance testing notes
-8. Performance benchmark summary
+8. Search performance summary
 9. Final demo showing end-to-end job search flow
 
 ## 2.6 Suggested Timeline
@@ -120,7 +120,7 @@ By the end of the short-term MBO, the following deliverables should exist:
 - Build search page UI in React/Inertia
 - Add keyword bar, filter panels, result list, empty state
 - Measure response times
-- Compare search quality against DB-based search
+- Review search quality against expected relevance outcomes
 - Write learning summary and next-phase recommendations
 
 ## 2.7 Key Risks and Mitigations

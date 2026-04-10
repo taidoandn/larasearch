@@ -77,6 +77,7 @@ it('casts company and job listing enum-backed attributes', function () {
         ->and($jobListing->work_model)->toBeInstanceOf(WorkModel::class)
         ->and($jobListing->experience_level)->toBeInstanceOf(ExperienceLevel::class)
         ->and($jobListing->source_type)->toBeInstanceOf(JobListingSourceType::class)
+        ->and($jobListing->toSearchDocument()['id'])->toBe($jobListing->getKey())
         ->and($jobListing->toSearchDocument()['job_type'])->toBe($jobListing->job_type->value)
         ->and($jobListing->toSearchDocument()['work_model'])->toBe($jobListing->work_model->value)
         ->and($jobListing->toSearchDocument()['experience_level'])->toBe($jobListing->experience_level->value);

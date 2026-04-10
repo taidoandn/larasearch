@@ -31,7 +31,7 @@
 - [x] Install `elasticsearch/elasticsearch`
 - [x] Create `App\Services\ElasticsearchClient`
 - [x] Add `es:health` artisan command
-- [ ] Define alias strategy:
+- [x] Define alias strategy:
   - [x] `job_listings_v1` (versioned index)
   - [x] `job_listings_current` (alias used by app)
 - [x] Create `es:create-index` command
@@ -54,7 +54,6 @@
 ### Search Architecture Scaffolding
 - [x] Create `SearchServiceInterface`
 - [x] Create `ElasticsearchSearchService`
-- [x] Create `DatabaseSearchService` for benchmark baseline only
 - [x] Register binding in service provider
 - [x] Create `SyncJobListingToElasticsearch` queued job
 - [x] Create `JobListingObserver`
@@ -71,61 +70,55 @@ Authenticated users access the search experience in the current MVP scope.
 The canonical search payload and Elasticsearch document shape are defined in `docs/reference.md`.
 
 ### Elasticsearch Mapping & Indexing
-- [ ] Create versioned ES mapping JSON file (e.g. `config/elasticsearch/job_listings_mapping.json`)
-- [ ] Design ES document shape for `job_listings`
-- [ ] Map text fields for title / description / company / skills
-- [ ] Map keyword fields for filters and facets
-- [ ] Map numeric/date fields for range and sort
-- [ ] Add autocomplete analyzer (edge_ngram) for title, company, skills
-- [ ] Flatten categories, skills, location, company fields into document
-- [ ] Implement `es:reindex` command with alias swap and validation
+- [x] Create versioned ES mapping JSON file (e.g. `config/elasticsearch/job_listings_mapping.json`)
+- [x] Design ES document shape for `job_listings`
+- [x] Map text fields for title / description / company / skills
+- [x] Map keyword fields for filters and facets
+- [x] Map numeric/date fields for range and sort
+- [x] Add autocomplete analyzer (edge_ngram) for title, company, skills
+- [x] Flatten categories, skills, location, company fields into document
+- [x] Implement `es:reindex` command with alias swap and validation
 
 ### Core Search Features
-- [ ] Implement keyword full-text search (multi_match)
-- [ ] Implement filters: location, category, job type, salary range, work model, experience level, skills
-- [ ] Implement aggregations/facets for filter counts
-- [ ] Implement sorting: best match, newest, salary asc/desc
-- [ ] Implement the canonical `items` / `pagination` / `facets` / `sort` result contract
-- [ ] Implement highlighting for matched terms
-- [ ] Add relevance boosting:
-  - [ ] Boost title field (highest)
-  - [ ] Boost skills field (medium)
-  - [ ] Description match (lowest)
-  - [ ] Freshness decay via `function_score`
-  - [ ] Featured job boost
+- [x] Implement keyword full-text search (multi_match)
+- [x] Implement filters: location, category, job type, salary range, work model, experience level, skills
+- [x] Implement aggregations/facets for filter counts
+- [x] Implement sorting: best match, newest, salary asc/desc
+- [x] Implement the canonical `items` / `pagination` / `facets` / `sort` result contract
+- [x] Implement highlighting for matched terms
+- [x] Add relevance boosting:
+  - [x] Boost title field (highest)
+  - [x] Boost skills field (medium)
+  - [x] Description match (lowest)
+  - [x] Freshness decay via `function_score`
+  - [x] Featured job boost
 - [x] Create `SearchRequest` FormRequest for input validation
 
 ### Suggestions & Related Jobs
-- [ ] Implement autocomplete/suggest endpoint
-- [ ] Create `JobSuggestService`
-- [ ] Add typo tolerance where safe
-- [ ] Implement related jobs query (more-like-this or similar)
+- [x] Implement autocomplete/suggest endpoint
+- [x] Create `JobSuggestService`
+- [x] Add typo tolerance where safe
+- [x] Implement related jobs query (more-like-this or similar)
 
 ### Search UI (React + Inertia)
 - [x] Create jobs index page (`resources/js/pages/jobs/index.tsx`)
-- [ ] Create job detail page
-- [ ] Build search bar with debounced autocomplete + keyboard navigation
-- [ ] Build filter sidebar
-- [ ] Build facet count UI
-- [ ] Build reusable job card component
-- [ ] Build pagination and sort selector
-- [ ] Build active filter chips
-- [ ] Add empty/loading/skeleton states
-- [ ] Bind search state to URL params
-- [ ] Keep search consumers isolated from raw Elasticsearch response shapes and internal ES helper fields
+- [x] Create job detail page
+- [x] Build search bar with debounced autocomplete + keyboard navigation
+- [x] Build filter sidebar
+- [x] Build facet count UI
+- [x] Build reusable job card component
+- [x] Build pagination and sort selector
+- [x] Build active filter chips
+- [x] Add empty/loading/skeleton states
+- [x] Bind search state to URL params
+- [x] Keep search consumers isolated from raw Elasticsearch response shapes and internal ES helper fields
 
 ### Testing
 - [x] Add feature tests for search controller
-- [ ] Add unit tests for query building
+- [x] Add unit tests for query building
 - [x] Add tests for index sync flows
-- [ ] Test autocomplete queries (partial inputs like `lar`, `rea`, `jav`)
+- [x] Test autocomplete queries (partial inputs like `lar`, `rea`, `jav`)
 - [x] Add live Elasticsearch E2E coverage for create/sync and delete-sync flows
-
-### Benchmarking (optional)
-- [ ] Build `benchmark:search` command
-- [ ] Compare Elasticsearch vs MySQL baseline: keyword, filtered, aggregations
-- [ ] Define benchmark query set and relevance evaluation set
-- [ ] Track p50 / p95 / result quality
 
 ## Phase 1 — Marketplace Core
 > Objective: introduce real candidate, employer, and application workflows.
@@ -248,10 +241,9 @@ The canonical search payload and Elasticsearch document shape are defined in `do
 
 ## ✅ Definition of Done (MBO)
 
-- [ ] Elasticsearch fully integrated with Laravel
-- [ ] Job search works with keyword + filters via Inertia pages
-- [ ] UI fully functional for search experience
-- [ ] Dataset ≥ 5,000 jobs indexed
-- [ ] Performance benchmark documented
-- [ ] Relevance evaluation completed
-- [ ] Demo ready for presentation
+- [x] Elasticsearch fully integrated with Laravel
+- [x] Job search works with keyword + filters via Inertia pages
+- [x] UI fully functional for search experience
+- [x] Dataset ≥ 5,000 jobs indexed
+- [x] Relevance evaluation completed
+- [x] Demo ready for presentation

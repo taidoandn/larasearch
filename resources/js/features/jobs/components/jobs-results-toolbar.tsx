@@ -1,4 +1,3 @@
-import { router } from '@inertiajs/react';
 import { SlidersHorizontal } from 'lucide-react';
 import {
     Select,
@@ -7,9 +6,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { sectionLabelClassName } from '@/features/jobs/components/shared';
-import type { JobFilters } from '@/features/jobs/types';
-import { index as jobsIndex } from '@/routes/jobs';
+import { Spinner } from '@/components/ui/spinner';
+import { sectionLabelClassName } from '@/features/jobs/utils';
 
 const sortOptions = [
     { label: 'Best Match', value: 'best_match' },
@@ -21,24 +19,14 @@ const sortOptions = [
 export function JobsResultsToolbar({
     total,
     sort,
-    filters,
+    isRefreshing,
+    onSortChange,
 }: {
     total: number;
     sort: string;
-    filters: JobFilters;
+    isRefreshing: boolean;
+    onSortChange: (sortValue: string) => void;
 }) {
-    const updateSort = (sortValue: string) => {
-        router.get(jobsIndex.url(), {
-            ...filters,
-            sort: sortValue,
-            page: 1,
-        }, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
-    };
-
     return (
         <div className="flex flex-col gap-3 border-b border-zinc-200 bg-zinc-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-zinc-800 dark:bg-zinc-900/50">
             <p className="font-mono text-[10px] tracking-[0.28em] text-zinc-400 uppercase dark:text-zinc-500">
@@ -47,12 +35,26 @@ export function JobsResultsToolbar({
                     {total}
                 </span>{' '}
                 matches
+                {isRefreshing ? (
+                    <>
+                        {' '}
+                        <span className="mx-1 text-zinc-300 dark:text-zinc-700">
+                            /
+                        </span>{' '}
+                        updating
+                        <Spinner className="ml-2 inline size-3.5 align-[-0.1em]" />
+                    </>
+                ) : null}
             </p>
 
             <div className="flex items-center gap-3 self-start sm:self-auto">
                 <SlidersHorizontal className="size-4 text-zinc-400 dark:text-zinc-500" />
                 <span className={sectionLabelClassName}>Sort By</span>
-                <Select value={sort} onValueChange={updateSort}>
+                <Select
+                    value={sort}
+                    onValueChange={onSortChange}
+                    disabled={isRefreshing}
+                >
                     <SelectTrigger className="h-6 w-auto min-w-0 rounded-none border-0 bg-transparent px-0 py-0 text-sm font-medium text-zinc-700 shadow-none ring-0 focus-visible:ring-0 dark:bg-transparent dark:text-zinc-200">
                         <SelectValue />
                     </SelectTrigger>

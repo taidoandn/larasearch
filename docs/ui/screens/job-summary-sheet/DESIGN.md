@@ -25,10 +25,10 @@ The detail panel is no longer a permanent split column. It is now a reusable sum
 
 ## Component Structure
 
-- `resources/js/features/jobs/components/index/summary-panel.tsx`
+- `resources/js/features/jobs/components/job-summary-sheet.tsx`
   Hosts both the `Sheet` wrapper and the summary content.
-- `resources/js/features/jobs/components/shared.tsx`
-  Provides shared label and metric helpers used by the panel and full detail page.
+- `resources/js/features/jobs/components/highlighted-text.tsx`
+  Shared text highlighting helper for list and detail surfaces.
 
 ## Visual Rules
 
@@ -45,4 +45,4 @@ The detail panel is no longer a permanent split column. It is now a reusable sum
 
 ## Out Of Scope
 
-- No benchmark drilldown, apply flow, or live company/location integrations.
+- No apply flow persistence.
