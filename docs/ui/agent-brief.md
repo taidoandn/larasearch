@@ -13,57 +13,62 @@ Larasearch is a smart job search platform focused on fast, high-density search U
 ## Source of truth priority
 When implementing UI, follow this priority order:
 1. docs/ui/foundations/implementation-rules.md
-2. each screen's design.md
-3. each screen's code.html
-4. screen.png only as visual reference
+2. docs/ui/screens/DESIGN.md
+3. each screen's DESIGN.md
+4. each screen's code.html
+5. screen.png only as visual reference
 
 Do not treat screenshots as the primary source of truth if they conflict with markdown specs.
+If a screen-level DESIGN.md conflicts with docs/ui/screens/DESIGN.md, the top-level screens design system wins.
 
 ## Branding
 - Product name: Larasearch
 
 ## Design direction
-- Enterprise Minimal
-- high scanability
-- crisp borders
-- restrained indigo accent
-- dense but readable layout
+- The Digital Curator
+- editorial, high-trust product experience
+- soft layered surfaces instead of hard structural borders
+- authoritative electric blue accent
+- high scanability with calm information density
 - production-ready, reusable UI
 
 ## Color Palette
 
-- **Primary:** `#4338CA` - Indigo, used exclusively for active states, primary buttons, and matched text highlights
-- **Background:** `#FAFAFA` - Stark off-white for main app background
-- **Surface:** `#FFFFFF` - Cards, slide-overs, dropdowns
-- **Text:** `#09090B` - Primary headings, active job titles
-- **Muted:** `#71717A` - Secondary text, timestamps, placeholder copy
-- **Borders:** `#E4E4E7` - Universal 1px solid structural lines
-- **Accent:** `#EEF2FF` - Subtle indigo background for hover states and selected items
+- **Primary:** `#004ac6` - Authoritative electric blue for active states, CTAs, and fit cues
+- **Primary Container:** `#2563eb` - brighter interaction blue for gradients and emphasis
+- **Background:** `#f7f9fb` - soft cool canvas for the overall product
+- **Surface Low:** `#f2f4f6` - section panels, rails, and grouped surfaces
+- **Surface:** `#ffffff` - cards, overlays, and focused content
+- **Text:** `#191c1e` - primary headings and high-priority content
+- **Muted:** `#434655` - secondary text and metadata
+- **Accent:** `rgba(255,255,255,0.7)` - glassy floating surfaces when needed
 
 ## Typography
 
-Use **Geist** for structural readability and **Geist Mono** for precise data alignment. 
+Use **Manrope** for high-impact display and **Inter** for functional reading.
 
-- **Headings:** Geist, 600, `18px`
-- **Body:** Geist, 400, `14px`
-- **Small text:** Geist, 400, `12px`
-- **Metrics/Badges:** Geist Mono, 500, `11px`
-- **Buttons:** Geist, 500, `13px`
+- **Display:** Manrope, 700
+- **Headings:** Manrope, 600
+- **Body:** Inter, 400, `14px`
+- **Small text:** Inter, 400, `12px`
+- **Metrics/Badges:** Inter, 500, `11px`
+- **Buttons:** Inter, 500, `13px`
 
-**Style notes:** Crisp 1px solid borders and 0px border radius (`rounded-none`) for all structural layout elements to maintain a stark, crisp grid. Subtle softness is applied ONLY to dropdowns, overlays, and modals: these receive a slight border radius (`4px`) and soft shadows (`shadow-[0_4px_24px_rgba(0,0,0,0.08)]`) to clearly separate them from the underlying structured data.
+**Style notes:** Prefer tonal layering over visible structural borders. Cards and interactive surfaces should feel soft and elevated, usually with generous radius. Avoid hard-edged grid styling unless a screen-specific spec explicitly calls for it.
 
 ## Design Tokens
 
 ```css
 :root {
-  --color-primary: #4338CA;
-  --color-background: #FAFAFA;
-  --color-text: #09090B;
-  --color-muted: #71717A;
-  --color-border: #E4E4E7;
-  --color-accent: #EEF2FF;
-  --font-primary: 'Geist', sans-serif;
-  --font-mono: 'Geist Mono', monospace;
+  --color-primary: #004ac6;
+  --color-primary-container: #2563eb;
+  --color-background: #f7f9fb;
+  --color-surface-low: #f2f4f6;
+  --color-surface: #ffffff;
+  --color-text: #191c1e;
+  --color-muted: #434655;
+  --font-display: 'Manrope', sans-serif;
+  --font-body: 'Inter', sans-serif;
 }
 ```
 
@@ -82,8 +87,8 @@ Main screens:
 <!-- - Benchmark / Insights panel -->
 
 ## Important UX rules
-- Search/filter bar stays at the top
-- Results list is full-width by default
+- Search/filter experience should feel like a premium discovery workspace
+- Results and filters should read as layered editorial panels, not raw app scaffolding
 - Selecting a job opens a summary detail panel
 - Full job detail is a dedicated page
 - Mobile uses full-screen detail instead of split view

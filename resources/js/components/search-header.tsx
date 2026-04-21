@@ -1,6 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { Menu, Search, Settings } from 'lucide-react';
-import AppLogo from '@/components/app-logo';
+import { Bell, Menu, Search, Settings } from 'lucide-react';
 import { AppUserMenu } from '@/components/app-user-menu';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Button } from '@/components/ui/button';
@@ -10,13 +9,7 @@ import {
     NavigationMenuList,
     navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn } from '@/lib/utils';
 import { home } from '@/routes';
@@ -42,39 +35,36 @@ export function SearchHeader({ breadcrumbs = [] }: Props) {
 
     return (
         <>
-            <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/95 backdrop-blur-sm dark:border-zinc-800/80 dark:bg-zinc-950/90">
-                <div className="mx-auto flex h-16 w-full max-w-420 items-center gap-3 px-4 sm:px-6 lg:px-8">
+            <header className="sticky top-0 z-40 border-b border-slate-200 bg-white">
+                <div className="mx-auto flex h-16 w-full max-w-360 items-center gap-4 px-4 sm:px-6 lg:px-8">
                     <div className="lg:hidden">
                         <Sheet>
                             <SheetTrigger asChild>
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-9 w-9 rounded-full text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+                                    className="h-9 w-9 rounded-full text-slate-500 hover:bg-slate-100 hover:text-primary"
                                 >
                                     <Menu className="size-4" />
                                 </Button>
                             </SheetTrigger>
                             <SheetContent
                                 side="left"
-                                className="flex h-full w-72 flex-col bg-white px-0 dark:bg-zinc-950"
+                                className="flex h-full w-72 flex-col bg-white px-0"
                             >
-                                <SheetTitle className="sr-only">
-                                    Search navigation
-                                </SheetTitle>
-                                <SheetHeader className="border-b border-zinc-200 px-5 pb-4 text-left dark:border-zinc-800">
+                                <SheetTitle className="sr-only">Search navigation</SheetTitle>
+                                <SheetHeader className="border-b border-zinc-200 px-5 pb-4 text-left">
                                     <Link
                                         href={home()}
-                                        className="flex items-center"
+                                        className="text-2xl font-semibold tracking-tight text-primary"
                                     >
-                                        <AppLogo />
+                                        Larasearch
                                     </Link>
                                 </SheetHeader>
                                 <div className="flex flex-1 flex-col justify-between px-3 py-4">
                                     <nav className="space-y-1">
                                         {navItems.map((item) => {
-                                            const isActive =
-                                                isCurrentOrParentUrl(item.href);
+                                            const isActive = isCurrentOrParentUrl(item.href);
 
                                             return (
                                                 <Button
@@ -82,14 +72,12 @@ export function SearchHeader({ breadcrumbs = [] }: Props) {
                                                     variant="ghost"
                                                     asChild
                                                     className={cn(
-                                                        'h-11 w-full justify-start rounded-xl px-3 text-sm font-medium',
+                                                        'h-11 w-full justify-start rounded-xl px-3 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900',
                                                         isActive &&
-                                                            'bg-accent text-primary hover:bg-accent hover:text-primary dark:bg-accent/30 dark:text-accent-foreground dark:hover:bg-accent/30 dark:hover:text-accent-foreground',
+                                                            'bg-blue-50 text-primary hover:bg-blue-50 hover:text-primary',
                                                     )}
                                                 >
-                                                    <Link href={item.href}>
-                                                        {item.title}
-                                                    </Link>
+                                                    <Link href={item.href}>{item.title}</Link>
                                                 </Button>
                                             );
                                         })}
@@ -99,7 +87,7 @@ export function SearchHeader({ breadcrumbs = [] }: Props) {
                                         <Button
                                             variant="ghost"
                                             asChild
-                                            className="h-11 w-full justify-start rounded-xl px-3"
+                                            className="h-11 w-full justify-start rounded-xl px-3 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                                         >
                                             <Link href={jobsIndex()}>
                                                 <Search className="size-4" />
@@ -109,7 +97,7 @@ export function SearchHeader({ breadcrumbs = [] }: Props) {
                                         <Button
                                             variant="ghost"
                                             asChild
-                                            className="h-11 w-full justify-start rounded-xl px-3"
+                                            className="h-11 w-full justify-start rounded-xl px-3 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                                         >
                                             <Link href={editProfile()}>
                                                 <Settings className="size-4" />
@@ -125,18 +113,16 @@ export function SearchHeader({ breadcrumbs = [] }: Props) {
                     <Link
                         href={home()}
                         prefetch
-                        className="flex min-w-0 items-center"
+                        className="min-w-0 text-[2rem] font-semibold tracking-tight text-primary"
                     >
-                        <AppLogo />
+                        Larasearch
                     </Link>
 
-                    <nav className="ml-4 hidden lg:block">
+                    <nav className="ml-5 hidden lg:block">
                         <NavigationMenu>
-                            <NavigationMenuList className="gap-1">
+                            <NavigationMenuList className="gap-6">
                                 {navItems.map((item) => {
-                                    const isActive = isCurrentOrParentUrl(
-                                        item.href,
-                                    );
+                                    const isActive = isCurrentOrParentUrl(item.href);
 
                                     return (
                                         <NavigationMenuItem key={item.title}>
@@ -144,9 +130,9 @@ export function SearchHeader({ breadcrumbs = [] }: Props) {
                                                 href={item.href}
                                                 className={cn(
                                                     navigationMenuTriggerStyle(),
-                                                    'h-10 rounded-full bg-transparent px-4 text-sm font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100',
+                                                    'h-16 rounded-none border-b-2 border-transparent bg-transparent px-0 text-base font-medium text-slate-500 hover:bg-transparent hover:text-primary',
                                                     isActive &&
-                                                        'bg-accent text-primary hover:bg-accent hover:text-primary dark:bg-accent/30 dark:text-accent-foreground dark:hover:bg-accent/30 dark:hover:text-accent-foreground',
+                                                        'border-primary text-primary hover:bg-transparent hover:text-primary',
                                                 )}
                                             >
                                                 {item.title}
@@ -158,23 +144,22 @@ export function SearchHeader({ breadcrumbs = [] }: Props) {
                         </NavigationMenu>
                     </nav>
 
-                    <div className="ml-auto flex items-center gap-2">
-                        <Link
-                            href={jobsIndex()}
-                            className="hidden h-10 min-w-56 items-center gap-3 rounded-full border border-zinc-200 bg-zinc-50 px-4 text-sm text-zinc-500 transition-colors hover:border-zinc-300 hover:text-zinc-900 lg:flex dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-zinc-100"
+                    <div className="ml-auto flex items-center gap-3">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="rounded-full text-slate-500 hover:bg-slate-100 hover:text-primary"
                         >
-                            <Search className="size-4" />
-                            <span className="truncate">Search database</span>
-                            <span className="ml-auto rounded-full border border-zinc-200 px-2 py-0.5 text-[10px] font-semibold tracking-[0.22em] text-zinc-400 uppercase dark:border-zinc-700 dark:text-zinc-500">
-                                /
+                            <span aria-hidden="true">
+                                <Bell className="size-4" />
                             </span>
-                        </Link>
+                        </Button>
 
                         <Button
                             variant="ghost"
                             size="icon"
                             asChild
-                            className="rounded-full text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+                            className="rounded-full text-slate-500 hover:bg-slate-100 hover:text-primary"
                         >
                             <Link href={editProfile()} aria-label="Settings">
                                 <Settings className="size-4" />
@@ -187,8 +172,8 @@ export function SearchHeader({ breadcrumbs = [] }: Props) {
             </header>
 
             {breadcrumbs.length > 1 ? (
-                <div className="border-b border-zinc-200/80 bg-white/80 dark:border-zinc-800/80 dark:bg-zinc-950/75">
-                    <div className="mx-auto flex h-11 w-full max-w-420 items-center px-4 text-sm text-zinc-500 sm:px-6 lg:px-8 dark:text-zinc-400">
+                <div className="border-b border-slate-200 bg-white">
+                    <div className="mx-auto flex h-11 w-full max-w-360 items-center px-4 text-sm text-slate-500 sm:px-6 lg:px-8">
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
                     </div>
                 </div>

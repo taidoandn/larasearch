@@ -11,8 +11,8 @@
 
 ## Current Implementation Notes
 
-- The authenticated `/jobs` page is served by `JobsController` and rendered through the Inertia page at `resources/js/pages/jobs/index.tsx`.
-- The authenticated `/jobs/{job:slug}` detail page is served by `JobShowController` and rendered through `resources/js/pages/jobs/show.tsx`.
+- The authenticated `/jobs` page is served by `JobsController`, enters through `resources/js/pages/jobs/index.tsx`, and delegates to `resources/js/features/jobs/screens/search-screen.tsx`.
+- The authenticated `/jobs/{job:slug}` detail page is served by `JobShowController`, enters through `resources/js/pages/jobs/show.tsx`, and delegates to `resources/js/features/jobs/screens/detail-screen.tsx`.
 - Query validation is handled by `SearchRequest`.
 - `ElasticsearchSearchService` normalizes backend responses into the canonical search contract before the page consumes them.
 - The suggest endpoint is served by `JobSuggestController` and backed by `JobSuggestService`.

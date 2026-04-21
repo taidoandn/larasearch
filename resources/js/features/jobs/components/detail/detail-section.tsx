@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export function JobDetailSection({
+export function DetailSection({
     title,
     children,
 }: {
@@ -8,8 +8,8 @@ export function JobDetailSection({
     children: ReactNode;
 }) {
     return (
-        <section className="space-y-8">
-            <h2 className="border-b border-zinc-200 pb-4 text-3xl font-black tracking-tight text-zinc-950 dark:border-zinc-800 dark:text-zinc-50">
+        <section className="space-y-6">
+            <h2 className="text-sm font-semibold tracking-tight text-slate-900">
                 {title}
             </h2>
             {children}

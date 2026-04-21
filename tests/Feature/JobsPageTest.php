@@ -1,7 +1,9 @@
 <?php
 
 use App\Contracts\SearchServiceInterface;
+use App\Enums\ExperienceLevel;
 use App\Enums\JobType;
+use App\Enums\WorkModel;
 use App\Models\Company;
 use App\Models\JobListing;
 use App\Models\Location;
@@ -57,6 +59,11 @@ test('authenticated users can visit the job show page', function () {
     $company = Company::factory()->create([
         'name' => 'Acme Tech',
         'slug' => 'acme-tech',
+        'logo_url' => 'https://cdn.example.test/acme-logo.png',
+        'industry' => 'Cloud Infrastructure',
+        'company_size' => '201-500',
+        'founded_year' => 2016,
+        'is_verified' => true,
     ]);
     $location = Location::factory()->create([
         'city_name' => 'Da Nang',
@@ -73,6 +80,9 @@ test('authenticated users can visit the job show page', function () {
             'slug' => 'lead-technical-architect',
             'title' => 'Lead Technical Architect',
             'job_type' => JobType::FULL_TIME,
+            'work_model' => WorkModel::ONSITE,
+            'experience_level' => ExperienceLevel::ENTRY,
+            'benefits' => "Own reliability initiatives\nShape delivery workflows",
             'published_at' => now()->subDay(),
             'expires_at' => now()->addDay(),
         ]);
@@ -90,15 +100,26 @@ test('authenticated users can visit the job show page', function () {
             && data_get($job, 'title') === 'Lead Technical Architect'
             && data_get($job, 'application_url') === $jobListing->application_url
             && data_get($job, 'company.name') === 'Acme Tech'
+            && data_get($job, 'company.logo_url') === 'https://cdn.example.test/acme-logo.png'
             && data_get($job, 'company.website') === $company->website_url
             && data_get($job, 'company.summary') === $company->description
+            && data_get($job, 'company.industry') === 'Cloud Infrastructure'
+            && data_get($job, 'company.company_size') === '201-500'
+            && data_get($job, 'company.founded_year') === 2016
+            && data_get($job, 'company.is_verified') === true
             && data_get($job, 'primary_location') === 'Da Nang'
             && data_get($job, 'overview') === $jobListing->description
             && data_get($job, 'job_type') === 'full-time'
+            && data_get($job, 'job_type_label') === JobType::FULL_TIME->label()
+            && data_get($job, 'work_model_label') === WorkModel::ONSITE->label()
+            && data_get($job, 'experience_level_label') === ExperienceLevel::ENTRY->label()
             && data_get($job, 'skills.0') === 'Laravel'
+            && data_get($job, 'benefits.0') === 'Own reliability initiatives'
+            && data_get($job, 'benefits.1') === 'Shape delivery workflows'
             && data_get($job, 'summary_metrics.0.label') === 'Compensation')
         ->where('searchContext.index_query', [])
         ->has('job.requirements')
+        ->has('job.benefits', 2)
         ->has('job.summary_metrics')
         ->has('relatedJobs'),
     );
@@ -116,10 +137,10 @@ test('job show preserves only meaningful search context query params', function 
         'job' => $jobListing->slug,
         'category' => 'mobile-engineering',
         'q' => '',
-        'location' => '',
+        'location' => [],
         'job_type' => '',
-        'work_model' => '',
-        'experience_level' => '',
+        'work_model' => [],
+        'experience_level' => [],
         'salary_min' => '',
         'salary_max' => '',
         'sort' => 'best_match',
@@ -131,7 +152,7 @@ test('job show preserves only meaningful search context query params', function 
     $response->assertInertia(fn (Assert $page) => $page
         ->component('jobs/show')
         ->where('searchContext.index_query', [
-            'category' => 'mobile-engineering',
+            'category' => ['mobile-engineering'],
         ]),
     );
 });
@@ -149,8 +170,8 @@ test('job show drops invalid search context query params before linking back to 
         'category' => 'Platform Engineering',
         'q' => 'laravel',
         'job_type' => 'invalid-job-type',
-        'work_model' => 'bad-work-model',
-        'experience_level' => 'unknown-level',
+        'work_model' => ['remote', 'bad-work-model'],
+        'experience_level' => ['senior', 'unknown-level'],
         'sort' => 'unsupported',
         'page' => 0,
         'per_page' => 999,
@@ -163,9 +184,11 @@ test('job show drops invalid search context query params before linking back to 
     $response->assertInertia(fn (Assert $page) => $page
         ->component('jobs/show')
         ->where('searchContext.index_query', [
-            'category' => 'platform-engineering',
+            'category' => ['platform-engineering'],
             'q' => 'laravel',
             'skills' => ['laravel'],
+            'work_model' => ['remote'],
+            'experience_level' => ['senior'],
             'per_page' => 50,
         ]),
     );

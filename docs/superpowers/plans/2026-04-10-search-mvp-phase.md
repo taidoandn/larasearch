@@ -147,16 +147,18 @@ Expected: PASS with suggest auth/validation coverage, typo-tolerance coverage, s
 **Files:**
 - Modify: `resources/js/pages/jobs/index.tsx`
 - Modify: `resources/js/pages/jobs/show.tsx`
-- Create: `resources/js/features/jobs/components/jobs-filters.tsx`
-- Create: `resources/js/features/jobs/components/jobs-results-list.tsx`
-- Create: `resources/js/features/jobs/components/jobs-results-toolbar.tsx`
-- Create: `resources/js/features/jobs/components/job-summary-sheet.tsx`
-- Create: `resources/js/features/jobs/components/job-header.tsx`
-- Create: `resources/js/features/jobs/components/job-detail-info.tsx`
-- Create: `resources/js/features/jobs/components/job-related-list.tsx`
-- Create: `resources/js/features/jobs/hooks/use-job-search.ts`
-- Create: `resources/js/features/jobs/hooks/use-job-suggestions.ts`
-- Create: `resources/js/features/jobs/api/fetch-job-suggestions.ts`
+- Create: `resources/js/features/jobs/screens/search-screen.tsx`
+- Create: `resources/js/features/jobs/screens/detail-screen.tsx`
+- Create: `resources/js/features/jobs/components/search/filters.tsx`
+- Create: `resources/js/features/jobs/components/search/results-list.tsx`
+- Create: `resources/js/features/jobs/components/search/results-toolbar.tsx`
+- Create: `resources/js/features/jobs/components/search/summary-sheet.tsx`
+- Create: `resources/js/features/jobs/components/detail/header.tsx`
+- Create: `resources/js/features/jobs/components/detail/detail-info.tsx`
+- Create: `resources/js/features/jobs/components/detail/related-list.tsx`
+- Create: `resources/js/features/jobs/hooks/use-search.ts`
+- Create: `resources/js/features/jobs/hooks/use-suggestions.ts`
+- Create: `resources/js/features/jobs/api/fetch-suggestions.ts`
 - Modify: `resources/js/features/jobs/types/index.ts`
 - Modify: `docs/ui/screens/jobs-index/DESIGN.md`
 - Modify: `docs/ui/screens/jobs-show/DESIGN.md`
@@ -165,7 +167,7 @@ Expected: PASS with suggest auth/validation coverage, typo-tolerance coverage, s
 - [x] **Step 1: Build the jobs index and summary-sheet flow**
 
 Implemented:
-- index page composition under `resources/js/pages/jobs/index.tsx`
+- index page composition under `resources/js/features/jobs/screens/search-screen.tsx` with `resources/js/pages/jobs/index.tsx` as the thin Inertia wrapper
 - summary sheet for row selection
 - reusable results list, toolbar, and pagination
 

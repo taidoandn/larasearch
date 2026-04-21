@@ -12,12 +12,12 @@ it('renders the jobs index page with canonical job props', function () {
         ->once()
         ->with([
             'q' => 'laravel',
-            'location' => 'da-nang',
-            'category' => '',
+            'location' => ['da-nang'],
+            'category' => [],
             'skills' => [],
-            'job_type' => '',
-            'work_model' => '',
-            'experience_level' => '',
+            'job_type' => [],
+            'work_model' => [],
+            'experience_level' => [],
             'salary_min' => null,
             'salary_max' => null,
             'sort' => 'newest',
@@ -33,6 +33,7 @@ it('renders the jobs index page with canonical job props', function () {
                     'company' => [
                         'name' => 'Acme Tech',
                         'slug' => 'acme-tech',
+                        'logo_url' => 'https://cdn.example.test/acme-logo.png',
                         'website' => 'https://acme.example.test',
                     ],
                     'application_url' => 'https://jobs.example.test/apply/senior-laravel-backend-engineer',
@@ -79,7 +80,7 @@ it('renders the jobs index page with canonical job props', function () {
 
     $response = $this->actingAs($user)->get(route('jobs.index', [
         'q' => 'laravel',
-        'location' => 'da-nang',
+        'location' => ['da-nang'],
         'sort' => 'newest',
         'page' => 2,
         'per_page' => 10,
@@ -89,6 +90,7 @@ it('renders the jobs index page with canonical job props', function () {
     $response->assertInertia(fn ($page) => $page
         ->component('jobs/index')
         ->where('results.items.0.application_url', 'https://jobs.example.test/apply/senior-laravel-backend-engineer')
+        ->where('results.items.0.company.logo_url', 'https://cdn.example.test/acme-logo.png')
         ->where('results.items.0.company.website', 'https://acme.example.test')
         ->where('results.pagination.page', 2)
         ->where('results.pagination.per_page', 10)
@@ -96,7 +98,7 @@ it('renders the jobs index page with canonical job props', function () {
         ->where('results.pagination.to', 11)
         ->where('results.sort', 'newest')
         ->where('filters.q', 'laravel')
-        ->where('filters.location', 'da-nang')
+        ->where('filters.location', ['da-nang'])
         ->where('filters.sort', 'newest')
         ->where('filters.page', 2)
         ->where('filters.per_page', 10),
@@ -111,12 +113,12 @@ it('preserves the active category filter when category facets are empty', functi
         ->once()
         ->with([
             'q' => '',
-            'location' => '',
-            'category' => 'platform-engineering',
+            'location' => [],
+            'category' => ['platform-engineering'],
             'skills' => [],
-            'job_type' => '',
-            'work_model' => '',
-            'experience_level' => '',
+            'job_type' => [],
+            'work_model' => [],
+            'experience_level' => [],
             'salary_min' => null,
             'salary_max' => null,
             'sort' => 'best_match',
@@ -154,7 +156,7 @@ it('preserves the active category filter when category facets are empty', functi
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
         ->component('jobs/index')
-        ->where('filters.category', 'platform-engineering')
+        ->where('filters.category', ['platform-engineering'])
         ->where('results.facets.categories', []),
     );
 });
@@ -170,17 +172,80 @@ it('rejects invalid enum-backed search filters', function () {
     $response = $this->from(route('jobs.index'))
         ->actingAs($user)
         ->get(route('jobs.index', [
-            'job_type' => 'temporary',
+            'job_type' => ['temporary'],
             'work_model' => 'remote-first',
             'experience_level' => 'principal',
         ]));
 
     $response->assertRedirect(route('jobs.index'));
     $response->assertSessionHasErrors([
-        'job_type',
-        'work_model',
-        'experience_level',
+        'job_type.0',
+        'work_model.0',
+        'experience_level.0',
     ]);
+});
+
+it('renders normalized multi-select facet filters on the jobs index page', function () {
+    $user = User::factory()->create();
+
+    $searchService = Mockery::mock(SearchServiceInterface::class);
+    $searchService->shouldReceive('search')
+        ->once()
+        ->with([
+            'q' => '',
+            'location' => ['da-nang', 'bangkok'],
+            'category' => ['platform-engineering', 'developer-tools'],
+            'skills' => [],
+            'job_type' => ['full-time', 'contract'],
+            'work_model' => ['remote', 'hybrid'],
+            'experience_level' => ['mid', 'senior'],
+            'salary_min' => null,
+            'salary_max' => null,
+            'sort' => 'best_match',
+            'page' => 1,
+            'per_page' => 20,
+        ])
+        ->andReturn([
+            'items' => [],
+            'pagination' => [
+                'page' => 1,
+                'per_page' => 20,
+                'total' => 0,
+                'from' => 0,
+                'to' => 0,
+                'total_pages' => 0,
+                'has_more' => false,
+            ],
+            'facets' => [
+                'locations' => [],
+                'categories' => [],
+                'skills' => [],
+                'job_types' => [],
+                'work_models' => [],
+                'experience_levels' => [],
+            ],
+            'sort' => 'best_match',
+        ]);
+
+    app()->instance(SearchServiceInterface::class, $searchService);
+
+    $response = $this->actingAs($user)->get(route('jobs.index', [
+        'location' => ['Da Nang', 'Bangkok'],
+        'category' => ['Platform Engineering', 'Developer Tools'],
+        'job_type' => ['full-time', 'contract'],
+        'work_model' => ['remote', 'hybrid'],
+        'experience_level' => ['mid', 'senior'],
+    ]));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('jobs/index')
+        ->where('filters.location', ['da-nang', 'bangkok'])
+        ->where('filters.category', ['platform-engineering', 'developer-tools'])
+        ->where('filters.job_type', ['full-time', 'contract'])
+        ->where('filters.work_model', ['remote', 'hybrid'])
+        ->where('filters.experience_level', ['mid', 'senior']),
+    );
 });
 
 it('returns normalized job suggestions for authenticated users', function () {

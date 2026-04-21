@@ -1,65 +1,58 @@
-# Search Results Current Spec
+# Jobs Index Screen Specification
+
+This screen must follow the canonical design system in [../DESIGN.md](../DESIGN.md). If any guidance here conflicts with the parent document, the parent document wins.
 
 ## Purpose
 
-The Search Results screen is the primary browsing surface inside the existing Laravel app shell. It only owns the page content area and must not recreate layout, sidebar, or global navigation concerns.
-
-## Current Interaction Model
-
-- Desktop, tablet, and mobile all keep the results list full width by default.
-- Selecting a job opens the summary view in a right-side sheet.
-- Closing the sheet clears the selection.
-- Selecting another row swaps the sheet content to the newly selected job.
-- The results page never morphs into a split desktop layout anymore.
-- "View Full Details" navigates to the dedicated job detail page at `/jobs/{job}`.
+The jobs index is the primary discovery workspace. It should feel like a refined search console rather than a generic list page: fast to scan, calm under dense information, and clearly optimized for narrowing and comparison.
 
 ## Layout
 
-- Top section: dense filter/search bar with five controls and a primary search action.
-- Secondary row: active filter chips and reset action.
-- Toolbar row: result count and sort control.
-- Main body: mapped results rows and pagination footer.
-- Overlay layer: sheet-based summary panel for the selected job.
+- Use a wide two-column layout.
+- Left column is a persistent filter rail with a compact, fixed width.
+- Right column is the search-results workspace with toolbar, cards, and pagination.
+- Keep the page centered in a broad desktop container; avoid edge-to-edge stretching.
 
-## Component Structure
+## Filter Rail
 
-- `resources/js/pages/jobs/index.tsx`
-  Page entry using the search layout and jobs feature composition.
-- `resources/js/features/jobs/hooks/use-job-search.ts`
-  Screen-level Inertia navigation, selection state, and summary-sheet coordination.
-- `resources/js/features/jobs/components/jobs-filters.tsx`
-  Controlled filter inputs/selects, dynamic chip rendering, and explicit search submission.
-- `resources/js/features/jobs/hooks/use-job-suggestions.ts`
-  Debounced keyword suggestion fetching, stale-request protection, and combobox interaction state.
-- `resources/js/features/jobs/components/jobs-results-toolbar.tsx`
-  Controlled sort select.
-- `resources/js/features/jobs/components/jobs-results-list.tsx`
-  Reusable mapped row rendering and pagination footer.
-- `resources/js/features/jobs/components/job-summary-sheet.tsx`
-  Sheet-hosted summary panel shown for any selected job.
+- The sidebar should read as a soft, integrated panel sitting on the canvas, not a separate app shell.
+- Start with `Filters` and a short helper line like `Refine your match`.
+- Order controls as:
+  `Keywords`, `Location`, `Category`, `Salary Range`, `Work Model`, `Experience`, `Skills`.
+- Text inputs should be rounded, borderless, and sit on `surface-container-lowest`.
+- Salary range should present as a visual slider treatment first, with numeric anchors secondary.
+- Work model and experience should prefer checklist rows with counts when facet counts exist.
+- Skills should appear as selected pills plus a lightweight entry affordance.
 
-## Input And Select Behavior
+## Results Toolbar
 
-- Keyword and location are controlled `Input` components using the same visual height and typography baseline as the `Select` triggers.
-- Work model, experience, salary, and sort use shadcn `Select`.
-- Keyword suggestions are debounced and keyboard navigable through the live `/jobs/suggest` endpoint.
-- Filter chips are derived from current control values instead of being static markup.
-- Reset restores the initial filter values and chip set.
+- The top toolbar should summarize result count and active filters before the sort control.
+- Present active filters as removable pills in a single horizontal row when possible.
+- Include a visible `Clear all filters` action below or beside the active pill row.
+- Sort should live in a compact floating control aligned right.
+- Keep supporting metadata in mono label styling.
 
-## Visual Rules
+## Result Cards
 
-- Preserve the existing Larasearch architectural-ledger feel: sharp edges, dense metrics, low-shadow surfaces, indigo action accents.
-- Use shadcn UI primitives for interaction controls instead of raw form buttons and selects.
-- Keep light and dark mode support with the same hierarchy and contrast expectations.
-- Selected rows use an owned left border and tonal background, not floating absolute accents.
+- Cards must use the soft editorial card treatment from the design system: large radius, pale surfaces, minimal visible lines.
+- The first row should be visually featured by default.
+- Card anatomy should be:
+  logo/avatar, title, company/location line, compact metadata row, skills row, right-edge match/bookmark area.
+- Title should dominate the card visually.
+- Company/location metadata should remain lighter and secondary.
+- The compensation item should use primary brand emphasis.
+- Skills should render as small monochrome pills.
+- The match score should appear as a circular score treatment at the far right.
+- Bookmark affordance should sit near the match score, not inside the metadata cluster.
 
-## Responsive Rules
+## Interaction
 
-- Desktop: full-width list plus right sheet when selected.
-- Tablet: same behavior as desktop.
-- Mobile: same selection sheet behavior for consistency with the current implementation.
+- Hover should slightly lift or brighten cards without introducing harsh shadows.
+- Selected cards should use a stronger primary outline and slightly tinted background.
+- Pagination should sit in its own soft container below the results list.
 
-## Out Of Scope
+## Mobile Behavior
 
-- No save/apply persistence yet.
-- No layout-level changes to the Laravel starter shell.
+- Collapse the two-column layout into a single column.
+- Move filters above results in mobile.
+- Keep the toolbar readable with stacked rows rather than squeezing chips into a single cramped line.

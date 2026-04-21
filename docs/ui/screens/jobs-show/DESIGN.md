@@ -1,52 +1,43 @@
-# Job Detail Current Spec
+# Jobs Show Screen Specification
+
+This screen must follow the canonical design system in [../DESIGN.md](../DESIGN.md). If any guidance here conflicts with the parent document, the parent document wins.
 
 ## Purpose
 
-The Job Detail screen is the dedicated routed page for full reading mode. It is reached from the results summary sheet through "View Full Details".
+The job detail screen is the editorial reading surface for a single role. It should feel more premium and narrative than the index: less like filtering, more like evaluating fit.
 
-## Route
+## Layout
 
-- URL pattern: `/jobs/{job}`
-- Laravel route name: `jobs.show`
-- Inertia page component: `resources/js/pages/jobs/show.tsx`
+- Use an asymmetrical content split.
+- Main column carries title, overview, responsibilities, requirements, skills, and related roles.
+- Right column is a sticky contextual rail for company information, summary metrics, map/context, and apply action.
+- Preserve strong breathing room between major content sections.
 
-## Current Layout
+## Header
 
-- Main reading column for overview, responsibilities, requirements, and related jobs.
-- Secondary sidebar column for company context, metadata, and the apply action.
-- Reuses the default `AppLayout` and existing app shell.
+- Begin with a prominent title block using the primary headline scale.
+- Show company, location, and role metadata directly beneath the title.
+- Keep primary and secondary actions visible at the header level.
+- The header should feel like a hero panel rather than a thin page heading.
 
-## Component Structure
+## Main Content
 
-- `resources/js/pages/jobs/show.tsx`
-  Route entry, breadcrumbs, and backend-provided job props.
-- `resources/js/features/jobs/components/job-header.tsx`
-  Headline, salary, and primary actions.
-- `resources/js/features/jobs/components/job-detail-info.tsx`
-  Main reading column, metadata sidebar, and related opportunities.
-- `resources/js/features/jobs/components/job-detail-section.tsx`
-  Reusable content section wrapper.
+- Present overview first in readable body text width.
+- Responsibilities should render as separated editorial bullets or soft list blocks.
+- Requirements should use card or tile treatment, not table-like dividers.
+- Skills should render as compact monochrome or lightly tinted pills.
+- Related roles should appear as a compact secondary card grid at the bottom.
 
-## Navigation Behavior
+## Right Rail
 
-- Back action returns to `/jobs`.
-- Related opportunities link directly to other `/jobs/{job}` pages.
-- The full detail page does not depend on a local "view mode" from the results page anymore.
+- The company block should sit inside its own card.
+- Summary metrics should be grouped in a second card.
+- Map/location context and apply button can share a third card if composition stays clean.
+- Keep the apply CTA high-contrast and always visually dominant inside the rail.
 
-## Visual Rules
+## Tone
 
-- Typography-first composition.
-- Strong headline hierarchy.
-- Dense but restrained metadata sidebar.
-- Indigo action accents.
-- Same light/dark visual language as the results page.
-
-## Responsive Rules
-
-- Desktop: two-column content plus sidebar.
-- Tablet: same structure with natural vertical compression.
-- Mobile: stacked reading layout with sidebar sections flowing below the main article.
-
-## Out Of Scope
-
-- No application submission workflow or save-state persistence.
+- This page should feel calmer and more spacious than the jobs index.
+- Avoid overloading the rail with too many visual treatments.
+- The hierarchy must clearly prioritize:
+  role title, compensation/fit summary, overview, then supporting company context.

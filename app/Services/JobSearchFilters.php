@@ -9,16 +9,31 @@ use Illuminate\Support\Str;
 
 class JobSearchFilters
 {
+    public const string DEFAULT_SORT = 'best_match';
+
+    public const int DEFAULT_PAGE = 1;
+
+    public const int DEFAULT_PER_PAGE = 20;
+
+    public const int MAX_PER_PAGE = 50;
+
+    public const array SORT_OPTIONS = [
+        self::DEFAULT_SORT,
+        'newest',
+        'salary_desc',
+        'salary_asc',
+    ];
+
     /**
      * @param  array<string, mixed>  $input
      * @return array{
      *     q: string,
-     *     location: string,
-     *     category: string,
+     *     location: array<int, string>,
+     *     category: array<int, string>,
      *     skills: array<int, string>,
-     *     job_type: string,
-     *     work_model: string,
-     *     experience_level: string,
+     *     job_type: array<int, string>,
+     *     work_model: array<int, string>,
+     *     experience_level: array<int, string>,
      *     salary_min: ?int,
      *     salary_max: ?int,
      *     sort: string,
@@ -30,12 +45,12 @@ class JobSearchFilters
     {
         return [
             'q' => self::string($input, 'q', 255),
-            'location' => self::string($input, 'location', 120),
-            'category' => self::slug($input, 'category', 120),
+            'location' => self::slugList($input['location'] ?? []),
+            'category' => self::slugList($input['category'] ?? []),
             'skills' => self::skills($input['skills'] ?? []),
-            'job_type' => self::enum($input['job_type'] ?? null, JobType::class),
-            'work_model' => self::enum($input['work_model'] ?? null, WorkModel::class),
-            'experience_level' => self::enum($input['experience_level'] ?? null, ExperienceLevel::class),
+            'job_type' => self::enumList($input['job_type'] ?? [], JobType::class),
+            'work_model' => self::enumList($input['work_model'] ?? [], WorkModel::class),
+            'experience_level' => self::enumList($input['experience_level'] ?? [], ExperienceLevel::class),
             'salary_min' => self::integer($input['salary_min'] ?? null),
             'salary_max' => self::integer($input['salary_max'] ?? null),
             'sort' => self::sort($input['sort'] ?? null),
@@ -53,14 +68,14 @@ class JobSearchFilters
         $normalized = self::normalize($input);
         $compact = [];
 
-        foreach (['q', 'location', 'category', 'job_type', 'work_model', 'experience_level'] as $key) {
-            if ($normalized[$key] !== '') {
-                $compact[$key] = $normalized[$key];
-            }
+        if ($normalized['q'] !== '') {
+            $compact['q'] = $normalized['q'];
         }
 
-        if ($normalized['skills'] !== []) {
-            $compact['skills'] = $normalized['skills'];
+        foreach (['location', 'category', 'skills', 'job_type', 'work_model', 'experience_level'] as $key) {
+            if ($normalized[$key] !== []) {
+                $compact[$key] = $normalized[$key];
+            }
         }
 
         foreach (['salary_min', 'salary_max'] as $key) {
@@ -69,15 +84,15 @@ class JobSearchFilters
             }
         }
 
-        if ($normalized['sort'] !== 'best_match') {
+        if ($normalized['sort'] !== self::DEFAULT_SORT) {
             $compact['sort'] = $normalized['sort'];
         }
 
-        if ($normalized['page'] !== 1) {
+        if ($normalized['page'] !== self::DEFAULT_PAGE) {
             $compact['page'] = $normalized['page'];
         }
 
-        if ($normalized['per_page'] !== 20) {
+        if ($normalized['per_page'] !== self::DEFAULT_PER_PAGE) {
             $compact['per_page'] = $normalized['per_page'];
         }
 
@@ -95,13 +110,18 @@ class JobSearchFilters
     }
 
     /**
-     * @param  array<string, mixed>  $input
+     * @return array<int, string>
      */
-    protected static function slug(array $input, string $key, int $maxLength): string
+    protected static function slugList(mixed $value): array
     {
-        $value = self::string($input, $key, $maxLength);
-
-        return $value === '' ? '' : Str::slug($value);
+        return collect(self::arrayValue($value))
+            ->map(fn (mixed $item): string => trim((string) $item))
+            ->filter(fn (string $item): bool => $item !== '' && mb_strlen($item) <= 120)
+            ->map(fn (string $item): string => Str::slug($item))
+            ->filter(fn (string $item): bool => $item !== '')
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**
@@ -109,11 +129,7 @@ class JobSearchFilters
      */
     protected static function skills(mixed $value): array
     {
-        if (! is_array($value)) {
-            return [];
-        }
-
-        return collect($value)
+        return collect(self::arrayValue($value))
             ->map(fn (mixed $skill): string => trim((string) $skill))
             ->filter(fn (string $skill): bool => $skill !== '' && mb_strlen($skill) <= 120)
             ->map(fn (string $skill): string => Str::slug($skill))
@@ -136,6 +152,32 @@ class JobSearchFilters
         return $enumClass::tryFrom($candidate)?->value ?? '';
     }
 
+    /**
+     * @param  class-string<\BackedEnum>  $enumClass
+     * @return array<int, string>
+     */
+    protected static function enumList(mixed $value, string $enumClass): array
+    {
+        return collect(self::arrayValue($value))
+            ->map(fn (mixed $item): string => self::enum($item, $enumClass))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    protected static function arrayValue(mixed $value): array
+    {
+        if ($value === null || $value === '') {
+            return [];
+        }
+
+        return is_array($value) ? $value : [$value];
+    }
+
     protected static function integer(mixed $value): ?int
     {
         if (! is_numeric($value)) {
@@ -151,26 +193,26 @@ class JobSearchFilters
     {
         $candidate = trim((string) $value);
 
-        return in_array($candidate, ['best_match', 'newest', 'salary_desc', 'salary_asc'], true)
+        return in_array($candidate, self::SORT_OPTIONS, true)
             ? $candidate
-            : 'best_match';
+            : self::DEFAULT_SORT;
     }
 
     protected static function page(mixed $value): int
     {
         if (! is_numeric($value)) {
-            return 1;
+            return self::DEFAULT_PAGE;
         }
 
-        return max((int) $value, 1);
+        return max((int) $value, self::DEFAULT_PAGE);
     }
 
     protected static function perPage(mixed $value): int
     {
         if (! is_numeric($value)) {
-            return 20;
+            return self::DEFAULT_PER_PAGE;
         }
 
-        return min(max((int) $value, 1), 50);
+        return min(max((int) $value, self::DEFAULT_PAGE), self::MAX_PER_PAGE);
     }
 }

@@ -43,6 +43,7 @@ it('maps a job listing into the expected elasticsearch document shape', function
         ->and($document['application_url'])->toBe('https://jobs.example.test/apply/staff-search-platform-engineer')
         ->and($document['company_name'])->toBe($jobListing->company->name)
         ->and($document['company_slug'])->toBe($jobListing->company->slug)
+        ->and($document['company_logo_url'])->toBe($jobListing->company->logo_url)
         ->and($document['company_website'])->toBe($jobListing->company->website_url)
         ->and($document['location_slugs'])->toBe([Str::slug($jobListing->primaryLocation->city_name)])
         ->and($document['location_labels'])->toBe([$jobListing->primaryLocation->display_name])

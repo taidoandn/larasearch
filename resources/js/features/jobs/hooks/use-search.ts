@@ -1,14 +1,14 @@
 import { router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { createDefaultJobFilters, JOB_SEARCH_DEFAULT_PAGE } from '@/features/jobs/constants';
 import type {
     JobFilters,
     JobResultItem,
     JobResultsPayload,
 } from '@/features/jobs/types';
-import { compactJobSearchQuery } from '@/features/jobs/utils';
-import { index as jobsIndex } from '@/routes/jobs';
+import { buildJobSearchUrl } from '@/features/jobs/utils';
 
-export function useJobSearch({
+export function useSearch({
     results,
     filters,
 }: {
@@ -27,7 +27,7 @@ export function useJobSearch({
         setSelectedJobId(null);
         setIsRefreshing(true);
 
-        router.get(jobsIndex.url(), compactJobSearchQuery(nextFilters), {
+        router.get(buildJobSearchUrl(nextFilters), {}, {
             preserveState: true,
             preserveScroll: true,
             replace: true,
@@ -41,20 +41,7 @@ export function useJobSearch({
     };
 
     const resetFilters = (): void => {
-        visitResults({
-            q: '',
-            location: '',
-            category: '',
-            skills: [],
-            job_type: '',
-            work_model: '',
-            experience_level: '',
-            salary_min: null,
-            salary_max: null,
-            sort: 'best_match',
-            page: 1,
-            per_page: filters.per_page,
-        });
+        visitResults(createDefaultJobFilters(filters.per_page));
     };
 
     return {
@@ -80,7 +67,7 @@ export function useJobSearch({
             visitResults({
                 ...filters,
                 sort,
-                page: 1,
+                page: JOB_SEARCH_DEFAULT_PAGE,
             });
         },
     };

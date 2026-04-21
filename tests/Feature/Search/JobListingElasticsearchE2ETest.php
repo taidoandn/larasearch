@@ -307,7 +307,7 @@ it('searches indexed job listings with normalized filters and facets', function 
         'q' => "Laravel {$suffix}",
         'location' => Str::slug($location->city_name),
         'category' => $categories[0]->slug,
-        'skills' => [$skills[0]->slug],
+        'skills' => $skills[0]->slug,
         'sort' => 'best_match',
         'page' => 1,
         'per_page' => 10,

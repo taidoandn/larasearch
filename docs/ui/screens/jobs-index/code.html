@@ -1,732 +1,427 @@
-<!doctype html>
+<!DOCTYPE html>
 
-<html class="light" lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,line-clamp"></script>
-        <link
-            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-            rel="stylesheet"
-        />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=Geist+Mono:wght@100..900&amp;family=Inter:wght@100..900&amp;family=Space+Grotesk:wght@300..700&amp;display=swap"
-            rel="stylesheet"
-        />
-        <script id="tailwind-config">
-            tailwind.config = {
-                darkMode: 'class',
-                theme: {
-                    extend: {
-                        colors: {
-                            primary: '#4338CA',
-                            'on-primary': '#ffffff',
-                            surface: '#f9f9f9',
-                            'on-surface': '#18181b',
-                            'on-surface-variant': '#71717a',
-                            'outline-variant': '#e4e4e7',
-                            'primary-container': '#EEF2FF',
-                        },
-                        fontFamily: {
-                            headline: ['Geist', 'Inter', 'sans-serif'],
-                            body: ['Geist', 'Inter', 'sans-serif'],
-                            label: ['Geist Mono', 'Space Grotesk', 'monospace'],
-                        },
-                        borderRadius: {
-                            DEFAULT: '0px',
-                            lg: '4px',
-                            xl: '8px',
-                            full: '9999px',
-                        },
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed": "#360f00",
+                        "on-secondary-fixed": "#00174b",
+                        "outline": "#737686",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary": "#495c95",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "outline-variant": "#c3c6d7",
+                        "secondary-fixed-dim": "#b4c5ff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-bright": "#f7f9fb",
+                        "error": "#ba1a1a",
+                        "surface-container": "#eceef0",
+                        "on-surface": "#191c1e",
+                        "surface-tint": "#0053db",
+                        "surface-dim": "#d8dadc",
+                        "on-background": "#191c1e",
+                        "primary-fixed": "#dbe1ff",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#2563eb",
+                        "on-surface-variant": "#434655",
+                        "surface-variant": "#e0e3e5",
+                        "tertiary-fixed": "#ffdbcd",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "secondary-fixed": "#dbe1ff",
+                        "on-secondary-container": "#394c84",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#e6e8ea",
+                        "on-primary-container": "#eeefff",
+                        "surface-container-highest": "#e0e3e5",
+                        "tertiary": "#943700",
+                        "primary": "#004ac6",
+                        "inverse-on-surface": "#eff1f3",
+                        "tertiary-container": "#bc4800",
+                        "on-secondary-fixed-variant": "#31447b",
+                        "secondary-container": "#acbfff",
+                        "on-secondary": "#ffffff",
+                        "inverse-surface": "#2d3133",
+                        "inverse-primary": "#b4c5ff",
+                        "background": "#f7f9fb",
+                        "surface-container-low": "#f2f4f6",
+                        "surface": "#f7f9fb"
                     },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
                 },
-            };
-        </script>
-        <style>
-            .material-symbols-outlined {
-                font-variation-settings:
-                    'FILL' 0,
-                    'wght' 400,
-                    'GRAD' 0,
-                    'opsz' 20;
-                vertical-align: middle;
-                line-height: 1;
-                font-size: 20px;
-            }
-            body {
-                font-family: 'Geist', sans-serif;
-                -webkit-font-smoothing: antialiased;
-            }
-            .geist-mono {
-                font-family: 'Geist Mono', monospace;
-            }
-            .search-group-container > *:not(:last-child) {
-                border-right: 1px solid #e4e4e7;
-            }
-        </style>
-    </head>
-    <body
-        class="text-on-surface selection:bg-primary-container bg-white selection:text-primary"
-    >
-        <!-- Top Navigation Shell -->
-        <nav
-            class="sticky top-0 z-50 mx-auto flex h-14 w-full max-w-[1920px] items-center justify-between border-b border-zinc-100 bg-white px-6 font-sans text-sm tracking-tight antialiased"
-        >
-            <div class="flex items-center gap-8">
-                <span
-                    class="text-lg font-black tracking-tighter text-zinc-900 uppercase"
-                    >Larasearch</span
-                >
-                <div class="hidden items-center gap-6 md:flex">
-                    <a
-                        class="mt-1 border-b-2 border-primary pb-1 font-bold text-primary"
-                        href="#"
-                        >Explore</a
-                    >
-                    <a
-                        class="text-zinc-500 transition-all duration-200 hover:text-zinc-900"
-                        href="#"
-                        >My Jobs</a
-                    >
-                    <a
-                        class="text-zinc-500 transition-all duration-200 hover:text-zinc-900"
-                        href="#"
-                        >Messages</a
-                    >
-                    <a
-                        class="text-zinc-500 transition-all duration-200 hover:text-zinc-900"
-                        href="#"
-                        >Benchmarks</a
-                    >
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
-                <button
-                    class="p-2 text-zinc-500 transition-all hover:bg-zinc-50 active:scale-[0.98]"
-                >
-                    <span
-                        class="material-symbols-outlined"
-                        data-icon="notifications"
-                        >notifications</span
-                    >
-                </button>
-                <button
-                    class="p-2 text-zinc-500 transition-all hover:bg-zinc-50 active:scale-[0.98]"
-                >
-                    <span class="material-symbols-outlined" data-icon="settings"
-                        >settings</span
-                    >
-                </button>
-                <div class="ml-2 h-8 w-8 bg-zinc-200">
-                    <img
-                        alt="User profile"
-                        class="h-full w-full object-cover"
-                        data-alt="close-up portrait of a professional woman"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlp_QWZ4RnaC-RpVgDczrU7L9yI5_CG-Z11uEQP04IDYp3GseHBWxFzp5IOFHgE1_kugOdkIXsu3p5sXlhM4eJn0shHK1Vhr70hhWot7fV2KyiF7jb4TrDIfRN6ymU3IwWmsl64se3SL032Zh1Sv1YJy6cOGFO6m9hzLH9IAXFlDMpEJrosvXbfOEUJYhb35CH3GRLZCHjcTAK3lRCfJM0l73CCKHLAecU-27Mg2jplwkl-mUmstpzR5UTgGp_dKqcun_Of5SvVlie"
-                    />
-                </div>
-            </div>
-        </nav>
-        <!-- Filter Bar Header -->
-        <header class="sticky top-14 z-40 border-b border-zinc-100 bg-white">
-            <div class="mx-auto max-w-[1920px] px-6 py-4">
-                <div class="flex flex-col gap-4">
-                    <div class="flex flex-col items-stretch gap-3 md:flex-row">
-                        <!-- Unified Search Container -->
-                        <div
-                            class="search-group-container flex flex-grow items-stretch border border-zinc-200 bg-zinc-50/30 transition-all focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
-                        >
-                            <!-- Keyword -->
-                            <div
-                                class="flex min-w-[160px] flex-1 flex-col px-3 py-1.5"
-                            >
-                                <label
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Keyword</label
-                                >
-                                <input
-                                    class="border-none bg-transparent p-0 text-sm font-medium placeholder:text-zinc-300 focus:ring-0"
-                                    placeholder="Design, Engineering..."
-                                    type="text"
-                                />
-                            </div>
-                            <!-- Location -->
-                            <div
-                                class="flex min-w-[160px] flex-1 flex-col px-3 py-1.5"
-                            >
-                                <label
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Location</label
-                                >
-                                <input
-                                    class="border-none bg-transparent p-0 text-sm font-medium placeholder:text-zinc-300 focus:ring-0"
-                                    placeholder="Remote, NYC..."
-                                    type="text"
-                                />
-                            </div>
-                            <!-- Work Model -->
-                            <div
-                                class="flex min-w-[120px] flex-1 flex-col px-3 py-1.5"
-                            >
-                                <label
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Work Model</label
-                                >
-                                <select
-                                    class="cursor-pointer appearance-none border-none bg-transparent p-0 text-sm font-medium focus:ring-0"
-                                >
-                                    <option>All Models</option>
-                                    <option>Remote</option>
-                                    <option>Hybrid</option>
-                                    <option>On-site</option>
-                                </select>
-                            </div>
-                            <!-- Experience -->
-                            <div
-                                class="flex min-w-[120px] flex-1 flex-col px-3 py-1.5"
-                            >
-                                <label
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Experience</label
-                                >
-                                <select
-                                    class="cursor-pointer appearance-none border-none bg-transparent p-0 text-sm font-medium focus:ring-0"
-                                >
-                                    <option>All Levels</option>
-                                    <option>Senior (5+ yr)</option>
-                                    <option>Lead (8+ yr)</option>
-                                    <option>Director</option>
-                                </select>
-                            </div>
-                            <!-- Salary -->
-                            <div
-                                class="flex min-w-[120px] flex-1 flex-col px-3 py-1.5"
-                            >
-                                <label
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Min Salary</label
-                                >
-                                <select
-                                    class="cursor-pointer appearance-none border-none bg-transparent p-0 text-sm font-medium focus:ring-0"
-                                >
-                                    <option>$120k+</option>
-                                    <option>$150k+</option>
-                                    <option>$180k+</option>
-                                    <option>$220k+</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button
-                            class="bg-primary px-8 py-2 text-xs font-bold tracking-wider whitespace-nowrap text-white uppercase transition-colors hover:bg-indigo-800 active:scale-[0.98]"
-                        >
-                            Search Database
-                        </button>
-                    </div>
-                    <!-- Active Chips -->
-                    <div class="flex flex-wrap items-center gap-2">
-                        <div
-                            class="group flex cursor-default items-center gap-1.5 border border-zinc-200 bg-zinc-100 px-2 py-0.5"
-                        >
-                            <span
-                                class="text-[9px] font-bold text-zinc-400 uppercase"
-                                >Role:</span
-                            >
-                            <span
-                                class="text-[11px] font-semibold text-zinc-700"
-                                >Principal Architect</span
-                            >
-                            <button
-                                class="material-symbols-outlined ml-1 !text-[14px] text-zinc-400 hover:text-red-600"
-                                data-icon="close"
-                            >
-                                close
-                            </button>
-                        </div>
-                        <div
-                            class="group flex cursor-default items-center gap-1.5 border border-zinc-200 bg-zinc-100 px-2 py-0.5"
-                        >
-                            <span
-                                class="text-[9px] font-bold text-zinc-400 uppercase"
-                                >Remote:</span
-                            >
-                            <span
-                                class="text-[11px] font-semibold text-zinc-700"
-                                >Global</span
-                            >
-                            <button
-                                class="material-symbols-outlined ml-1 !text-[14px] text-zinc-400 hover:text-red-600"
-                                data-icon="close"
-                            >
-                                close
-                            </button>
-                        </div>
-                        <button
-                            class="ml-1 text-[9px] font-bold tracking-widest text-primary uppercase hover:underline"
-                        >
-                            Reset Filters
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </header>
-        <!-- Search Results Content -->
-        <main class="mx-auto min-h-screen max-w-[1920px]">
-            <div class="flex w-full flex-col">
-                <!-- Results Toolbar -->
-                <div
-                    class="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 px-6 py-2.5"
-                >
-                    <p
-                        class="geist-mono text-[10px] tracking-widest text-zinc-400 uppercase"
-                    >
-                        Displaying
-                        <span class="font-bold text-zinc-600">142</span> matches
-                        <span class="mx-1 text-zinc-300">/</span> indexed 0.04s
-                    </p>
-                    <div class="flex items-center gap-4">
-                        <span
-                            class="text-[10px] font-bold tracking-widest text-zinc-400 uppercase"
-                            >Sort by:</span
-                        >
-                        <select
-                            class="cursor-pointer bg-transparent text-[11px] font-bold text-zinc-600 focus:outline-none"
-                        >
-                            <option>Precision Match</option>
-                            <option>Salary: High to Low</option>
-                            <option>Most Recent</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="divide-y divide-zinc-100">
-                    <!-- Job Row 1 - ACTIVE STATE -->
-                    <div
-                        class="group bg-primary-container grid cursor-pointer grid-cols-1 items-center gap-4 border-l-4 border-primary px-6 py-3.5 transition-colors md:grid-cols-12"
-                    >
-                        <div class="flex flex-col gap-0.5 md:col-span-5">
-                            <div class="flex items-center gap-2">
-                                <h2
-                                    class="line-clamp-2 text-[14px] font-bold tracking-tight text-zinc-900"
-                                >
-                                    Senior Systems Architect
-                                </h2>
-                                <span
-                                    class="border border-primary/20 bg-primary/5 px-1.5 text-[9px] font-black tracking-tighter text-primary uppercase"
-                                    >New</span
-                                >
-                            </div>
-                            <p
-                                class="flex items-center gap-1.5 text-[12px] font-medium text-zinc-500"
-                            >
-                                Quant Logic Systems
-                                <span
-                                    class="h-0.5 w-0.5 rounded-full bg-zinc-300"
-                                ></span>
-                                Remote, SF
-                            </p>
-                        </div>
-                        <div class="flex items-center gap-10 md:col-span-4">
-                            <div class="flex flex-col">
-                                <span
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Comp</span
-                                >
-                                <span
-                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
-                                    >$190k — $245k</span
-                                >
-                            </div>
-                            <div class="flex flex-col">
-                                <span
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Exp</span
-                                >
-                                <span
-                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
-                                    >8-12 Years</span
-                                >
-                            </div>
-                        </div>
-                        <div
-                            class="flex items-center justify-end gap-4 md:col-span-3"
-                        >
-                            <div class="flex flex-col text-right">
-                                <span
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Added</span
-                                >
-                                <span
-                                    class="geist-mono text-[11px] font-medium text-zinc-400"
-                                    >2h ago</span
-                                >
-                            </div>
-                            <button
-                                class="material-symbols-outlined text-zinc-400 transition-colors hover:text-primary"
-                                data-icon="bookmark_border"
-                            >
-                                bookmark_border
-                            </button>
-                            <button
-                                class="material-symbols-outlined text-zinc-300 transition-colors group-hover:text-primary"
-                                data-icon="chevron_right"
-                            >
-                                chevron_right
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Job Row 2 -->
-                    <div
-                        class="group grid cursor-pointer grid-cols-1 items-center gap-4 border-l-4 border-transparent bg-white px-6 py-3.5 transition-colors hover:bg-zinc-50 md:grid-cols-12"
-                    >
-                        <div class="flex flex-col gap-0.5 md:col-span-5">
-                            <div class="flex items-center gap-2">
-                                <h2
-                                    class="line-clamp-2 text-[14px] font-bold tracking-tight text-zinc-900"
-                                >
-                                    Lead UI Engineer (Design Systems)
-                                </h2>
-                            </div>
-                            <p
-                                class="flex items-center gap-1.5 text-[12px] font-medium text-zinc-500"
-                            >
-                                Vellum Labs
-                                <span
-                                    class="h-0.5 w-0.5 rounded-full bg-zinc-300"
-                                ></span>
-                                Hybrid, London
-                            </p>
-                        </div>
-                        <div class="flex items-center gap-10 md:col-span-4">
-                            <div class="flex flex-col">
-                                <span
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Comp</span
-                                >
-                                <span
-                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
-                                    >£120k — £155k</span
-                                >
-                            </div>
-                            <div class="flex flex-col">
-                                <span
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Exp</span
-                                >
-                                <span
-                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
-                                    >Senior+</span
-                                >
-                            </div>
-                        </div>
-                        <div
-                            class="flex items-center justify-end gap-4 md:col-span-3"
-                        >
-                            <div class="flex flex-col text-right">
-                                <span
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Added</span
-                                >
-                                <span
-                                    class="geist-mono text-[11px] font-medium text-zinc-400"
-                                    >6h ago</span
-                                >
-                            </div>
-                            <button
-                                class="material-symbols-outlined text-primary"
-                                data-icon="bookmark"
-                                style="font-variation-settings: 'FILL' 1"
-                            >
-                                bookmark
-                            </button>
-                            <button
-                                class="material-symbols-outlined text-zinc-300 transition-colors group-hover:text-primary"
-                                data-icon="chevron_right"
-                            >
-                                chevron_right
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Job Row 3 -->
-                    <div
-                        class="group grid cursor-pointer grid-cols-1 items-center gap-4 border-l-4 border-transparent bg-white px-6 py-3.5 transition-colors hover:bg-zinc-50 md:grid-cols-12"
-                    >
-                        <div class="flex flex-col gap-0.5 md:col-span-5">
-                            <div class="flex items-center gap-2">
-                                <h2
-                                    class="line-clamp-2 text-[14px] font-bold tracking-tight text-zinc-900"
-                                >
-                                    Director of Digital Products &amp;
-                                    Innovation Management
-                                </h2>
-                            </div>
-                            <p
-                                class="flex items-center gap-1.5 text-[12px] font-medium text-zinc-500"
-                            >
-                                Atelier Global
-                                <span
-                                    class="h-0.5 w-0.5 rounded-full bg-zinc-300"
-                                ></span>
-                                Remote, Global
-                            </p>
-                        </div>
-                        <div class="flex items-center gap-10 md:col-span-4">
-                            <div class="flex flex-col">
-                                <span
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Comp</span
-                                >
-                                <span
-                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
-                                    >$210k — $280k</span
-                                >
-                            </div>
-                            <div class="flex flex-col">
-                                <span
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Exp</span
-                                >
-                                <span
-                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
-                                    >10+ Years</span
-                                >
-                            </div>
-                        </div>
-                        <div
-                            class="flex items-center justify-end gap-4 md:col-span-3"
-                        >
-                            <div class="flex flex-col text-right">
-                                <span
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Added</span
-                                >
-                                <span
-                                    class="geist-mono text-[11px] font-medium text-zinc-400"
-                                    >1d ago</span
-                                >
-                            </div>
-                            <button
-                                class="material-symbols-outlined text-zinc-400 transition-colors hover:text-primary"
-                                data-icon="bookmark_border"
-                            >
-                                bookmark_border
-                            </button>
-                            <button
-                                class="material-symbols-outlined text-zinc-300 transition-colors group-hover:text-primary"
-                                data-icon="chevron_right"
-                            >
-                                chevron_right
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Job Row 4 -->
-                    <div
-                        class="group grid cursor-pointer grid-cols-1 items-center gap-4 border-l-4 border-transparent bg-white px-6 py-3.5 transition-colors hover:bg-zinc-50 md:grid-cols-12"
-                    >
-                        <div class="flex flex-col gap-0.5 md:col-span-5">
-                            <div class="flex items-center gap-2">
-                                <h2
-                                    class="line-clamp-2 text-[14px] font-bold tracking-tight text-zinc-900"
-                                >
-                                    Staff Frontend Engineer
-                                </h2>
-                            </div>
-                            <p
-                                class="flex items-center gap-1.5 text-[12px] font-medium text-zinc-500"
-                            >
-                                Borealis Infrastructure
-                                <span
-                                    class="h-0.5 w-0.5 rounded-full bg-zinc-300"
-                                ></span>
-                                Hybrid, NYC
-                            </p>
-                        </div>
-                        <div class="flex items-center gap-10 md:col-span-4">
-                            <div class="flex flex-col">
-                                <span
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Comp</span
-                                >
-                                <span
-                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
-                                    >$180k — $230k</span
-                                >
-                            </div>
-                            <div class="flex flex-col">
-                                <span
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Exp</span
-                                >
-                                <span
-                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
-                                    >8-10 Years</span
-                                >
-                            </div>
-                        </div>
-                        <div
-                            class="flex items-center justify-end gap-4 md:col-span-3"
-                        >
-                            <div class="flex flex-col text-right">
-                                <span
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Added</span
-                                >
-                                <span
-                                    class="geist-mono text-[11px] font-medium text-zinc-400"
-                                    >2d ago</span
-                                >
-                            </div>
-                            <button
-                                class="material-symbols-outlined text-zinc-400 transition-colors hover:text-primary"
-                                data-icon="bookmark_border"
-                            >
-                                bookmark_border
-                            </button>
-                            <button
-                                class="material-symbols-outlined text-zinc-300 transition-colors group-hover:text-primary"
-                                data-icon="chevron_right"
-                            >
-                                chevron_right
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Job Row 5 -->
-                    <div
-                        class="group grid cursor-pointer grid-cols-1 items-center gap-4 border-l-4 border-transparent bg-white px-6 py-3.5 transition-colors hover:bg-zinc-50 md:grid-cols-12"
-                    >
-                        <div class="flex flex-col gap-0.5 md:col-span-5">
-                            <div class="flex items-center gap-2">
-                                <h2
-                                    class="line-clamp-2 text-[14px] font-bold tracking-tight text-zinc-900"
-                                >
-                                    Information Security Officer
-                                </h2>
-                            </div>
-                            <p
-                                class="flex items-center gap-1.5 text-[12px] font-medium text-zinc-500"
-                            >
-                                Titan Asset Mgmt
-                                <span
-                                    class="h-0.5 w-0.5 rounded-full bg-zinc-300"
-                                ></span>
-                                On-site, Chicago
-                            </p>
-                        </div>
-                        <div class="flex items-center gap-10 md:col-span-4">
-                            <div class="flex flex-col">
-                                <span
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Comp</span
-                                >
-                                <span
-                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
-                                    >$250k — $310k</span
-                                >
-                            </div>
-                            <div class="flex flex-col">
-                                <span
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Exp</span
-                                >
-                                <span
-                                    class="geist-mono text-[12px] font-semibold text-zinc-600"
-                                    >12+ Years</span
-                                >
-                            </div>
-                        </div>
-                        <div
-                            class="flex items-center justify-end gap-4 md:col-span-3"
-                        >
-                            <div class="flex flex-col text-right">
-                                <span
-                                    class="text-[9px] font-bold tracking-wider text-zinc-400 uppercase"
-                                    >Added</span
-                                >
-                                <span
-                                    class="geist-mono text-[11px] font-medium text-zinc-400"
-                                    >3d ago</span
-                                >
-                            </div>
-                            <button
-                                class="material-symbols-outlined text-zinc-400 transition-colors hover:text-primary"
-                                data-icon="bookmark_border"
-                            >
-                                bookmark_border
-                            </button>
-                            <button
-                                class="material-symbols-outlined text-zinc-300 transition-colors group-hover:text-primary"
-                                data-icon="chevron_right"
-                            >
-                                chevron_right
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <!-- Pagination / Load More -->
-                <div
-                    class="flex flex-col items-center gap-4 border-t border-zinc-100 p-10"
-                >
-                    <button
-                        class="border border-zinc-200 px-10 py-2.5 text-[11px] font-black tracking-[0.2em] uppercase transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white active:scale-[0.98]"
-                    >
-                        Load Next Page
-                    </button>
-                    <p
-                        class="geist-mono text-[10px] tracking-widest text-zinc-400 uppercase"
-                    >
-                        Showing 15 of 142 Records
-                    </p>
-                </div>
-            </div>
-        </main>
-        <!-- Mobile Bottom Navigation Shell -->
-        <nav
-            class="fixed bottom-0 left-0 z-50 flex h-14 w-full items-center justify-around border-t border-zinc-100 bg-white px-4 md:hidden"
-        >
-            <button
-                class="flex flex-col items-center justify-center text-primary"
-            >
-                <span class="material-symbols-outlined" data-icon="search"
-                    >search</span
-                >
-                <span
-                    class="mt-1 font-sans text-[9px] font-bold tracking-widest uppercase"
-                    >Search</span
-                >
-            </button>
-            <button
-                class="flex flex-col items-center justify-center text-zinc-400"
-            >
-                <span class="material-symbols-outlined" data-icon="work_outline"
-                    >work_outline</span
-                >
-                <span
-                    class="mt-1 font-sans text-[9px] font-bold tracking-widest uppercase"
-                    >Jobs</span
-                >
-            </button>
-            <button
-                class="flex flex-col items-center justify-center text-zinc-400"
-            >
-                <span
-                    class="material-symbols-outlined"
-                    data-icon="bookmark_border"
-                    >bookmark_border</span
-                >
-                <span
-                    class="mt-1 font-sans text-[9px] font-bold tracking-widest uppercase"
-                    >Saved</span
-                >
-            </button>
-            <button
-                class="flex flex-col items-center justify-center text-zinc-400"
-            >
-                <span class="material-symbols-outlined" data-icon="person"
-                    >person</span
-                >
-                <span
-                    class="mt-1 font-sans text-[9px] font-bold tracking-widest uppercase"
-                    >Me</span
-                >
-            </button>
-        </nav>
-    </body>
-</html>
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background font-body text-on-background antialiased">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 shadow-sm dark:shadow-none bg-white">
+<div class="flex justify-between items-center px-8 h-16 max-w-[1440px] mx-auto"><div class="flex items-center gap-12">
+<span class="text-2xl font-bold tracking-tight text-primary font-display">Larasearch</span>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-primary font-semibold tracking-tight h-16 flex items-center border-b-2 border-primary" href="#">Explore</a>
+<a class="text-slate-500 font-semibold tracking-tight hover:text-primary transition-colors h-16 flex items-center" href="#">Bookmarks</a>
+<a class="text-slate-500 font-semibold tracking-tight hover:text-primary transition-colors h-16 flex items-center" href="#">Messages</a>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border border-slate-200">
+<img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAB98kpkLuAUTF_hQqlOvifDHYkafRT99MwCY2iAzkoTo-NYTtjpervNFzrK0cLrGAhpXptKt6Bp-3WxtpmGpytjYSDbn4ZmsaVYYjFD05LIls83ju_YTHZhDz2qMyqVdza_NKz5FcIsW_tdzBZASmY78EFgNzCfccnbD52coH3KPL6d2Ix_EOQw2yUJt055T3Q9KV6Gr_1c6dixY441ZFLFCYwX3qRpAle1qxBxVaRVN_E9w2GlBCKH2CNDCccrQkkW56Y18qjzWI"/>
+</div>
+</div></div>
+</nav>
+<main class="max-w-[1440px] mx-auto px-8 pt-24 pb-12 flex gap-8">
+<!-- Sidebar Navigation (Faceted Filters) -->
+<aside class="sticky top-24 w-72 h-[calc(100vh-8rem)] flex flex-col gap-4 p-6 bg-slate-50 rounded-3xl overflow-y-auto no-scrollbar">
+<header class="mb-4">
+<h2 class="text-lg font-bold text-slate-900 font-headline">Filters</h2>
+<p class="text-sm text-slate-500">Refine your match</p>
+</header>
+<!-- Keyword Search -->
+<section class="space-y-2">
+<label class="text-sm font-semibold text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">search</span> Keywords
+                </label>
+<input class="w-full bg-surface-container-lowest border-none rounded-2xl p-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none" placeholder="Design, Engineering..." type="text"/>
+</section>
+<!-- Location -->
+<section class="space-y-2">
+<label class="text-sm font-semibold text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">location_on</span> Location
+                </label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border-none rounded-2xl p-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none" placeholder="London, UK or Remote" type="text"/>
+</div>
+</section>
+<!-- Category -->
+<section class="space-y-2">
+<label class="text-sm font-semibold text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">category</span> Category
+                </label>
+<select class="w-full bg-surface-container-lowest border-none rounded-2xl p-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none appearance-none">
+<option>Product Design</option>
+<option>Software Development</option>
+<option>Marketing</option>
+</select>
+</section>
+<!-- Salary Range Slider -->
+<section class="space-y-4 pt-4 border-t border-slate-200">
+<div class="flex justify-between items-center">
+<label class="text-sm font-semibold text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">payments</span> Salary Range
+                    </label>
+</div>
+<div class="relative h-2 bg-slate-200 rounded-full">
+<div class="absolute left-1/4 right-1/4 h-full bg-primary rounded-full"></div>
+<div class="absolute left-1/4 -top-1.5 w-5 h-5 bg-white border-2 border-primary rounded-full shadow-md cursor-pointer"></div>
+<div class="absolute right-1/4 -top-1.5 w-5 h-5 bg-white border-2 border-primary rounded-full shadow-md cursor-pointer"></div>
+</div>
+<div class="flex justify-between text-xs font-bold text-primary">
+<span>$100k</span>
+<span>$180k</span>
+</div>
+</section>
+<!-- Work Model -->
+<section class="space-y-3 pt-4 border-t border-slate-200">
+<label class="text-sm font-semibold text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">work_outline</span> Work Model
+                </label>
+<div class="space-y-2">
+<label class="flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-3">
+<input checked="" class="w-5 h-5 rounded-lg border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-slate-700">Remote</span>
+</div>
+<span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">1,248</span>
+</label>
+<label class="flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-3">
+<input class="w-5 h-5 rounded-lg border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-slate-700">Hybrid</span>
+</div>
+<span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">842</span>
+</label>
+<label class="flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-3">
+<input class="w-5 h-5 rounded-lg border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-slate-700">Onsite</span>
+</div>
+<span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">132</span>
+</label>
+</div>
+</section>
+<!-- Experience -->
+<section class="space-y-3 pt-4 border-t border-slate-200">
+<label class="text-sm font-semibold text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">trending_up</span> Experience
+                </label>
+<div class="space-y-2">
+<label class="flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-3">
+<input class="w-5 h-5 rounded-lg border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-slate-700">Entry</span>
+</div>
+<span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">324</span>
+</label>
+<label class="flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-3">
+<input checked="" class="w-5 h-5 rounded-lg border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-slate-700">Mid</span>
+</div>
+<span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">1,102</span>
+</label>
+<label class="flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-3">
+<input checked="" class="w-5 h-5 rounded-lg border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-slate-700">Senior</span>
+</div>
+<span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">889</span>
+</label>
+</div>
+</section>
+<!-- Skills Tag Input -->
+<section class="space-y-3 pt-4 border-t border-slate-200">
+<label class="text-sm font-semibold text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">bolt</span> Skills
+                </label>
+<div class="flex flex-wrap gap-2 p-2 bg-surface-container-lowest rounded-2xl min-h-[44px]">
+<span class="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-lg">FIGMA <span class="material-symbols-outlined text-[10px] cursor-pointer">close</span></span>
+<span class="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-lg">REACT <span class="material-symbols-outlined text-[10px] cursor-pointer">close</span></span>
+<input class="flex-1 bg-transparent border-none p-0 text-xs focus:ring-0 w-20" placeholder="Add..." type="text"/>
+</div>
+</section>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 space-y-6">
+<!-- Toolbar -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-surface-container-low/50 p-6 rounded-3xl backdrop-blur-sm">
+<div class="space-y-2">
+<p class="text-sm font-medium text-slate-600">Showing <span class="text-slate-900 font-bold">1,248 jobs</span> for <span class="text-primary font-bold">Remote + Product Design</span></p>
+<div class="flex flex-wrap items-center gap-2">
+<span class="bg-slate-50 px-4 py-2 rounded-xl text-xs font-medium shadow-sm flex items-center gap-3 border border-slate-100/50">
+<span class="text-slate-500">Work Model:</span> <span class="text-slate-900 font-bold">Remote</span>
+<span class="material-symbols-outlined text-sm text-slate-400 hover:text-red-500 cursor-pointer transition-colors">close</span>
+</span>
+<span class="bg-slate-50 px-4 py-2 rounded-xl text-xs font-medium shadow-sm flex items-center gap-3 border border-slate-100/50">
+<span class="text-slate-500">Experience:</span> <span class="text-slate-900 font-bold">Mid-Senior</span>
+<span class="material-symbols-outlined text-sm text-slate-400 hover:text-red-500 cursor-pointer transition-colors">close</span>
+</span>
+<span class="bg-slate-50 px-4 py-2 rounded-xl text-xs font-medium shadow-sm flex items-center gap-3 border border-slate-100/50">
+<span class="text-slate-500">Location:</span> <span class="text-slate-900 font-bold">San Francisco, CA</span>
+<span class="material-symbols-outlined text-sm text-slate-400 hover:text-red-500 cursor-pointer transition-colors">close</span>
+</span>
+<button class="text-xs text-primary font-bold hover:underline ml-4">Clear all filters</button>
+</div>
+</div>
+<div class="flex items-center gap-4 self-end lg:self-center">
+<div class="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100">
+<span class="text-xs text-slate-500 font-medium">Sort by:</span>
+<select class="bg-transparent border-none p-0 text-xs font-bold focus:ring-0 cursor-pointer">
+<option>Most Relevant</option>
+<option>Newest</option>
+<option>Highest Salary</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Job Cards Grid -->
+<div class="grid grid-cols-1 gap-6">
+<!-- Job Card 1 (Active/Selected State) -->
+<article class="bg-blue-50 border-2 border-primary rounded-3xl p-8 relative hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+<div class="flex justify-between items-start mb-4">
+<div class="flex gap-4">
+<div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm p-3">
+<img alt="Company Logo" class="w-full h-full object-contain" data-alt="minimalist tech logo with geometric shapes and a vibrant electric blue color profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaT7uO8jtQlmuAlAafqv2IwoPVKk8sF6M__Q1msAz_qH2UzfSyc_jxcf3OYGhZ1CMX20yKdyw9uN6VOFesRiEbasvde-Lw2hhMSaKK_-P7mNxeFbwUibRaGUK2uGbdNCSDrxrkKbh78dr6_Go8f17iW5IzH9RWbnNr2_b5bZ3EgZrOzmPqVKWoJQXwzfZsTfhiXWK5hTkF2tV6WOPPtH_5jSlvLv3xxgBvY2llRHEhSeM7KPzk9qzUE9gX_75MPAR_psdd5NwWBiw"/>
+</div>
+<div>
+<div class="flex items-center gap-3">
+<h3 class="text-xl font-bold font-headline text-slate-900">Senior Product Designer</h3>
+<span class="bg-emerald-100 text-emerald-700 text-[10px] font-extrabold px-2 py-1 rounded-full uppercase tracking-wider">Actively hiring</span>
+</div>
+<p class="text-slate-600 font-medium">Stripe • London, UK (Remote)</p>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-primary shadow-sm hover:bg-primary hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-6 items-center mb-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">payments</span>
+<span class="text-sm font-bold text-primary">$140k - $190k</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-xl">trending_up</span>
+<span class="text-sm font-medium text-slate-600">6+ years exp.</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-xl">schedule</span>
+<span class="text-sm font-medium text-slate-500">2h ago</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex gap-2">
+<span class="px-3 py-1 bg-white rounded-lg text-xs font-semibold text-slate-600 border border-slate-100">Figma</span>
+<span class="px-3 py-1 bg-white rounded-lg text-xs font-semibold text-slate-600 border border-slate-100">Design Systems</span>
+<span class="px-3 py-1 bg-white rounded-lg text-xs font-semibold text-slate-600 border border-slate-100">+4</span>
+</div>
+<div class="flex items-center gap-4">
+<!-- Match Score -->
+<div class="flex items-center gap-2 px-3 py-1.5 bg-white/50 backdrop-blur-md rounded-xl">
+<div class="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-pulse"></div>
+<span class="text-xs font-bold text-slate-900">98% Match</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Job Card 2 -->
+<article class="bg-white rounded-3xl p-8 relative hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-slate-100">
+<div class="flex justify-between items-start mb-4">
+<div class="flex gap-4">
+<div class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center shadow-sm p-3 border border-slate-100">
+<img alt="Company Logo" class="w-full h-full object-contain" data-alt="modern corporate logo for a music streaming service with abstract soundwave patterns" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1u0C9tuwjY8VOXxxR3nKVRRsGqSXUOKPQ9kKqeO7NEx-AkASrY2EQyws117JBauvKTVancMK-lcD3-lXt1vwoay5jYQZkW4lFsktgasZDfup8h49eZHG4lDIvkU1LascOUNZ7NVhUPce80gp_TGoSBAjExhiXeV-o23QqJsnzkXfTjYSMv7kzuVJgo7vtI1hjEiAWnhsS0wixFBiMJtoBfyEPmlvsVWyQgSXlsNyKvLKOE3QQyCqMtrXDm1GwJO1rxEmDlsY4Dlw"/>
+</div>
+<div>
+<div class="flex items-center gap-3">
+<h3 class="text-xl font-bold font-headline text-slate-900">Lead UX Researcher</h3>
+<span class="bg-emerald-100 text-emerald-700 text-[10px] font-extrabold px-2 py-1 rounded-full uppercase tracking-wider">Actively hiring</span>
+</div>
+<p class="text-slate-600 font-medium">Spotify • Stockholm, SE (Hybrid)</p>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shadow-sm hover:bg-primary hover:text-white transition-colors border border-slate-100">
+<span class="material-symbols-outlined">bookmark</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-6 items-center mb-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">payments</span>
+<span class="text-sm font-bold text-primary">$120k - $165k</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-xl">trending_up</span>
+<span class="text-sm font-medium text-slate-600">8+ years exp.</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-xl">schedule</span>
+<span class="text-sm font-medium text-slate-500">5h ago</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex gap-2">
+<span class="px-3 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-600 border border-slate-100">User Testing</span>
+<span class="px-3 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-600 border border-slate-100">Data Analysis</span>
+<span class="px-3 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-600 border border-slate-100">+2</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl">
+<span class="text-xs font-bold text-slate-900">92% Match</span>
+</div>
+</div>
+</article>
+<!-- Job Card 3 -->
+<article class="bg-white rounded-3xl p-8 relative hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-slate-100">
+<div class="flex justify-between items-start mb-4">
+<div class="flex gap-4">
+<div class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center shadow-sm p-3 border border-slate-100">
+<img alt="Company Logo" class="w-full h-full object-contain" data-alt="sleek dark-themed mobile application icon representing a fintech startup with gold accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTrH_AxmIS9A1wrmUYItaONiCVKX5E8XJkAKcQEmZ_NOUqbL0oHUC6jdzk4xs95cUqc8Fis_0bnaKw2I79mkcNgIAn7OhlIKmTCajjgxNz03DDlciPIUJ1i4vW-9CwTKAMcytf4zmOTkCAqtnNiPfUxMMYL-QL-O8m-jcP3OW82QbScUZTo7PMwP3o5TIz2wY7diCVVhuOVOHdY-PEfDmDYdgbg139PlZMt1gxGOBMyZurot14GhZXjUW8Cd2d9B3WZU2HESWD2nc"/>
+</div>
+<div>
+<div class="flex items-center gap-3">
+<h3 class="text-xl font-bold font-headline text-slate-900">Staff Product Designer</h3>
+</div>
+<p class="text-slate-600 font-medium">Revolut • New York, NY (Onsite)</p>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shadow-sm hover:bg-primary hover:text-white transition-colors border border-slate-100">
+<span class="material-symbols-outlined">bookmark</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-6 items-center mb-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">payments</span>
+<span class="text-sm font-bold text-primary">$180k - $240k</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-xl">trending_up</span>
+<span class="text-sm font-medium text-slate-600">10+ years exp.</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-xl">schedule</span>
+<span class="text-sm font-medium text-slate-500">1d ago</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex gap-2">
+<span class="px-3 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-600 border border-slate-100">Fintech</span>
+<span class="px-3 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-600 border border-slate-100">Leadership</span>
+<span class="px-3 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-600 border border-slate-100">+5</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl">
+<span class="text-xs font-bold text-slate-900">85% Match</span>
+</div>
+</div>
+</article>
+</div>
+<!-- Pagination -->
+<nav class="flex items-center justify-center gap-2 pt-8 bg-white">
+<button class="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all shadow-sm">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center font-bold shadow-lg shadow-primary/20">1</button>
+<button class="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">2</button>
+<button class="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">3</button>
+<span class="text-slate-300 mx-2">...</span>
+<button class="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">12</button>
+<button class="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all shadow-sm">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</nav>
+</div>
+</main>
+<!-- Floating Action Button (FAB) - For Discovery Screen -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-white rounded-2xl shadow-xl flex items-center justify-center active:scale-90 transition-transform duration-150 z-50">
+<span class="material-symbols-outlined">bolt</span>
+</button>
+</body></html>

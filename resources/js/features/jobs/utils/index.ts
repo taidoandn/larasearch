@@ -1,13 +1,7 @@
-import type { JobFacetItem } from '@/features/jobs/types';
 import { formatDisplayDate, formatDisplayDateTime } from '@/lib/formatters';
-export { compactJobSearchQuery } from './search-query';
+export { buildJobSearchUrl, compactJobSearchQuery } from './search-query';
 
-export const sectionLabelClassName =
-    'text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-400 dark:text-zinc-500';
-
-export function getFacetLabel(item: JobFacetItem): string {
-    return item.label?.trim() || item.value;
-}
+export const sectionLabelClassName = 'text-sm font-semibold';
 
 export function formatSlugLabel(value: string): string {
     return value
@@ -18,10 +12,7 @@ export function formatSlugLabel(value: string): string {
         .join(' ');
 }
 
-export function formatJobTypeLabel(
-    value: string | null | undefined,
-    fallback = 'Unknown',
-): string {
+export function formatJobTypeLabel(value: string | null | undefined, fallback = 'Unknown'): string {
     return formatEnumLabel(value, fallback);
 }
 
@@ -50,7 +41,7 @@ export function formatSalaryRange({
     currency: string | null;
     is_visible: boolean;
 }): string {
-    if (! is_visible || (min === null && max === null)) {
+    if (!is_visible || (min === null && max === null)) {
         return 'Comp undisclosed';
     }
 
@@ -73,10 +64,7 @@ export function formatSalaryRange({
 
 export { formatDisplayDate, formatDisplayDateTime };
 
-function formatEnumLabel(
-    value: string | null | undefined,
-    fallback: string,
-): string {
+function formatEnumLabel(value: string | null | undefined, fallback: string): string {
     if (value === null || value === undefined || value.trim() === '') {
         return fallback;
     }

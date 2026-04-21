@@ -1,48 +1,33 @@
-# Detail Panel Current Spec
+# Job Summary Sheet Specification
+
+This screen must follow the canonical design system in [../DESIGN.md](../DESIGN.md). If any guidance here conflicts with the parent document, the parent document wins.
 
 ## Purpose
 
-The detail panel is no longer a permanent split column. It is now a reusable summary sheet that can be opened from any results row across desktop, tablet, and mobile.
+The summary sheet is a high-speed comparison panel opened from the jobs index. It should help the user assess fit without leaving the search flow.
 
-## Current Interaction Model
+## Structure
 
-- Opens from row selection on the Search Results screen.
-- Implemented with the existing shadcn `Sheet` component.
-- Closing the sheet clears the selected row on the results page.
-- Content swaps instantly when another job is selected.
-- "View Full Details" routes to the dedicated job detail page instead of changing local page mode.
-
-## Content Blocks
-
-- Eyebrow label: `Job Overview`
-- Job title and company block
-- Two-column summary metrics grid
-- Short role description
-- Core proficiencies tag group
-- Primary apply action
-- Secondary full-details link action
-- Bottom visual/location block
-
-## Component Structure
-
-- `resources/js/features/jobs/components/job-summary-sheet.tsx`
-  Hosts both the `Sheet` wrapper and the summary content.
-- `resources/js/features/jobs/components/highlighted-text.tsx`
-  Shared text highlighting helper for list and detail surfaces.
+- Use a right-side panel with generous padding and clear internal grouping.
+- Start with company identity and primary actions at the top.
+- Follow with title, key role chips, match score block, technical requirements, location/context, and the deep-link CTA.
 
 ## Visual Rules
 
-- Use the same editorial, high-precision style as the results list.
-- Keep the panel background lighter than the app shell but not shadow-heavy.
-- Maintain sharp corners and subdued separators.
-- Action styling should stay aligned with the indigo Larasearch language.
+- The panel should feel connected to the jobs index, not like a separate modal universe.
+- Keep surfaces soft and bright, with the same primary blue accent system as the index.
+- Avoid dense walls of text; favor short blocks and grouped callouts.
+- The match score should be a featured visual component.
+- Technical requirements should render as pills or micro-cards.
+- Location/map treatment should feel atmospheric and supportive, not overly literal.
 
-## Responsive Rules
+## Actions
 
-- Desktop: right sheet overlay.
-- Tablet: right sheet overlay.
-- Mobile: right sheet overlay.
+- `Apply` is the primary action.
+- `Save` is secondary.
+- `View Full Position Details` is the clear escape hatch into the full detail page.
 
-## Out Of Scope
+## Constraints
 
-- No apply flow persistence.
+- Keep the panel narrow enough to preserve the context of the underlying list on desktop.
+- Do not rely on deep nested sections or divider-heavy composition.

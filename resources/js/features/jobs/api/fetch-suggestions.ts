@@ -1,7 +1,7 @@
 import type { JobSuggestionItem } from '@/features/jobs/types';
 import { suggest as jobsSuggest } from '@/routes/jobs';
 
-export async function fetchJobSuggestions(
+export async function fetchSuggestions(
     keyword: string,
     signal: AbortSignal,
 ): Promise<JobSuggestionItem[]> {

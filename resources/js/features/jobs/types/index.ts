@@ -1,11 +1,11 @@
 export type JobSearchQuery = Partial<{
     q: string;
-    location: string;
-    category: string;
+    location: string[];
+    category: string[];
     skills: string[];
-    job_type: string;
-    work_model: string;
-    experience_level: string;
+    job_type: string[];
+    work_model: string[];
+    experience_level: string[];
     salary_min: number;
     salary_max: number;
     sort: string;
@@ -15,12 +15,12 @@ export type JobSearchQuery = Partial<{
 
 export type JobFilters = {
     q: string;
-    location: string;
-    category: string;
+    location: string[];
+    category: string[];
     skills: string[];
-    job_type: string;
-    work_model: string;
-    experience_level: string;
+    job_type: string[];
+    work_model: string[];
+    experience_level: string[];
     salary_min: number | null;
     salary_max: number | null;
     sort: string;
@@ -48,6 +48,7 @@ export type JobResultItem = {
     company: {
         name: string | null;
         slug: string | null;
+        logo_url: string | null;
         website: string | null;
     };
     primary_location: string | null;
@@ -60,8 +61,11 @@ export type JobResultItem = {
         is_visible: boolean;
     };
     job_type: string | null;
+    job_type_label?: string | null;
     work_model: string | null;
+    work_model_label?: string | null;
     experience_level: string | null;
+    experience_level_label?: string | null;
     published_at: string | null;
     highlight: {
         title: string | null;
@@ -82,14 +86,24 @@ export type JobDetailItem = {
     company: {
         name: string;
         slug: string;
+        logo_url: string | null;
         summary: string;
         meta: string;
         website: string | null;
+        industry: string | null;
+        company_size: string | null;
+        founded_year: number | null;
+        is_verified: boolean;
     };
     locations: string[];
     primary_location: string | null;
     work_model: string | null;
+    work_model_label?: string | null;
+    experience_level: string | null;
+    experience_level_label?: string | null;
     job_type: string | null;
+    job_type_label?: string | null;
+    benefits: string[];
     salary: {
         min: number | null;
         max: number | null;

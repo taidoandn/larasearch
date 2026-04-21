@@ -115,6 +115,10 @@ class JobListing extends Model
         $locationKey = $this->primaryLocation?->city_name === null
             ? null
             : Str::slug($this->primaryLocation->city_name);
+        $categorySlugs = $this->categories->pluck('slug')->values()->all();
+        $categoryNames = $this->categories->pluck('name')->values()->all();
+        $skillSlugs = $this->skills->pluck('slug')->values()->all();
+        $skillNames = $this->skills->pluck('name')->values()->all();
 
         return [
             'id' => $this->getKey(),
@@ -125,14 +129,15 @@ class JobListing extends Model
             'application_url' => $this->application_url,
             'company_name' => $this->company?->name,
             'company_slug' => $this->company?->slug,
+            'company_logo_url' => $this->company?->logo_url,
             'company_website' => $this->company?->website_url,
             'location_slugs' => $locationKey === null ? [] : [$locationKey],
             'location_labels' => $locationLabel === null ? [] : [$locationLabel],
-            'category_slugs' => $this->categories->pluck('slug')->values()->all(),
-            'category_names' => $this->categories->pluck('name')->values()->all(),
-            'skill_slugs' => $this->skills->pluck('slug')->values()->all(),
-            'skills' => $this->skills->pluck('name')->values()->all(),
-            'skills_text' => $this->skills->pluck('name')->implode(' '),
+            'category_slugs' => $categorySlugs,
+            'category_names' => $categoryNames,
+            'skill_slugs' => $skillSlugs,
+            'skills' => $skillNames,
+            'skills_text' => implode(' ', $skillNames),
             'job_type' => $this->job_type?->value,
             'work_model' => $this->work_model?->value,
             'experience_level' => $this->experience_level?->value,

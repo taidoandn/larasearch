@@ -3,11 +3,17 @@
 namespace App\Services;
 
 use App\Contracts\SearchServiceInterface;
+use App\Enums\ExperienceLevel;
+use App\Enums\JobType;
+use App\Enums\WorkModel;
 use App\Models\JobListing;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class ElasticsearchSearchService implements SearchServiceInterface
 {
+    protected const int FACET_BUCKET_LIMIT = 1000;
+
     public function __construct(
         private readonly ElasticsearchClient $client,
     ) {}
@@ -18,79 +24,62 @@ class ElasticsearchSearchService implements SearchServiceInterface
         $page = max(1, (int) ($params['page'] ?? 1));
         $perPage = min(50, max(1, (int) ($params['per_page'] ?? 20)));
         $sort = (string) ($params['sort'] ?? 'best_match');
-        $location = $this->normalizeLocation($params['location'] ?? null);
+        $locations = $this->normalizeLocations($params['location'] ?? null);
+        $visibilityFilters = $this->visibilityFilters();
+        $salaryFilters = $this->salaryFilters($params);
+        $skillFilters = $this->skillFilters($params);
+        $locationFilter = $this->locationFilter($locations);
+        $categoryFilter = $this->anyTermsFilter('category_slugs', $params['category'] ?? null);
+        $jobTypeFilter = $this->anyTermsFilter('job_type', $params['job_type'] ?? null);
+        $workModelFilter = $this->anyTermsFilter('work_model', $params['work_model'] ?? null);
+        $experienceLevelFilter = $this->anyTermsFilter('experience_level', $params['experience_level'] ?? null);
+        $resultFilters = array_values(array_filter([
+            ...$visibilityFilters,
+            ...$salaryFilters,
+            ...$skillFilters,
+            $locationFilter,
+            $categoryFilter,
+            $jobTypeFilter,
+            $workModelFilter,
+            $experienceLevelFilter,
+        ]));
 
         $response = $this->client->search($this->alias(), [
             'from' => ($page - 1) * $perPage,
             'size' => $perPage,
             'sort' => $this->sortClause($sort),
-            'query' => [
-                'function_score' => [
-                    'query' => [
-                        'bool' => [
-                            'must' => $query === ''
-                                ? [['match_all' => (object) []]]
-                                : [[
-                                    'multi_match' => [
-                                        'query' => $query,
-                                        'fields' => [
-                                            'title^3',
-                                            'skills_text^2',
-                                            'company_name^2',
-                                            'description',
-                                        ],
-                                    ],
-                                ]],
-                            'filter' => array_values(array_filter([
-                                ['term' => ['is_active' => true]],
-                                ['range' => ['published_at' => ['lte' => 'now']]],
-                                [
-                                    'bool' => [
-                                        'should' => [
-                                            ['bool' => ['must_not' => [['exists' => ['field' => 'expires_at']]]]],
-                                            ['range' => ['expires_at' => ['gt' => 'now']]],
-                                        ],
-                                        'minimum_should_match' => 1,
-                                    ],
-                                ],
-                                $this->locationFilter($params['location'] ?? null, $location),
-                                $this->termFilter('category_slugs', $params['category'] ?? null),
-                                ...$this->allSkillsFilters($params['skills'] ?? null),
-                                $this->termFilter('job_type', $params['job_type'] ?? null),
-                                $this->termFilter('work_model', $params['work_model'] ?? null),
-                                $this->termFilter('experience_level', $params['experience_level'] ?? null),
-                                $this->minimumSalaryFilter($params['salary_min'] ?? null),
-                                $this->maximumSalaryFilter($params['salary_max'] ?? null),
-                            ])),
-                        ],
-                    ],
-                    'functions' => [
-                        [
-                            'filter' => [
-                                'term' => [
-                                    'is_featured' => true,
-                                ],
-                            ],
-                            'weight' => 1.5,
-                        ],
-                        [
-                            'exp' => [
-                                'published_at' => [
-                                    'scale' => '7d',
-                                    'decay' => 0.5,
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
+            'query' => $this->searchQuery($query, $sort, $resultFilters),
             'aggs' => [
-                'locations' => $this->facetAggregation('location_slugs', 'location_labels'),
-                'categories' => $this->facetAggregation('category_slugs', 'category_names'),
-                'skills' => $this->facetAggregation('skill_slugs', 'skills'),
-                'job_types' => ['terms' => ['field' => 'job_type', 'size' => 10]],
-                'work_models' => ['terms' => ['field' => 'work_model', 'size' => 10]],
-                'experience_levels' => ['terms' => ['field' => 'experience_level', 'size' => 10]],
+                'locations' => $this->scopedFacetAggregation(
+                    $query,
+                    [...$visibilityFilters, ...$salaryFilters, ...$skillFilters, $categoryFilter, $jobTypeFilter, $workModelFilter, $experienceLevelFilter],
+                    $this->facetAggregation('location_slugs', 'location_labels'),
+                ),
+                'categories' => $this->scopedFacetAggregation(
+                    $query,
+                    [...$visibilityFilters, ...$salaryFilters, ...$skillFilters, $locationFilter, $jobTypeFilter, $workModelFilter, $experienceLevelFilter],
+                    $this->facetAggregation('category_slugs', 'category_names'),
+                ),
+                'skills' => $this->scopedFacetAggregation(
+                    $query,
+                    [...$visibilityFilters, ...$salaryFilters, $locationFilter, $categoryFilter, $jobTypeFilter, $workModelFilter, $experienceLevelFilter],
+                    $this->facetAggregation('skill_slugs', 'skills'),
+                ),
+                'job_types' => $this->scopedFacetAggregation(
+                    $query,
+                    [...$visibilityFilters, ...$salaryFilters, ...$skillFilters, $locationFilter, $categoryFilter, $workModelFilter, $experienceLevelFilter],
+                    $this->termsAggregation('job_type'),
+                ),
+                'work_models' => $this->scopedFacetAggregation(
+                    $query,
+                    [...$visibilityFilters, ...$salaryFilters, ...$skillFilters, $locationFilter, $categoryFilter, $jobTypeFilter, $experienceLevelFilter],
+                    $this->termsAggregation('work_model'),
+                ),
+                'experience_levels' => $this->scopedFacetAggregation(
+                    $query,
+                    [...$visibilityFilters, ...$salaryFilters, ...$skillFilters, $locationFilter, $categoryFilter, $jobTypeFilter, $workModelFilter],
+                    $this->termsAggregation('experience_level'),
+                ),
             ],
             'highlight' => [
                 'fields' => [
@@ -143,6 +132,60 @@ class ElasticsearchSearchService implements SearchServiceInterface
     }
 
     /**
+     * @param  array<int, array<string, mixed>>  $baseFilters
+     * @return array<string, mixed>
+     */
+    protected function searchQuery(string $query, string $sort, array $baseFilters): array
+    {
+        $baseQuery = [
+            'bool' => [
+                'must' => $query === ''
+                    ? [['match_all' => (object) []]]
+                    : [[
+                        'multi_match' => [
+                            'query' => $query,
+                            'fields' => [
+                                'title^3',
+                                'skills_text^2',
+                                'company_name^2',
+                                'description',
+                            ],
+                        ],
+                    ]],
+                'filter' => $baseFilters,
+            ],
+        ];
+
+        if ($sort !== 'best_match') {
+            return $baseQuery;
+        }
+
+        return [
+            'function_score' => [
+                'query' => $baseQuery,
+                'functions' => [
+                    [
+                        'filter' => [
+                            'term' => [
+                                'is_featured' => true,
+                            ],
+                        ],
+                        'weight' => 1.5,
+                    ],
+                    [
+                        'exp' => [
+                            'published_at' => [
+                                'scale' => '7d',
+                                'decay' => 0.5,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
      * @param  array<string, mixed>  $response
      * @return array<string, mixed>
      */
@@ -192,6 +235,7 @@ class ElasticsearchSearchService implements SearchServiceInterface
             'company' => [
                 'name' => $source['company_name'] ?? null,
                 'slug' => $source['company_slug'] ?? null,
+                'logo_url' => $source['company_logo_url'] ?? null,
                 'website' => $source['company_website'] ?? null,
             ],
             'primary_location' => $locationLabels[0] ?? null,
@@ -204,8 +248,11 @@ class ElasticsearchSearchService implements SearchServiceInterface
                 'is_visible' => (bool) ($source['salary_is_visible'] ?? false),
             ],
             'job_type' => $source['job_type'] ?? null,
+            'job_type_label' => JobType::tryFrom((string) ($source['job_type'] ?? ''))?->label(),
             'work_model' => $source['work_model'] ?? null,
+            'work_model_label' => WorkModel::tryFrom((string) ($source['work_model'] ?? ''))?->label(),
             'experience_level' => $source['experience_level'] ?? null,
+            'experience_level_label' => ExperienceLevel::tryFrom((string) ($source['experience_level'] ?? ''))?->label(),
             'published_at' => $source['published_at'] ?? null,
             'highlight' => [
                 'title' => $this->firstString(data_get($hit, 'highlight.title', [])),
@@ -222,23 +269,23 @@ class ElasticsearchSearchService implements SearchServiceInterface
     {
         return [
             'locations' => $this->bucketFacet(
-                $aggregations['locations']['buckets'] ?? [],
+                $this->facetBuckets($aggregations, 'locations'),
                 'location_labels',
                 'location_slugs',
             ),
             'categories' => $this->bucketFacet(
-                $aggregations['categories']['buckets'] ?? [],
+                $this->facetBuckets($aggregations, 'categories'),
                 'category_names',
                 'category_slugs',
             ),
             'skills' => $this->bucketFacet(
-                $aggregations['skills']['buckets'] ?? [],
+                $this->facetBuckets($aggregations, 'skills'),
                 'skills',
                 'skill_slugs',
             ),
-            'job_types' => $this->bucketFacet($aggregations['job_types']['buckets'] ?? []),
-            'work_models' => $this->bucketFacet($aggregations['work_models']['buckets'] ?? []),
-            'experience_levels' => $this->bucketFacet($aggregations['experience_levels']['buckets'] ?? []),
+            'job_types' => $this->bucketFacet($this->facetBuckets($aggregations, 'job_types')),
+            'work_models' => $this->bucketFacet($this->facetBuckets($aggregations, 'work_models')),
+            'experience_levels' => $this->bucketFacet($this->facetBuckets($aggregations, 'experience_levels')),
         ];
     }
 
@@ -269,7 +316,7 @@ class ElasticsearchSearchService implements SearchServiceInterface
         return [
             'terms' => [
                 'field' => $field,
-                'size' => 10,
+                'size' => self::FACET_BUCKET_LIMIT,
             ],
             'aggs' => [
                 'label' => [
@@ -278,6 +325,145 @@ class ElasticsearchSearchService implements SearchServiceInterface
                         'size' => 1,
                     ],
                 ],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function termsAggregation(string $field): array
+    {
+        return [
+            'terms' => [
+                'field' => $field,
+                'size' => self::FACET_BUCKET_LIMIT,
+            ],
+        ];
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>|null>  $filters
+     * @param  array<string, mixed>  $aggregation
+     * @return array<string, mixed>
+     */
+    protected function scopedFacetAggregation(string $query, array $filters, array $aggregation): array
+    {
+        return [
+            'global' => (object) [],
+            'aggs' => [
+                'scope' => [
+                    'filter' => $this->facetScopeQuery($query, $filters),
+                    'aggs' => [
+                        'values' => $aggregation,
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>|null>  $filters
+     * @return array<string, mixed>
+     */
+    protected function facetScopeQuery(string $query, array $filters): array
+    {
+        return [
+            'bool' => [
+                'must' => $query === ''
+                    ? [['match_all' => (object) []]]
+                    : [[
+                        'multi_match' => [
+                            'query' => $query,
+                            'fields' => [
+                                'title^3',
+                                'skills_text^2',
+                                'company_name^2',
+                                'description',
+                            ],
+                        ],
+                    ]],
+                'filter' => array_values(array_filter($filters)),
+            ],
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $aggregations
+     * @return array<int, array<string, mixed>>
+     */
+    protected function facetBuckets(array $aggregations, string $name): array
+    {
+        /** @var array<int, array<string, mixed>> $buckets */
+        $buckets = $aggregations[$name]['scope']['values']['buckets']
+            ?? $aggregations[$name]['scope']['aggs']['values']['buckets']
+            ?? $aggregations[$name]['aggs']['scope']['aggs']['values']['buckets']
+            ?? $aggregations[$name]['aggs']['scope']['values']['buckets']
+            ?? $aggregations[$name]['aggs']['values']['buckets']
+            ?? $aggregations[$name]['values']['buckets']
+            ?? $aggregations[$name]['buckets']
+            ?? [];
+
+        return $buckets;
+    }
+
+    /**
+     * @param  array<string, mixed>  $params
+     * @return array<int, array<string, mixed>>
+     */
+    protected function visibilityFilters(): array
+    {
+        return [
+            ['term' => ['is_active' => true]],
+            ['range' => ['published_at' => ['lte' => 'now']]],
+            [
+                'bool' => [
+                    'should' => [
+                        ['bool' => ['must_not' => [['exists' => ['field' => 'expires_at']]]]],
+                        ['range' => ['expires_at' => ['gt' => 'now']]],
+                    ],
+                    'minimum_should_match' => 1,
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $params
+     * @return array<int, array<string, mixed>>
+     */
+    protected function skillFilters(array $params): array
+    {
+        return $this->allSkillsFilters($params['skills'] ?? null);
+    }
+
+    /**
+     * @param  array<string, mixed>  $params
+     * @return array<int, array<string, mixed>>
+     */
+    protected function salaryFilters(array $params): array
+    {
+        return array_values(array_filter([
+            $this->minimumSalaryFilter($params['salary_min'] ?? null),
+            $this->maximumSalaryFilter($params['salary_max'] ?? null),
+        ]));
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>|null>  $filters
+     * @return array<string, mixed>
+     */
+    protected function booleanFilter(array $filters): array
+    {
+        $normalizedFilters = array_values(array_filter($filters));
+
+        if ($normalizedFilters === []) {
+            return ['match_all' => (object) []];
+        }
+
+        return [
+            'bool' => [
+                'filter' => $normalizedFilters,
             ],
         ];
     }
@@ -309,17 +495,27 @@ class ElasticsearchSearchService implements SearchServiceInterface
     }
 
     /**
-     * @return array<string, array<string, mixed>>|null
+     * @return array<string, mixed>|null
      */
-    protected function termFilter(string $field, mixed $value): ?array
+    protected function anyTermsFilter(string $field, mixed $values): ?array
     {
-        if ($value === null || $value === '') {
+        $normalizedValues = collect(Arr::wrap($values))
+            ->map(fn (mixed $value): string => trim((string) $value))
+            ->filter(fn (string $value): bool => $value !== '')
+            ->values()
+            ->all();
+
+        if ($normalizedValues === []) {
             return null;
         }
 
         return [
-            'term' => [
-                $field => $value,
+            'bool' => [
+                'should' => array_values(array_map(
+                    fn (string $value): array => ['term' => [$field => $value]],
+                    $normalizedValues,
+                )),
+                'minimum_should_match' => 1,
             ],
         ];
     }
@@ -329,14 +525,12 @@ class ElasticsearchSearchService implements SearchServiceInterface
      */
     protected function allSkillsFilters(mixed $values): array
     {
-        if (! is_array($values) || $values === []) {
-            return [];
-        }
-
-        return array_values(array_map(
-            fn (mixed $value): array => ['term' => ['skill_slugs' => (string) $value]],
-            $values,
-        ));
+        return collect(Arr::wrap($values))
+            ->map(fn (mixed $value): string => trim((string) $value))
+            ->filter(fn (string $value): bool => $value !== '')
+            ->map(fn (string $value): array => ['term' => ['skill_slugs' => $value]])
+            ->values()
+            ->all();
     }
 
     /**
@@ -433,47 +627,40 @@ class ElasticsearchSearchService implements SearchServiceInterface
     /**
      * @return array<string, mixed>|null
      */
-    protected function locationFilter(mixed $rawLocation, ?string $normalizedLocation): ?array
+    protected function locationFilter(array $locations): ?array
     {
-        if ($rawLocation === null || trim((string) $rawLocation) === '') {
+        if ($locations === []) {
             return null;
         }
 
-        if ($normalizedLocation === null || $normalizedLocation === '') {
-            return ['match_none' => (object) []];
-        }
-
-        $rawLocationValue = trim((string) $rawLocation);
-
         return [
             'bool' => [
-                'should' => [
-                    [
+                'should' => array_values(array_map(
+                    fn (string $location): array => [
                         'term' => [
-                            'location_slugs' => $normalizedLocation,
+                            'location_slugs' => $location,
                         ],
                     ],
-                    [
-                        'wildcard' => [
-                            'location_labels' => [
-                                'value' => '*'.$rawLocationValue.'*',
-                                'case_insensitive' => true,
-                            ],
-                        ],
-                    ],
-                ],
+                    $locations,
+                )),
                 'minimum_should_match' => 1,
             ],
         ];
     }
 
-    protected function normalizeLocation(mixed $value): ?string
+    /**
+     * @return array<int, string>
+     */
+    protected function normalizeLocations(mixed $value): array
     {
-        if ($value === null || trim((string) $value) === '') {
-            return null;
-        }
-
-        return Str::slug(trim((string) $value));
+        return collect(Arr::wrap($value))
+            ->map(fn (mixed $item): string => trim((string) $item))
+            ->filter(fn (string $item): bool => $item !== '')
+            ->map(fn (string $item): string => Str::slug($item))
+            ->filter(fn (string $item): bool => $item !== '')
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**

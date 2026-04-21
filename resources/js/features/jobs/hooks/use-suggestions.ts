@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { fetchJobSuggestions } from '@/features/jobs/api/fetch-job-suggestions';
+import { fetchSuggestions } from '@/features/jobs/api';
 import type { JobSuggestionItem } from '@/features/jobs/types';
 
 const minimumSuggestionKeywordLength = 2;
 const suggestionDebounceDelay = 180;
 
-export function useJobSuggestions(keyword: string) {
+export function useSuggestions(keyword: string) {
     const [suggestions, setSuggestions] = useState<JobSuggestionItem[]>([]);
     const [isSuggesting, setIsSuggesting] = useState(false);
     const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
@@ -31,7 +31,7 @@ export function useJobSuggestions(keyword: string) {
             setIsSuggesting(true);
 
             try {
-                const items = await fetchJobSuggestions(normalizedKeyword, controller.signal);
+                const items = await fetchSuggestions(normalizedKeyword, controller.signal);
 
                 if (requestVersion !== suggestionRequestVersion.current) {
                     return;

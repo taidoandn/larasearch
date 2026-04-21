@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Collection;
-
 class JobSuggestService
 {
     protected const int MAX_SUGGESTIONS = 5;
@@ -60,46 +58,70 @@ class JobSuggestService
         ]);
 
         return [
-            'items' => collect((array) data_get($response, 'hits.hits', []))
-                ->flatMap(fn (array $hit): Collection => $this->mapSuggestionHit($hit, $keyword))
-                ->unique(fn (array $item): string => "{$item['type']}:{$item['label']}")
-                ->take(self::MAX_SUGGESTIONS)
-                ->values()
-                ->all(),
+            'items' => $this->collectSuggestions((array) data_get($response, 'hits.hits', []), $keyword),
         ];
     }
 
     /**
-     * @param  array<string, mixed>  $hit
-     * @return Collection<int, array{label: string, type: string}>
+     * @param  array<int, array<string, mixed>>  $hits
+     * @return array<int, array{label: string, type: string}>
      */
-    protected function mapSuggestionHit(array $hit, string $keyword): Collection
+    protected function collectSuggestions(array $hits, string $keyword): array
+    {
+        $normalizedKeyword = mb_strtolower($keyword);
+        $items = [];
+        $seen = [];
+
+        foreach ($hits as $hit) {
+            foreach ($this->mapSuggestionHit($hit, $normalizedKeyword) as $item) {
+                $key = "{$item['type']}:{$item['label']}";
+
+                if (array_key_exists($key, $seen)) {
+                    continue;
+                }
+
+                $seen[$key] = true;
+                $items[] = $item;
+
+                if (count($items) === self::MAX_SUGGESTIONS) {
+                    return $items;
+                }
+            }
+        }
+
+        return $items;
+    }
+
+    /**
+     * @param  array<string, mixed>  $hit
+     * @return array<int, array{label: string, type: string}>
+     */
+    protected function mapSuggestionHit(array $hit, string $normalizedKeyword): array
     {
         $source = (array) ($hit['_source'] ?? []);
-        $normalizedKeyword = mb_strtolower($keyword);
-        $items = collect();
+        $items = [];
 
         if (filled($source['title'] ?? null) && $this->matchesKeyword((string) $source['title'], $normalizedKeyword)) {
-            $items->push([
+            $items[] = [
                 'label' => (string) $source['title'],
                 'type' => 'job_title',
-            ]);
+            ];
         }
 
         foreach ((array) ($source['skills'] ?? []) as $skill) {
             if (is_string($skill) && $skill !== '' && $this->matchesKeyword($skill, $normalizedKeyword)) {
-                $items->push([
+                $items[] = [
                     'label' => $skill,
                     'type' => 'skill',
-                ]);
+                ];
             }
         }
 
         if (filled($source['company_name'] ?? null) && $this->matchesKeyword((string) $source['company_name'], $normalizedKeyword)) {
-            $items->push([
+            $items[] = [
                 'label' => (string) $source['company_name'],
                 'type' => 'company',
-            ]);
+            ];
         }
 
         return $items;
@@ -113,9 +135,13 @@ class JobSuggestService
             return true;
         }
 
-        return collect(preg_split('/[^[:alnum:]]+/u', $normalizedValue) ?: [])
-            ->filter()
-            ->contains(fn (string $token): bool => $this->tokenMatchesKeyword($token, $normalizedKeyword));
+        foreach (preg_split('/[^[:alnum:]]+/u', $normalizedValue) ?: [] as $token) {
+            if ($token !== '' && $this->tokenMatchesKeyword($token, $normalizedKeyword)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function tokenMatchesKeyword(string $token, string $normalizedKeyword): bool
