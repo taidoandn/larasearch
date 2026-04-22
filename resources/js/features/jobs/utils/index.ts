@@ -1,4 +1,6 @@
 import { formatDisplayDate, formatDisplayDateTime } from '@/lib/formatters';
+export { getNextDropdownFacetState } from './dropdown-facet-state';
+export { buildFacetChecklistOptions } from './filter-options';
 export { buildJobSearchUrl, compactJobSearchQuery } from './search-query';
 
 export const sectionLabelClassName = 'text-sm font-semibold';

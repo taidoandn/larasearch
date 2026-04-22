@@ -1,6 +1,5 @@
-import type { JobFacetItem } from '@/features/jobs/types';
+import type { JobFacetItem, MultiSelectOption } from '@/features/jobs/types';
 import { formatSlugLabel } from '@/features/jobs/utils';
-import type { MultiSelectOption } from './filter-fields';
 
 export function buildFacetChecklistOptions(
     items: JobFacetItem[],

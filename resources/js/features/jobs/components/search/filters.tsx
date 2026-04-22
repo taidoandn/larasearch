@@ -2,12 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSuggestions } from '@/features/jobs/hooks';
 import type { JobFilters as JobFiltersState, JobResultsPayload } from '@/features/jobs/types';
 import {
+    buildFacetChecklistOptions,
     formatExperienceLevelLabel,
     formatJobTypeLabel,
     formatWorkModelLabel,
 } from '@/features/jobs/utils';
 import { DropdownFacetFilterField, SalaryRangeField, TextFilterField } from './filter-fields';
-import { buildFacetChecklistOptions } from './filter-options';
 
 type JobsFilterProps = {
     filters: JobFiltersState;

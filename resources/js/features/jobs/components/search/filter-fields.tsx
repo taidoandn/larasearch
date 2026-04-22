@@ -9,17 +9,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import type { JobSuggestionItem } from '@/features/jobs/types';
-import { sectionLabelClassName } from '@/features/jobs/utils';
+import type { JobSuggestionItem, MultiSelectOption } from '@/features/jobs/types';
+import { getNextDropdownFacetState, sectionLabelClassName } from '@/features/jobs/utils';
 import { cn } from '@/lib/utils';
-import { getNextDropdownFacetState } from './dropdown-facet-state';
-
-export type MultiSelectOption = {
-    label: string;
-    value: string;
-    count?: number;
-    disabled?: boolean;
-};
 
 const controlClassName =
     'h-7 rounded-none border-0 bg-transparent px-0 py-0 text-sm leading-none font-medium text-foreground shadow-none ring-0 focus-visible:ring-0 placeholder:text-muted-foreground/70';
