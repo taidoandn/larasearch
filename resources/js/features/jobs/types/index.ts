@@ -39,6 +39,13 @@ export type JobSuggestionItem = {
     type: string;
 };
 
+export type MultiSelectOption = {
+    label: string;
+    value: string;
+    count?: number;
+    disabled?: boolean;
+};
+
 export type JobResultItem = {
     id: number;
     slug: string;
