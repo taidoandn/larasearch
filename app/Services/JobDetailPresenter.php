@@ -12,48 +12,14 @@ class JobDetailPresenter
     public function present(JobListing $job): array
     {
         $primaryLocation = $job->primaryLocation?->display_name;
-        $companySummary = (string) ($job->company?->description ?? '');
-        $companyMeta = collect([
-            $job->company?->industry,
-            $job->company?->company_size,
-            $job->company?->country_code,
-        ])->filter()->implode(' • ');
         $skillNames = $job->skills->pluck('name')->values()->all();
         $categoryNames = $job->categories->pluck('name')->filter()->values()->all();
 
         return [
-            'id' => $job->getKey(),
-            'slug' => $job->slug,
-            'title' => $job->title,
-            'application_url' => $job->application_url,
-            'company' => [
-                'name' => $job->company?->name,
-                'slug' => $job->company?->slug,
-                'logo_url' => $job->company?->logo_url,
-                'summary' => $companySummary,
-                'meta' => $companyMeta,
-                'website' => $job->company?->website_url,
-                'industry' => $job->company?->industry,
-                'company_size' => $job->company?->company_size,
-                'founded_year' => $job->company?->founded_year,
-                'is_verified' => (bool) ($job->company?->is_verified ?? false),
-            ],
-            'primary_location' => $primaryLocation,
-            'locations' => $primaryLocation === null ? [] : [$primaryLocation],
-            'job_type' => $job->job_type?->value,
-            'job_type_label' => $job->job_type?->label(),
+            ...$this->basePayload($job),
+            'company' => $this->companyPayload($job, true),
             'skills' => $skillNames,
             'benefits' => $this->paragraphLines((string) ($job->benefits ?: '')),
-            'salary' => [
-                'min' => $job->salary_min,
-                'max' => $job->salary_max,
-                'currency' => $job->salary_currency,
-                'is_visible' => $job->salary_is_visible,
-            ],
-            'work_model' => $job->work_model?->value,
-            'work_model_label' => $job->work_model?->label(),
-            'experience_level' => $job->experience_level?->value,
-            'experience_level_label' => $job->experience_level?->label(),
             'overview' => (string) ($job->description ?: $job->short_description ?: ''),
             'responsibilities' => $this->paragraphLines((string) ($job->description ?: $job->requirements ?: 'Review the full job details for responsibilities.')),
             'requirements' => [
@@ -93,6 +59,42 @@ class JobDetailPresenter
                 ],
             ],
             'map_label' => $primaryLocation,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function presentRelated(JobListing $job): array
+    {
+        return [
+            ...$this->basePayload($job),
+            'company' => $this->companyPayload($job),
+            'skills' => $job->skills->pluck('name')->values()->all(),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function basePayload(JobListing $job): array
+    {
+        $primaryLocation = $job->primaryLocation?->display_name;
+
+        return [
+            'id' => $job->getKey(),
+            'slug' => $job->slug,
+            'title' => $job->title,
+            'application_url' => $job->application_url,
+            'salary' => $this->salaryPayload($job),
+            'job_type' => $job->job_type?->value,
+            'job_type_label' => $job->job_type?->label(),
+            'work_model' => $job->work_model?->value,
+            'work_model_label' => $job->work_model?->label(),
+            'experience_level' => $job->experience_level?->value,
+            'experience_level_label' => $job->experience_level?->label(),
+            'primary_location' => $primaryLocation,
+            'locations' => $primaryLocation === null ? [] : [$primaryLocation],
             'published_at' => $job->published_at?->toAtomString(),
             'highlight' => [
                 'title' => null,
@@ -104,39 +106,44 @@ class JobDetailPresenter
     /**
      * @return array<string, mixed>
      */
-    public function presentRelated(JobListing $job): array
+    protected function companyPayload(JobListing $job, bool $includeSummary = false): array
+    {
+        $payload = [
+            'name' => $job->company?->name,
+            'slug' => $job->company?->slug,
+            'logo_url' => $job->company?->logo_url,
+            'website' => $job->company?->website_url,
+        ];
+
+        if (! $includeSummary) {
+            return $payload;
+        }
+
+        return [
+            ...$payload,
+            'summary' => (string) ($job->company?->description ?? ''),
+            'meta' => collect([
+                $job->company?->industry,
+                $job->company?->company_size,
+                $job->company?->country_code,
+            ])->filter()->implode(' • '),
+            'industry' => $job->company?->industry,
+            'company_size' => $job->company?->company_size,
+            'founded_year' => $job->company?->founded_year,
+            'is_verified' => (bool) ($job->company?->is_verified ?? false),
+        ];
+    }
+
+    /**
+     * @return array{min: ?int, max: ?int, currency: ?string, is_visible: bool}
+     */
+    protected function salaryPayload(JobListing $job): array
     {
         return [
-            'id' => $job->getKey(),
-            'slug' => $job->slug,
-            'title' => $job->title,
-            'application_url' => $job->application_url,
-            'company' => [
-                'name' => $job->company?->name,
-                'slug' => $job->company?->slug,
-                'logo_url' => $job->company?->logo_url,
-                'website' => $job->company?->website_url,
-            ],
-            'locations' => $job->primaryLocation === null ? [] : [$job->primaryLocation->display_name],
-            'skills' => $job->skills->pluck('name')->values()->all(),
-            'salary' => [
-                'min' => $job->salary_min,
-                'max' => $job->salary_max,
-                'currency' => $job->salary_currency,
-                'is_visible' => $job->salary_is_visible,
-            ],
-            'job_type' => $job->job_type?->value,
-            'job_type_label' => $job->job_type?->label(),
-            'work_model' => $job->work_model?->value,
-            'work_model_label' => $job->work_model?->label(),
-            'experience_level' => $job->experience_level?->value,
-            'experience_level_label' => $job->experience_level?->label(),
-            'primary_location' => $job->primaryLocation?->display_name,
-            'published_at' => $job->published_at?->toAtomString(),
-            'highlight' => [
-                'title' => null,
-                'description' => null,
-            ],
+            'min' => $job->salary_min,
+            'max' => $job->salary_max,
+            'currency' => $job->salary_currency,
+            'is_visible' => $job->salary_is_visible,
         ];
     }
 

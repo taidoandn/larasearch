@@ -31,6 +31,17 @@ const salaryBounds = {
     step: 5_000,
 } as const;
 
+const filterIcons = {
+    Keywords: Search,
+    Location: MapPin,
+    Category: Layers3,
+    'Salary Range': Wallet,
+    Skills: Zap,
+    Experience: TrendingUp,
+    'Work Model': BriefcaseBusiness,
+    'Job Type': BriefcaseBusiness,
+} as const;
+
 export function TextFilterField({
     label,
     placeholder,
@@ -168,13 +179,7 @@ export function DropdownFacetFilterField({
     const [searchValue, setSearchValue] = useState('');
     const selectedOptions = options.filter((option) => value.includes(option.value));
     const visibleOptions = useMemo(() => {
-        const normalizedSearch = searchValue.trim().toLowerCase();
-
-        if (normalizedSearch === '') {
-            return options;
-        }
-
-        return options.filter((option) => option.label.toLowerCase().includes(normalizedSearch));
+        return filterOptions(options, searchValue);
     }, [options, searchValue]);
 
     return (
@@ -191,25 +196,10 @@ export function DropdownFacetFilterField({
                         type="button"
                         className="flex w-full items-center justify-between rounded-2xl bg-card px-3 py-2 text-left text-sm font-medium text-foreground shadow-[inset_0_0_0_1px_rgba(25,28,30,0.08)]"
                     >
-                        <span className="flex min-w-0 flex-wrap items-center gap-2">
-                            {selectedOptions.length > 0 ? (
-                                selectedOptions.slice(0, 2).map((option) => (
-                                    <span
-                                        key={option.value}
-                                        className="rounded-lg bg-blue-50 px-2 py-1 text-[10px] font-semibold text-primary"
-                                    >
-                                        {option.label}
-                                    </span>
-                                ))
-                            ) : (
-                                <span className="text-muted-foreground/70">{placeholder}</span>
-                            )}
-                            {selectedOptions.length > 2 ? (
-                                <span className="rounded-lg bg-secondary px-2 py-1 text-[10px] font-semibold text-muted-foreground">
-                                    +{selectedOptions.length - 2}
-                                </span>
-                            ) : null}
-                        </span>
+                        <SelectedOptionSummary
+                            placeholder={placeholder}
+                            selectedOptions={selectedOptions}
+                        />
                         <span className="text-[10px] font-semibold tracking-[0.2em] text-muted-foreground/55 uppercase">
                             {value.length}
                         </span>
@@ -270,9 +260,7 @@ export function DropdownFacetFilterField({
                             })
                         ) : (
                             <div className="px-2 py-3 text-sm text-muted-foreground">
-                                {searchable && searchValue.trim() !== ''
-                                    ? `No ${label.toLowerCase()} facets match "${searchValue.trim()}"`
-                                    : (emptyMessage ?? `No ${label.toLowerCase()} facets yet`)}
+                                {facetEmptyMessage(label, searchValue, searchable, emptyMessage)}
                             </div>
                         )}
                     </div>
@@ -386,25 +374,64 @@ export function SalaryRangeField({
 }
 
 function renderFilterIcon(label: string) {
-    switch (label) {
-        case 'Keywords':
-            return <Search className={labelIconClassName} />;
-        case 'Location':
-            return <MapPin className={labelIconClassName} />;
-        case 'Category':
-            return <Layers3 className={labelIconClassName} />;
-        case 'Salary Range':
-            return <Wallet className={labelIconClassName} />;
-        case 'Skills':
-            return <Zap className={labelIconClassName} />;
-        case 'Experience':
-            return <TrendingUp className={labelIconClassName} />;
-        case 'Work Model':
-        case 'Job Type':
-            return <BriefcaseBusiness className={labelIconClassName} />;
-        default:
-            return null;
+    const Icon = filterIcons[label as keyof typeof filterIcons];
+
+    return Icon ? <Icon className={labelIconClassName} /> : null;
+}
+
+function SelectedOptionSummary({
+    placeholder,
+    selectedOptions,
+}: {
+    placeholder: string;
+    selectedOptions: MultiSelectOption[];
+}) {
+    return (
+        <span className="flex min-w-0 flex-wrap items-center gap-2">
+            {selectedOptions.length > 0 ? (
+                selectedOptions.slice(0, 2).map((option) => (
+                    <span
+                        key={option.value}
+                        className="rounded-lg bg-blue-50 px-2 py-1 text-[10px] font-semibold text-primary"
+                    >
+                        {option.label}
+                    </span>
+                ))
+            ) : (
+                <span className="text-muted-foreground/70">{placeholder}</span>
+            )}
+            {selectedOptions.length > 2 ? (
+                <span className="rounded-lg bg-secondary px-2 py-1 text-[10px] font-semibold text-muted-foreground">
+                    +{selectedOptions.length - 2}
+                </span>
+            ) : null}
+        </span>
+    );
+}
+
+function filterOptions(options: MultiSelectOption[], searchValue: string): MultiSelectOption[] {
+    const normalizedSearch = searchValue.trim().toLowerCase();
+
+    if (normalizedSearch === '') {
+        return options;
     }
+
+    return options.filter((option) => option.label.toLowerCase().includes(normalizedSearch));
+}
+
+function facetEmptyMessage(
+    label: string,
+    searchValue: string,
+    searchable: boolean,
+    emptyMessage?: string,
+): string {
+    const trimmedSearchValue = searchValue.trim();
+
+    if (searchable && trimmedSearchValue !== '') {
+        return `No ${label.toLowerCase()} facets match "${trimmedSearchValue}"`;
+    }
+
+    return emptyMessage ?? `No ${label.toLowerCase()} facets yet`;
 }
 
 function clampSalaryValue(value: number): number {
