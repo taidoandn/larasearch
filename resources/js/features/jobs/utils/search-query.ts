@@ -1,7 +1,9 @@
 import {
+    JOB_SEARCH_ARRAY_FILTER_KEYS,
     JOB_SEARCH_DEFAULT_PAGE,
     JOB_SEARCH_DEFAULT_PER_PAGE,
     JOB_SEARCH_DEFAULT_SORT,
+    JOB_SEARCH_NULLABLE_NUMBER_KEYS,
 } from '@/features/jobs/constants';
 import type { JobFilters, JobSearchQuery } from '@/features/jobs/types';
 import { index as jobsIndex } from '@/routes/jobs';
@@ -13,36 +15,16 @@ export function compactJobSearchQuery(filters: JobFilters): JobSearchQuery {
         query.q = filters.q;
     }
 
-    if (filters.location.length > 0) {
-        query.location = filters.location;
+    for (const key of JOB_SEARCH_ARRAY_FILTER_KEYS) {
+        if (filters[key].length > 0) {
+            query[key] = filters[key];
+        }
     }
 
-    if (filters.category.length > 0) {
-        query.category = filters.category;
-    }
-
-    if (filters.skills.length > 0) {
-        query.skills = filters.skills;
-    }
-
-    if (filters.job_type.length > 0) {
-        query.job_type = filters.job_type;
-    }
-
-    if (filters.work_model.length > 0) {
-        query.work_model = filters.work_model;
-    }
-
-    if (filters.experience_level.length > 0) {
-        query.experience_level = filters.experience_level;
-    }
-
-    if (filters.salary_min !== null) {
-        query.salary_min = filters.salary_min;
-    }
-
-    if (filters.salary_max !== null) {
-        query.salary_max = filters.salary_max;
+    for (const key of JOB_SEARCH_NULLABLE_NUMBER_KEYS) {
+        if (filters[key] !== null) {
+            query[key] = filters[key];
+        }
     }
 
     if (filters.sort !== JOB_SEARCH_DEFAULT_SORT) {

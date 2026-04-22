@@ -10,6 +10,7 @@ class JobSuggestService
 
     public function __construct(
         private readonly ElasticsearchClient $client,
+        private readonly ?JobListingSearchIndex $searchIndex = null,
     ) {}
 
     /**
@@ -23,36 +24,21 @@ class JobSuggestService
             return ['items' => []];
         }
 
-        $response = $this->client->search((string) config('elasticsearch.aliases.job_listings'), [
+        $response = $this->client->search($this->searchIndex()->alias(), [
             'size' => self::ELASTICSEARCH_HIT_FETCH_SIZE,
             '_source' => ['title', 'company_name', 'skills'],
             'query' => [
                 'bool' => [
-                    'must' => [[
-                        'multi_match' => [
-                            'query' => $keyword,
-                            'type' => 'best_fields',
-                            'fuzziness' => 'AUTO',
-                            'fields' => [
-                                'title.autocomplete^3',
-                                'skills_text.autocomplete^2',
-                                'company_name.autocomplete',
-                            ],
+                    'must' => $this->searchIndex()->keywordMustClause($keyword, [
+                        'fields' => [
+                            'title.autocomplete^3',
+                            'skills_text.autocomplete^2',
+                            'company_name.autocomplete',
                         ],
-                    ]],
-                    'filter' => [
-                        ['term' => ['is_active' => true]],
-                        ['range' => ['published_at' => ['lte' => 'now']]],
-                        [
-                            'bool' => [
-                                'should' => [
-                                    ['bool' => ['must_not' => [['exists' => ['field' => 'expires_at']]]]],
-                                    ['range' => ['expires_at' => ['gt' => 'now']]],
-                                ],
-                                'minimum_should_match' => 1,
-                            ],
-                        ],
-                    ],
+                        'fuzziness' => 'AUTO',
+                        'type' => 'best_fields',
+                    ]),
+                    'filter' => $this->searchIndex()->visibilityFilters(),
                 ],
             ],
         ]);
@@ -166,5 +152,10 @@ class JobSuggestService
             $length <= 8 => 2,
             default => 3,
         };
+    }
+
+    protected function searchIndex(): JobListingSearchIndex
+    {
+        return $this->searchIndex ?? app(JobListingSearchIndex::class);
     }
 }

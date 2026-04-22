@@ -16,6 +16,7 @@ class ElasticsearchSearchService implements SearchServiceInterface
 
     public function __construct(
         private readonly ElasticsearchClient $client,
+        private readonly ?JobListingSearchIndex $searchIndex = null,
     ) {}
 
     public function search(array $params): array
@@ -128,7 +129,7 @@ class ElasticsearchSearchService implements SearchServiceInterface
 
     protected function alias(): string
     {
-        return (string) config('elasticsearch.aliases.job_listings');
+        return $this->searchIndex()->alias();
     }
 
     /**
@@ -139,19 +140,7 @@ class ElasticsearchSearchService implements SearchServiceInterface
     {
         $baseQuery = [
             'bool' => [
-                'must' => $query === ''
-                    ? [['match_all' => (object) []]]
-                    : [[
-                        'multi_match' => [
-                            'query' => $query,
-                            'fields' => [
-                                'title^3',
-                                'skills_text^2',
-                                'company_name^2',
-                                'description',
-                            ],
-                        ],
-                    ]],
+                'must' => $this->searchIndex()->keywordMustClause($query),
                 'filter' => $baseFilters,
             ],
         ];
@@ -370,19 +359,7 @@ class ElasticsearchSearchService implements SearchServiceInterface
     {
         return [
             'bool' => [
-                'must' => $query === ''
-                    ? [['match_all' => (object) []]]
-                    : [[
-                        'multi_match' => [
-                            'query' => $query,
-                            'fields' => [
-                                'title^3',
-                                'skills_text^2',
-                                'company_name^2',
-                                'description',
-                            ],
-                        ],
-                    ]],
+                'must' => $this->searchIndex()->keywordMustClause($query),
                 'filter' => array_values(array_filter($filters)),
             ],
         ];
@@ -413,19 +390,12 @@ class ElasticsearchSearchService implements SearchServiceInterface
      */
     protected function visibilityFilters(): array
     {
-        return [
-            ['term' => ['is_active' => true]],
-            ['range' => ['published_at' => ['lte' => 'now']]],
-            [
-                'bool' => [
-                    'should' => [
-                        ['bool' => ['must_not' => [['exists' => ['field' => 'expires_at']]]]],
-                        ['range' => ['expires_at' => ['gt' => 'now']]],
-                    ],
-                    'minimum_should_match' => 1,
-                ],
-            ],
-        ];
+        return $this->searchIndex()->visibilityFilters();
+    }
+
+    protected function searchIndex(): JobListingSearchIndex
+    {
+        return $this->searchIndex ?? app(JobListingSearchIndex::class);
     }
 
     /**

@@ -21,9 +21,11 @@ it('shows the configured alias names in the health command output', function () 
 });
 
 it('creates and deletes the configured index', function () {
+    config()->set('elasticsearch.indexes.job_listings', 'job_listings_test');
+
     $client = Mockery::mock(ElasticsearchClient::class);
-    $client->shouldReceive('createIndex')->once()->with('job_listings_v1', Mockery::type('array'))->andReturn(['acknowledged' => true]);
-    $client->shouldReceive('deleteIndex')->once()->with('job_listings_v1')->andReturn(['acknowledged' => true]);
+    $client->shouldReceive('createIndex')->once()->with('job_listings_test', Mockery::type('array'))->andReturn(['acknowledged' => true]);
+    $client->shouldReceive('deleteIndex')->once()->with('job_listings_test')->andReturn(['acknowledged' => true]);
 
     app()->instance(ElasticsearchClient::class, $client);
 
