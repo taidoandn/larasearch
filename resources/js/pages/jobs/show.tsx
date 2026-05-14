@@ -1,9 +1,5 @@
-import { DetailScreen } from '@/features/jobs';
-import type {
-    JobDetailItem,
-    JobResultItem,
-    JobSearchContext,
-} from '@/features/jobs/types';
+import { DetailScreen } from '@/features/jobs/screens';
+import type { JobDetailItem, JobResultItem, JobSearchContext } from '@/features/jobs/types';
 
 type Props = {
     job: JobDetailItem;
@@ -11,10 +7,6 @@ type Props = {
     searchContext: JobSearchContext;
 };
 
-export default function JobShowPage({
-    job,
-    relatedJobs,
-    searchContext,
-}: Props) {
+export default function JobShowPage({ job, relatedJobs, searchContext }: Props) {
     return <DetailScreen job={job} relatedJobs={relatedJobs} searchContext={searchContext} />;
 }

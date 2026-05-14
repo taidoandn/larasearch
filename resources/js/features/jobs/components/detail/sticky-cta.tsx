@@ -1,10 +1,10 @@
 import { Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { JobDetailItem } from '@/features/jobs/types';
-import { formatSalaryRange } from '@/features/jobs/utils';
+import { formatSalaryRange, jobApplyUrl } from '@/features/jobs/utils';
 
 export function StickyCta({ job }: { job: JobDetailItem }) {
-    const applyUrl = job.application_url ?? job.company.website;
+    const applyUrl = jobApplyUrl(job);
 
     return (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 py-4 backdrop-blur md:hidden">

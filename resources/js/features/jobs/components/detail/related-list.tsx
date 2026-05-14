@@ -7,6 +7,8 @@ import {
     formatExperienceLevelLabel,
     formatSalaryRange,
     formatWorkModelLabel,
+    jobCompanyName,
+    jobPrimaryLocation,
 } from '@/features/jobs/utils';
 import { show as jobsShow } from '@/routes/jobs';
 
@@ -44,7 +46,7 @@ export function RelatedList({
                     <div className="flex flex-col gap-8">
                         <div className="flex items-start justify-between gap-4">
                             <CompanyAvatar
-                                name={candidate.company.name ?? 'Unknown company'}
+                                name={jobCompanyName(candidate)}
                                 logoUrl={candidate.company.logo_url}
                             />
                             <span className="rounded-lg bg-white/80 px-3 py-1 text-[10px] font-bold tracking-[0.18em] text-slate-500 uppercase">
@@ -57,9 +59,9 @@ export function RelatedList({
                                 {candidate.title}
                             </h3>
                             <p className="text-sm font-medium text-slate-500">
-                                {candidate.company.name ?? 'Unknown company'}
+                                {jobCompanyName(candidate)}
                                 {' • '}
-                                {candidate.primary_location ?? 'Remote'}
+                                {jobPrimaryLocation(candidate)}
                             </p>
                         </div>
                     </div>

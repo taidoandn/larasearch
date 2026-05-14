@@ -1,4 +1,4 @@
-import { SearchScreen } from '@/features/jobs';
+import { SearchScreen } from '@/features/jobs/screens';
 import type { JobFilters, JobResultsPayload } from '@/features/jobs/types';
 
 export default function JobsIndexPage({

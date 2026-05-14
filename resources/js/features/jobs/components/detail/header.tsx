@@ -1,58 +1,17 @@
-import {
-    Bookmark,
-    BriefcaseBusiness,
-    CircleDot,
-    Clock3,
-    TrendingUp,
-    WalletCards,
-} from 'lucide-react';
+import { Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { CompanyIdentity } from '@/features/jobs/components/shared';
+import { CompanyIdentity, JobChipIcon } from '@/features/jobs/components/shared';
 import type { JobDetailItem } from '@/features/jobs/types';
-import {
-    formatDisplayDate,
-    formatExperienceLevelLabel,
-    formatJobTypeLabel,
-    formatSalaryRange,
-    formatWorkModelLabel,
-} from '@/features/jobs/utils';
+import { buildJobDisplayChips, jobApplyUrl, jobPrimaryLocation } from '@/features/jobs/utils';
 
 export function Header({ job }: { job: JobDetailItem }) {
-    const primaryLocation = job.primary_location ?? job.locations[0] ?? 'Remote';
-    const applyUrl = job.application_url ?? job.company.website;
-    const chips = [
-        {
-            icon: WalletCards,
-            label: formatSalaryRange(job.salary),
-            className: 'bg-blue-50 text-primary',
-        },
-        {
-            icon: BriefcaseBusiness,
-            label: job.work_model_label ?? formatWorkModelLabel(job.work_model, 'Flexible'),
-            className: 'bg-slate-100 text-slate-600',
-        },
-        {
-            icon: TrendingUp,
-            label:
-                job.experience_level_label ??
-                formatExperienceLevelLabel(
-                    job.summary_metrics.find((metric) => metric.label === 'Experience Required')
-                        ?.value ?? null,
-                    'Not specified',
-                ),
-            className: 'bg-slate-100 text-slate-600',
-        },
-        {
-            icon: CircleDot,
-            label: job.job_type_label ?? formatJobTypeLabel(job.job_type, 'Not specified'),
-            className: 'bg-slate-100 text-slate-600',
-        },
-        {
-            icon: Clock3,
-            label: formatDisplayDate(job.published_at),
-            className: 'bg-slate-100 text-slate-600',
-        },
-    ];
+    const primaryLocation = jobPrimaryLocation(job);
+    const applyUrl = jobApplyUrl(job);
+    const chips = buildJobDisplayChips(job, {
+        workModel: 'Flexible',
+        experience: 'Not specified',
+        jobType: 'Not specified',
+    });
 
     return (
         <section className="relative overflow-hidden rounded-4xl bg-white px-6 py-8 shadow-[0_16px_42px_-28px_rgba(0,74,198,0.16)] sm:px-8 sm:py-10 lg:px-10 lg:py-12">
@@ -76,10 +35,14 @@ export function Header({ job }: { job: JobDetailItem }) {
                         <div className="flex flex-wrap gap-3">
                             {chips.map((chip) => (
                                 <span
-                                    key={chip.label}
-                                    className={`inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold ${chip.className}`}
+                                    key={`${chip.type}-${chip.label}`}
+                                    className={`inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold ${
+                                        chip.emphasis === 'primary'
+                                            ? 'bg-blue-50 text-primary'
+                                            : 'bg-slate-100 text-slate-600'
+                                    }`}
                                 >
-                                    <chip.icon className="size-4" />
+                                    <JobChipIcon type={chip.type} />
                                     {chip.label}
                                 </span>
                             ))}

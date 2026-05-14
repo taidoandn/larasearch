@@ -20,7 +20,7 @@ class ElasticsearchReindexCommand extends Command
         $chunkSize = max(1, (int) $this->option('chunk'));
         $indexed = 0;
 
-        $client->createIndex($index, config('elasticsearch.mapping'));
+        $client->createIndex($index, config('elasticsearch.mapping', []));
 
         JobListing::query()
             ->with(['company', 'primaryLocation', 'categories', 'skills'])

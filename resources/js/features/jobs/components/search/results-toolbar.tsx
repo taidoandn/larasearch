@@ -8,13 +8,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import type { JobFilters } from '@/features/jobs/types';
-import {
-    formatExperienceLevelLabel,
-    formatJobTypeLabel,
-    formatSlugLabel,
-    formatSalaryRange,
-    formatWorkModelLabel,
-} from '@/features/jobs/utils';
+import { buildSearchSummary, buildToolbarChips } from '@/features/jobs/utils';
 
 const sortOptions = [
     { label: 'Most Relevant', value: 'best_match' },
@@ -22,13 +16,6 @@ const sortOptions = [
     { label: 'Salary: High to Low', value: 'salary_desc' },
     { label: 'Salary: Low to High', value: 'salary_asc' },
 ];
-
-type ToolbarChip = {
-    key: string;
-    label: string;
-    value: string;
-    onRemove: () => void;
-};
 
 export function ResultsToolbar({
     total,
@@ -48,7 +35,7 @@ export function ResultsToolbar({
     onResetFilters: () => void;
 }) {
     const activeChips = buildToolbarChips(filters, onApplyFilters);
-    const summary = buildSummary(filters);
+    const summary = buildSearchSummary(filters);
 
     return (
         <div className="rounded-4xl bg-secondary px-5 py-5 sm:px-6 sm:py-6">
@@ -121,119 +108,4 @@ export function ResultsToolbar({
             </div>
         </div>
     );
-}
-
-function buildToolbarChips(
-    filters: JobFilters,
-    onApplyFilters: (filters: JobFilters) => void,
-): ToolbarChip[] {
-    const chips: ToolbarChip[] = [];
-
-    if (filters.work_model.length > 0) {
-        chips.push({
-            key: 'work-model',
-            label: 'Work Model',
-            value: filters.work_model.map((item) => formatWorkModelLabel(item)).join(', '),
-            onRemove: () =>
-                onApplyFilters({
-                    ...filters,
-                    work_model: [],
-                    page: 1,
-                }),
-        });
-    }
-
-    if (filters.experience_level.length > 0) {
-        chips.push({
-            key: 'experience-level',
-            label: 'Experience',
-            value: filters.experience_level
-                .map((item) => formatExperienceLevelLabel(item))
-                .join(', '),
-            onRemove: () =>
-                onApplyFilters({
-                    ...filters,
-                    experience_level: [],
-                    page: 1,
-                }),
-        });
-    }
-
-    if (filters.location.length > 0) {
-        chips.push({
-            key: 'location',
-            label: 'Location',
-            value: filters.location.map((item) => formatSlugLabel(item)).join(', '),
-            onRemove: () =>
-                onApplyFilters({
-                    ...filters,
-                    location: [],
-                    page: 1,
-                }),
-        });
-    }
-
-    if (filters.category.length > 0) {
-        chips.push({
-            key: 'category',
-            label: 'Category',
-            value: filters.category.map((item) => formatSlugLabel(item)).join(', '),
-            onRemove: () =>
-                onApplyFilters({
-                    ...filters,
-                    category: [],
-                    page: 1,
-                }),
-        });
-    }
-
-    if (filters.job_type.length > 0) {
-        chips.push({
-            key: 'job-type',
-            label: 'Job Type',
-            value: filters.job_type.map((item) => formatJobTypeLabel(item)).join(', '),
-            onRemove: () =>
-                onApplyFilters({
-                    ...filters,
-                    job_type: [],
-                    page: 1,
-                }),
-        });
-    }
-
-    if (filters.salary_min !== null || filters.salary_max !== null) {
-        chips.push({
-            key: 'salary',
-            label: 'Salary',
-            value: formatSalaryRange({
-                min: filters.salary_min,
-                max: filters.salary_max,
-                currency: null,
-                is_visible: true,
-            }),
-            onRemove: () =>
-                onApplyFilters({
-                    ...filters,
-                    salary_min: null,
-                    salary_max: null,
-                    page: 1,
-                }),
-        });
-    }
-
-    return chips;
-}
-
-function buildSummary(filters: JobFilters): string {
-    const summaryParts = [
-        filters.work_model.length > 0
-            ? filters.work_model.map((item) => formatWorkModelLabel(item)).join(' + ')
-            : null,
-        filters.category.length > 0
-            ? filters.category.map((item) => formatSlugLabel(item)).join(' + ')
-            : null,
-        filters.q.trim() !== '' ? filters.q : null,
-    ].filter((value): value is string => value !== null);
-
-    return summaryParts.length > 0 ? summaryParts.join(' • ') : 'all open roles';
 }

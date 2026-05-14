@@ -5,11 +5,10 @@ import { Sheet, SheetContent, SheetFooter } from '@/components/ui/sheet';
 import { HighlightedText, JobSummaryPanel } from '@/features/jobs/components/shared';
 import type { JobResultItem, JobSearchContext } from '@/features/jobs/types';
 import {
-    formatDisplayDate,
-    formatExperienceLevelLabel,
-    formatJobTypeLabel,
-    formatSalaryRange,
-    formatWorkModelLabel,
+    buildJobDisplayChips,
+    jobApplyUrl,
+    jobCompanyName,
+    jobPrimaryLocation,
 } from '@/features/jobs/utils';
 import { show as jobsShow } from '@/routes/jobs';
 
@@ -43,45 +42,21 @@ function SummaryPanel({
     job: JobResultItem;
     searchQuery: JobSearchContext['index_query'];
 }) {
-    const salary = formatSalaryRange(job.salary);
-    const location = job.primary_location ?? job.locations[0] ?? 'Location flexible';
-    const applyUrl = job.application_url ?? job.company.website;
+    const location = jobPrimaryLocation(job, 'Location flexible');
+    const applyUrl = jobApplyUrl(job);
     const detailUrl = jobsShow(job.slug, { query: searchQuery });
+    const companyName = jobCompanyName(job);
 
     return (
         <>
             <div className="flex-1 overflow-y-auto bg-white px-4 py-4 sm:px-5 sm:py-5">
                 <JobSummaryPanel
-                    companyName={job.company.name ?? 'Unknown company'}
+                    companyName={companyName}
                     companyLogoUrl={job.company.logo_url}
                     location={location}
                     title={job.title}
                     titleHighlight={job.highlight.title}
-                    chips={[
-                        {
-                            label: salary,
-                            type: 'salary',
-                            emphasis: 'primary',
-                        },
-                        {
-                            label: job.work_model_label ?? formatWorkModelLabel(job.work_model),
-                            type: 'work-model',
-                        },
-                        {
-                            label:
-                                job.experience_level_label ??
-                                formatExperienceLevelLabel(job.experience_level),
-                            type: 'experience',
-                        },
-                        {
-                            label: job.job_type_label ?? formatJobTypeLabel(job.job_type),
-                            type: 'job-type',
-                        },
-                        {
-                            label: formatDisplayDate(job.published_at),
-                            type: 'published-at',
-                        },
-                    ]}
+                    chips={buildJobDisplayChips(job)}
                     skills={job.skills}
                     highlightedSummary={
                         job.highlight.description ? (
@@ -95,7 +70,7 @@ function SummaryPanel({
                     }
                     mapLabel={job.locations[0] ?? location}
                     contextLabel="Search Context"
-                    contextValue={[job.company.name ?? 'Unknown company', location].join(' • ')}
+                    contextValue={[companyName, location].join(' • ')}
                     secondaryAction={{
                         label: 'Save for later',
                     }}

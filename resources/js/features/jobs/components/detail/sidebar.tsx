@@ -2,10 +2,11 @@ import { ExternalLink, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CompanyAvatar } from '@/features/jobs/components/shared';
 import type { JobDetailItem } from '@/features/jobs/types';
+import { jobApplyUrl, jobPrimaryLocation } from '@/features/jobs/utils';
 
 export function Sidebar({ job }: { job: JobDetailItem }) {
-    const primaryLocation = job.primary_location ?? job.locations[0] ?? 'Remote';
-    const applyUrl = job.application_url ?? job.company.website;
+    const primaryLocation = jobPrimaryLocation(job);
+    const applyUrl = jobApplyUrl(job);
 
     return (
         <aside className="flex flex-col gap-6 lg:sticky lg:top-28">

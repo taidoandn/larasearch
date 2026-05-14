@@ -1,29 +1,17 @@
-import {
-    Bookmark,
-    BriefcaseBusiness,
-    CircleDot,
-    Clock3,
-    MapPin,
-    TrendingUp,
-    WalletCards,
-} from 'lucide-react';
+import { Bookmark, BriefcaseBusiness, MapPin } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CompanyIdentity } from '@/features/jobs/components/shared/company-identity';
 import { HighlightedText } from '@/features/jobs/components/shared/highlighted-text';
+import { JobChipIcon } from '@/features/jobs/components/shared/job-chip-icon';
+import type { JobDisplayChip } from '@/features/jobs/utils';
 import { cn } from '@/lib/utils';
 
 type SummaryAction = {
     label: string;
     href?: string | null;
     icon?: ReactNode;
-};
-
-type SummaryChip = {
-    label: string;
-    type: 'salary' | 'work-model' | 'experience' | 'job-type' | 'published-at';
-    emphasis?: 'primary';
 };
 
 export type JobSummaryPanelProps = {
@@ -34,7 +22,7 @@ export type JobSummaryPanelProps = {
     location: string;
     title: string;
     titleHighlight?: string | null;
-    chips: SummaryChip[];
+    chips: JobDisplayChip[];
     skills: string[];
     highlightedSummary?: ReactNode;
     mapLabel: string;
@@ -96,7 +84,7 @@ export function JobSummaryPanel({
                                         : 'bg-slate-100 text-slate-600',
                                 )}
                             >
-                                {summaryChipIcon(chip.type)}
+                                <JobChipIcon type={chip.type} />
                                 {chip.label}
                             </span>
                         ))}
@@ -235,19 +223,4 @@ function SummaryButton({
             <span className="sr-only">{action.label}</span>
         </Button>
     );
-}
-
-function summaryChipIcon(type: SummaryChip['type']): ReactNode {
-    switch (type) {
-        case 'salary':
-            return <WalletCards className="size-4" />;
-        case 'work-model':
-            return <BriefcaseBusiness className="size-4" />;
-        case 'experience':
-            return <TrendingUp className="size-4" />;
-        case 'job-type':
-            return <CircleDot className="size-4" />;
-        case 'published-at':
-            return <Clock3 className="size-4" />;
-    }
 }

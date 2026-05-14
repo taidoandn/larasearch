@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSuggestions } from '@/features/jobs/hooks';
+import { useMemo } from 'react';
+import { useFilterDraft, useSuggestions } from '@/features/jobs/hooks';
 import type { JobFilters as JobFiltersState, JobResultsPayload } from '@/features/jobs/types';
 import {
     buildFacetChecklistOptions,
@@ -16,12 +16,8 @@ type JobsFilterProps = {
     onApply: (nextFilters: JobFiltersState) => void;
 };
 
-type DraftFilters = JobFiltersState;
-
 export function Filters({ filters, facets, onApply }: JobsFilterProps) {
-    const [values, setValues] = useState<DraftFilters>(filters);
-    const hasMountedQueryRef = useRef(false);
-    const hasMountedSalaryRef = useRef(false);
+    const { values, updateDraftValue, applyImmediately } = useFilterDraft({ filters, onApply });
     const {
         suggestions,
         isSuggesting,
@@ -32,52 +28,6 @@ export function Filters({ filters, facets, onApply }: JobsFilterProps) {
         closeSuggestions,
         clearSuggestions,
     } = useSuggestions(values.q);
-
-    useEffect(() => {
-        setValues(filters);
-    }, [filters]);
-
-    useEffect(() => {
-        if (!hasMountedQueryRef.current) {
-            hasMountedQueryRef.current = true;
-
-            return;
-        }
-
-        if (values.q === filters.q) {
-            return;
-        }
-
-        const timeoutId = window.setTimeout(() => {
-            onApply({
-                ...values,
-                page: 1,
-            });
-        }, 300);
-
-        return () => window.clearTimeout(timeoutId);
-    }, [filters.q, onApply, values]);
-
-    useEffect(() => {
-        if (!hasMountedSalaryRef.current) {
-            hasMountedSalaryRef.current = true;
-
-            return;
-        }
-
-        if (values.salary_min === filters.salary_min && values.salary_max === filters.salary_max) {
-            return;
-        }
-
-        const timeoutId = window.setTimeout(() => {
-            onApply({
-                ...values,
-                page: 1,
-            });
-        }, 300);
-
-        return () => window.clearTimeout(timeoutId);
-    }, [filters.salary_max, filters.salary_min, onApply, values]);
 
     const locationOptions = useMemo(
         () => buildFacetChecklistOptions(facets.locations, filters.location, (value) => value),
@@ -118,21 +68,6 @@ export function Filters({ filters, facets, onApply }: JobsFilterProps) {
             ),
         [facets.experience_levels, filters.experience_level],
     );
-
-    const updateDraftValue = <K extends keyof DraftFilters>(key: K, value: DraftFilters[K]) => {
-        setValues((current) => ({
-            ...current,
-            [key]: value,
-        }));
-    };
-
-    const applyImmediately = (nextValues: DraftFilters) => {
-        setValues(nextValues);
-        onApply({
-            ...nextValues,
-            page: 1,
-        });
-    };
 
     return (
         <div className="space-y-4">
