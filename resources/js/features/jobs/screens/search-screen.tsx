@@ -1,5 +1,10 @@
 import { Head } from '@inertiajs/react';
-import { Filters, ResultsList, ResultsToolbar, SummarySheet } from '@/features/jobs/components/search';
+import {
+    Filters,
+    ResultsList,
+    ResultsToolbar,
+    SummarySheet,
+} from '@/features/jobs/components/search';
 import { useSearch } from '@/features/jobs/hooks';
 import type { JobFilters, JobResultsPayload } from '@/features/jobs/types';
 import { compactJobSearchQuery } from '@/features/jobs/utils';
@@ -47,9 +52,7 @@ export function SearchScreen({
                             <h1 className="font-display text-xl font-semibold tracking-tight text-foreground">
                                 Filters
                             </h1>
-                            <p className="text-sm text-muted-foreground">
-                                Refine your match
-                            </p>
+                            <p className="text-sm text-muted-foreground">Refine your match</p>
                         </div>
                         <Filters
                             filters={filters}
@@ -63,7 +66,7 @@ export function SearchScreen({
                 <div className="flex min-w-0 flex-1 flex-col gap-5">
                     <section className="space-y-5">
                         <ResultsToolbar
-                            total={results.pagination.total}
+                            total={results.total}
                             filters={filters}
                             sort={results.sort}
                             isRefreshing={isRefreshing}
@@ -74,9 +77,9 @@ export function SearchScreen({
 
                         <div className="overflow-hidden rounded-4xl bg-card shadow-[0_18px_40px_-34px_rgba(0,74,198,0.08)]">
                             <ResultsList
-                                items={results.items}
+                                items={results.data}
                                 activeSkills={filters.skills}
-                                pagination={results.pagination}
+                                pagination={results}
                                 isRefreshing={isRefreshing}
                                 selectedJobId={selectedJob?.id ?? null}
                                 onSelectJob={selectJob}

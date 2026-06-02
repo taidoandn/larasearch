@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Contracts\SearchServiceInterface;
 use App\Models\JobListing;
-use App\Services\ElasticsearchClient;
+use Elastic\Elasticsearch\Client;
 use Illuminate\Console\Command;
 
 class ElasticsearchReindexCommand extends Command
@@ -13,14 +13,17 @@ class ElasticsearchReindexCommand extends Command
 
     protected $description = 'Rebuild a versioned Elasticsearch index and switch the configured alias.';
 
-    public function handle(ElasticsearchClient $client, SearchServiceInterface $searchService): int
+    public function handle(Client $client, SearchServiceInterface $searchService): int
     {
         $index = (string) $this->argument('index');
         $alias = (string) ($this->option('alias') ?: config('elasticsearch.aliases.job_listings'));
         $chunkSize = max(1, (int) $this->option('chunk'));
         $indexed = 0;
 
-        $client->createIndex($index, config('elasticsearch.mapping', []));
+        $client->indices()->create([
+            'index' => $index,
+            'body' => config('elasticsearch.mapping', []),
+        ])->asArray();
 
         JobListing::query()
             ->with(['company', 'primaryLocation', 'categories', 'skills'])
@@ -28,22 +31,28 @@ class ElasticsearchReindexCommand extends Command
                 $indexed += $searchService->bulkIndexJobListings($jobListings, $index);
             });
 
-        $client->refreshIndex($index);
+        $client->indices()->refresh([
+            'index' => $index,
+        ])->asArray();
 
-        $client->updateAliases([
-            [
-                'remove' => [
-                    'index' => '*',
-                    'alias' => $alias,
+        $client->indices()->updateAliases([
+            'body' => [
+                'actions' => [
+                    [
+                        'remove' => [
+                            'index' => '*',
+                            'alias' => $alias,
+                        ],
+                    ],
+                    [
+                        'add' => [
+                            'index' => $index,
+                            'alias' => $alias,
+                        ],
+                    ],
                 ],
             ],
-            [
-                'add' => [
-                    'index' => $index,
-                    'alias' => $alias,
-                ],
-            ],
-        ]);
+        ])->asArray();
 
         $this->info("Indexed {$indexed} job listings into [{$index}].");
         $this->info("Alias [{$alias}] now points to [{$index}].");

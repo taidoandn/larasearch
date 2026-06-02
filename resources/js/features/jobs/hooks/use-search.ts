@@ -1,11 +1,7 @@
 import { router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import { createDefaultJobFilters, JOB_SEARCH_DEFAULT_PAGE } from '@/features/jobs/constants';
-import type {
-    JobFilters,
-    JobResultItem,
-    JobResultsPayload,
-} from '@/features/jobs/types';
+import type { JobFilters, JobResultItem, JobResultsPayload } from '@/features/jobs/types';
 import { buildJobSearchUrl } from '@/features/jobs/utils';
 
 export function useSearch({
@@ -19,25 +15,29 @@ export function useSearch({
     const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
 
     const selectedJob = useMemo(
-        () => results.items.find((job) => job.id === selectedJobId) ?? null,
-        [results.items, selectedJobId],
+        () => results.data.find((job) => job.id === selectedJobId) ?? null,
+        [results.data, selectedJobId],
     );
 
     const visitResults = (nextFilters: JobFilters): void => {
         setSelectedJobId(null);
         setIsRefreshing(true);
 
-        router.get(buildJobSearchUrl(nextFilters), {}, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-            onError: () => {
-                setIsRefreshing(false);
+        router.get(
+            buildJobSearchUrl(nextFilters),
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                onError: () => {
+                    setIsRefreshing(false);
+                },
+                onFinish: () => {
+                    setIsRefreshing(false);
+                },
             },
-            onFinish: () => {
-                setIsRefreshing(false);
-            },
-        });
+        );
     };
 
     const resetFilters = (): void => {
@@ -53,7 +53,7 @@ export function useSearch({
             setSelectedJobId(job.id);
         },
         setSummarySheetOpen: (open: boolean) => {
-            if (! open) {
+            if (!open) {
                 setSelectedJobId(null);
             }
         },

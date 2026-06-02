@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\ElasticsearchClient;
+use Elastic\Elasticsearch\Client;
 use Illuminate\Console\Command;
 
 class ElasticsearchCreateIndexCommand extends Command
@@ -11,11 +11,14 @@ class ElasticsearchCreateIndexCommand extends Command
 
     protected $description = 'Create the configured Elasticsearch index.';
 
-    public function handle(ElasticsearchClient $client): int
+    public function handle(Client $client): int
     {
         $index = (string) ($this->argument('index') ?: config('elasticsearch.indexes.job_listings'));
 
-        $client->createIndex($index, config('elasticsearch.mapping'));
+        $client->indices()->create([
+            'index' => $index,
+            'body' => config('elasticsearch.mapping'),
+        ])->asArray();
 
         $this->info("Created index [{$index}].");
 

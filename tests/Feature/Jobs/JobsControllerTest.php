@@ -2,7 +2,7 @@
 
 use App\Contracts\SearchServiceInterface;
 use App\Models\User;
-use App\Services\JobSuggestService;
+use App\Services\JobListingSearchService;
 
 it('renders the jobs index page with canonical job props', function () {
     $user = User::factory()->create();
@@ -25,7 +25,7 @@ it('renders the jobs index page with canonical job props', function () {
             'per_page' => 10,
         ])
         ->andReturn([
-            'items' => [
+            'data' => [
                 [
                     'id' => 1,
                     'slug' => 'senior-laravel-backend-engineer',
@@ -56,15 +56,12 @@ it('renders the jobs index page with canonical job props', function () {
                     ],
                 ],
             ],
-            'pagination' => [
-                'page' => 2,
-                'per_page' => 10,
-                'total' => 42,
-                'from' => 11,
-                'to' => 11,
-                'total_pages' => 5,
-                'has_more' => true,
-            ],
+            'current_page' => 2,
+            'per_page' => 10,
+            'total' => 42,
+            'from' => 11,
+            'to' => 11,
+            'last_page' => 5,
             'facets' => [
                 'locations' => [],
                 'categories' => [],
@@ -89,13 +86,13 @@ it('renders the jobs index page with canonical job props', function () {
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
         ->component('jobs/index')
-        ->where('results.items.0.application_url', 'https://jobs.example.test/apply/senior-laravel-backend-engineer')
-        ->where('results.items.0.company.logo_url', 'https://cdn.example.test/acme-logo.png')
-        ->where('results.items.0.company.website', 'https://acme.example.test')
-        ->where('results.pagination.page', 2)
-        ->where('results.pagination.per_page', 10)
-        ->where('results.pagination.from', 11)
-        ->where('results.pagination.to', 11)
+        ->where('results.data.0.application_url', 'https://jobs.example.test/apply/senior-laravel-backend-engineer')
+        ->where('results.data.0.company.logo_url', 'https://cdn.example.test/acme-logo.png')
+        ->where('results.data.0.company.website', 'https://acme.example.test')
+        ->where('results.current_page', 2)
+        ->where('results.per_page', 10)
+        ->where('results.from', 11)
+        ->where('results.to', 11)
         ->where('results.sort', 'newest')
         ->where('filters.q', 'laravel')
         ->where('filters.location', ['da-nang'])
@@ -126,16 +123,13 @@ it('preserves the active category filter when category facets are empty', functi
             'per_page' => 20,
         ])
         ->andReturn([
-            'items' => [],
-            'pagination' => [
-                'page' => 1,
-                'per_page' => 20,
-                'total' => 0,
-                'from' => 0,
-                'to' => 0,
-                'total_pages' => 0,
-                'has_more' => false,
-            ],
+            'data' => [],
+            'current_page' => 1,
+            'per_page' => 20,
+            'total' => 0,
+            'from' => null,
+            'to' => null,
+            'last_page' => 1,
             'facets' => [
                 'locations' => [],
                 'categories' => [],
@@ -206,16 +200,13 @@ it('renders normalized multi-select facet filters on the jobs index page', funct
             'per_page' => 20,
         ])
         ->andReturn([
-            'items' => [],
-            'pagination' => [
-                'page' => 1,
-                'per_page' => 20,
-                'total' => 0,
-                'from' => 0,
-                'to' => 0,
-                'total_pages' => 0,
-                'has_more' => false,
-            ],
+            'data' => [],
+            'current_page' => 1,
+            'per_page' => 20,
+            'total' => 0,
+            'from' => null,
+            'to' => null,
+            'last_page' => 1,
             'facets' => [
                 'locations' => [],
                 'categories' => [],
@@ -251,7 +242,7 @@ it('renders normalized multi-select facet filters on the jobs index page', funct
 it('returns normalized job suggestions for authenticated users', function () {
     $user = User::factory()->create();
 
-    $suggestService = Mockery::mock(JobSuggestService::class);
+    $suggestService = Mockery::mock(JobListingSearchService::class);
     $suggestService->shouldReceive('suggest')
         ->once()
         ->with('lar')
@@ -262,7 +253,7 @@ it('returns normalized job suggestions for authenticated users', function () {
             ],
         ]);
 
-    app()->instance(JobSuggestService::class, $suggestService);
+    app()->instance(JobListingSearchService::class, $suggestService);
 
     $response = $this->actingAs($user)
         ->getJson(route('jobs.suggest', ['q' => 'lar']));

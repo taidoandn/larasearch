@@ -9,7 +9,12 @@ use App\Models\JobListing;
 use App\Models\Location;
 use App\Models\Skill;
 use App\Models\User;
+use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia as Assert;
+
+beforeEach(function () {
+    Queue::fake();
+});
 
 test('guests are redirected to the login page for jobs', function () {
     $response = $this->get(route('jobs.index'));
@@ -23,16 +28,13 @@ test('authenticated users can visit the jobs index page', function () {
     $searchService->shouldReceive('search')
         ->once()
         ->andReturn([
-            'items' => [],
-            'pagination' => [
-                'page' => 1,
-                'per_page' => 20,
-                'total' => 0,
-                'from' => 0,
-                'to' => 0,
-                'total_pages' => 0,
-                'has_more' => false,
-            ],
+            'data' => [],
+            'current_page' => 1,
+            'per_page' => 20,
+            'total' => 0,
+            'from' => null,
+            'to' => null,
+            'last_page' => 1,
             'facets' => [
                 'locations' => [],
                 'categories' => [],

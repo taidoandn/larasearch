@@ -35,16 +35,23 @@ export type JobSearchContext = {
 };
 
 export type JobResultsPayload = {
-    items: JobResultItem[];
-    pagination: {
-        page: number;
-        per_page: number;
-        total: number;
-        from: number;
-        to: number;
-        total_pages: number;
-        has_more: boolean;
-    };
+    data: JobResultItem[];
+    current_page: number;
+    first_page_url: string | null;
+    from: number | null;
+    last_page: number;
+    last_page_url: string | null;
+    links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+    }>;
+    next_page_url: string | null;
+    path: string;
+    per_page: number;
+    prev_page_url: string | null;
+    to: number | null;
+    total: number;
     facets: {
         locations: JobFacetItem[];
         categories: JobFacetItem[];

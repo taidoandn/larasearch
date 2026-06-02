@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\ElasticsearchClient;
+use Elastic\Elasticsearch\Client;
 use Illuminate\Console\Command;
 
 class ElasticsearchHealthCommand extends Command
@@ -11,9 +11,9 @@ class ElasticsearchHealthCommand extends Command
 
     protected $description = 'Show Elasticsearch health and configured index aliases.';
 
-    public function handle(ElasticsearchClient $client): int
+    public function handle(Client $client): int
     {
-        $health = $client->health();
+        $health = $client->cluster()->health()->asArray();
 
         $this->info('Elasticsearch is reachable.');
         $this->line('Cluster: '.($health['cluster_name'] ?? 'unknown'));

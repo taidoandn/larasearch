@@ -1,5 +1,9 @@
 <?php
 
+use Elastic\Elasticsearch\Client;
+use Elastic\Elasticsearch\ClientBuilder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Support\FakeElasticsearchHttpClient;
 use Tests\TestCase;
 
 /*
@@ -14,7 +18,7 @@ use Tests\TestCase;
 */
 
 pest()->extend(TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->use(RefreshDatabase::class)
     ->in('Feature');
 
 /*
@@ -43,7 +47,17 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function fakeElasticsearchClient(array $response, ?FakeElasticsearchHttpClient &$http = null): Client
 {
-    // ..
+    return fakeElasticsearchClientWithResponses([$response], $http);
+}
+
+function fakeElasticsearchClientWithResponses(array $responses, ?FakeElasticsearchHttpClient &$http = null): Client
+{
+    $http = new FakeElasticsearchHttpClient($responses);
+
+    return ClientBuilder::create()
+        ->setHosts(['http://elasticsearch.test'])
+        ->setHttpClient($http)
+        ->build();
 }

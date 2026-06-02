@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\JobSuggestService;
+use App\Services\JobListingSearchService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class JobSuggestController extends Controller
 {
-    public function __invoke(Request $request, JobSuggestService $suggestService): JsonResponse
+    public function __invoke(Request $request, JobListingSearchService $searchService): JsonResponse
     {
         $validated = $request->validate([
             'q' => ['nullable', 'string', 'max:255'],
         ]);
 
         return response()->json(
-            $suggestService->suggest((string) ($validated['q'] ?? '')),
+            $searchService->suggest((string) ($validated['q'] ?? '')),
         );
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\ElasticsearchClient;
+use Elastic\Elasticsearch\Client;
 use Illuminate\Console\Command;
 
 class ElasticsearchSwitchAliasCommand extends Command
@@ -11,25 +11,29 @@ class ElasticsearchSwitchAliasCommand extends Command
 
     protected $description = 'Switch the job listing alias to a target index.';
 
-    public function handle(ElasticsearchClient $client): int
+    public function handle(Client $client): int
     {
         $index = (string) $this->argument('index');
         $alias = (string) ($this->option('alias') ?: config('elasticsearch.aliases.job_listings'));
 
-        $client->updateAliases([
-            [
-                'remove' => [
-                    'index' => '*',
-                    'alias' => $alias,
+        $client->indices()->updateAliases([
+            'body' => [
+                'actions' => [
+                    [
+                        'remove' => [
+                            'index' => '*',
+                            'alias' => $alias,
+                        ],
+                    ],
+                    [
+                        'add' => [
+                            'index' => $index,
+                            'alias' => $alias,
+                        ],
+                    ],
                 ],
             ],
-            [
-                'add' => [
-                    'index' => $index,
-                    'alias' => $alias,
-                ],
-            ],
-        ]);
+        ])->asArray();
 
         $this->info("Alias [{$alias}] now points to [{$index}].");
 

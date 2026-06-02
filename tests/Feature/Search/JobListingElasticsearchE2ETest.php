@@ -313,12 +313,12 @@ it('searches indexed job listings with normalized filters and facets', function 
         'per_page' => 10,
     ]);
 
-    expect($results['items'])->toHaveCount(1)
-        ->and($results['items'][0]['id'])->toBe($matchingJob->id)
-        ->and($results['items'][0]['slug'])->toBe("senior-laravel-search-engineer-{$suffix}")
+    expect($results['data'])->toHaveCount(1)
+        ->and($results['data'][0]['id'])->toBe($matchingJob->id)
+        ->and($results['data'][0]['slug'])->toBe("senior-laravel-search-engineer-{$suffix}")
         ->and($results['facets']['locations'][0]['value'])->toBe(Str::slug($location->city_name))
         ->and($results['facets']['locations'][0]['label'])->toBe($location->display_name)
-        ->and($results['pagination']['total'])->toBe(1);
+        ->and($results['total'])->toBe(1);
 
     cleanupLiveTestIndex($client, $index, $alias, $matchingJob->id);
 });

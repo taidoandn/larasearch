@@ -2,17 +2,17 @@
 
 use App\Contracts\SearchServiceInterface;
 use App\Models\JobListing;
-use App\Services\ElasticsearchClient;
+use Elastic\Elasticsearch\Client;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Queue;
 
 it('shows the configured alias names in the health command output', function () {
-    $client = Mockery::mock(ElasticsearchClient::class);
-    $client->shouldReceive('health')->once()->andReturn([
+    $client = fakeElasticsearchClient([
         'cluster_name' => 'larasearch',
         'status' => 'green',
-    ]);
+    ], $http);
 
-    app()->instance(ElasticsearchClient::class, $client);
+    app()->instance(Client::class, $client);
 
     $this->artisan('es:health')
         ->expectsOutputToContain('Elasticsearch is reachable.')
@@ -23,51 +23,45 @@ it('shows the configured alias names in the health command output', function () 
 it('creates and deletes the configured index', function () {
     config()->set('elasticsearch.indexes.job_listings', 'job_listings_test');
 
-    $client = Mockery::mock(ElasticsearchClient::class);
-    $client->shouldReceive('createIndex')->once()->with('job_listings_test', Mockery::type('array'))->andReturn(['acknowledged' => true]);
-    $client->shouldReceive('deleteIndex')->once()->with('job_listings_test')->andReturn(['acknowledged' => true]);
+    $client = fakeElasticsearchClientWithResponses([
+        ['acknowledged' => true],
+        ['acknowledged' => true],
+    ], $http);
 
-    app()->instance(ElasticsearchClient::class, $client);
+    app()->instance(Client::class, $client);
 
     $this->artisan('es:create-index')->assertExitCode(0);
     $this->artisan('es:delete-index')->assertExitCode(0);
+
+    expect((string) $http->requests[0]->getUri())->toContain('/job_listings_test')
+        ->and($http->requests[0]->getMethod())->toBe('PUT')
+        ->and((string) $http->requests[1]->getUri())->toContain('/job_listings_test')
+        ->and($http->requests[1]->getMethod())->toBe('DELETE');
 });
 
 it('switches the alias to the requested index', function () {
-    $client = Mockery::mock(ElasticsearchClient::class);
-    $client->shouldReceive('updateAliases')->once()->with(Mockery::on(function (array $actions): bool {
-        return data_get($actions, '1.add.index') === 'job_listings_v2'
-            && data_get($actions, '1.add.alias') === 'job_listings_current';
-    }))->andReturn(['acknowledged' => true]);
+    $client = fakeElasticsearchClient(['acknowledged' => true], $http);
 
-    app()->instance(ElasticsearchClient::class, $client);
+    app()->instance(Client::class, $client);
 
     $this->artisan('es:switch-alias job_listings_v2')
         ->expectsOutputToContain('job_listings_current')
         ->assertExitCode(0);
+
+    expect(data_get($http->jsonBody(), 'actions.1.add.index'))->toBe('job_listings_v2')
+        ->and(data_get($http->jsonBody(), 'actions.1.add.alias'))->toBe('job_listings_current');
 });
 
 it('reindexes job listings into a new index and switches the alias', function () {
+    Queue::fake();
+
     JobListing::factory()->count(3)->create();
 
-    $client = Mockery::mock(ElasticsearchClient::class);
-    $client->shouldReceive('createIndex')
-        ->once()
-        ->with('job_listings_v2', Mockery::type('array'))
-        ->andReturn(['acknowledged' => true]);
-    $client->shouldReceive('refreshIndex')
-        ->once()
-        ->ordered()
-        ->with('job_listings_v2')
-        ->andReturn(['_shards' => ['successful' => 1]]);
-    $client->shouldReceive('updateAliases')
-        ->once()
-        ->ordered()
-        ->with(Mockery::on(function (array $actions): bool {
-            return data_get($actions, '1.add.index') === 'job_listings_v2'
-                && data_get($actions, '1.add.alias') === 'job_listings_current';
-        }))
-        ->andReturn(['acknowledged' => true]);
+    $client = fakeElasticsearchClientWithResponses([
+        ['acknowledged' => true],
+        ['_shards' => ['successful' => 1]],
+        ['acknowledged' => true],
+    ], $http);
 
     $searchService = Mockery::mock(SearchServiceInterface::class);
     $searchService->shouldReceive('bulkIndexJobListings')
@@ -75,11 +69,14 @@ it('reindexes job listings into a new index and switches the alias', function ()
         ->with(Mockery::on(fn (Collection $jobListings): bool => $jobListings->count() === 3), 'job_listings_v2')
         ->andReturn(3);
 
-    app()->instance(ElasticsearchClient::class, $client);
+    app()->instance(Client::class, $client);
     app()->instance(SearchServiceInterface::class, $searchService);
 
     $this->artisan('es:reindex job_listings_v2 --chunk=10')
         ->expectsOutputToContain('Indexed 3 job listings')
         ->expectsOutputToContain('job_listings_current')
         ->assertExitCode(0);
+
+    expect(data_get($http->jsonBody(2), 'actions.1.add.index'))->toBe('job_listings_v2')
+        ->and(data_get($http->jsonBody(2), 'actions.1.add.alias'))->toBe('job_listings_current');
 });

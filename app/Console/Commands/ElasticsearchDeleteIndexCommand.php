@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\ElasticsearchClient;
+use Elastic\Elasticsearch\Client;
 use Illuminate\Console\Command;
 
 class ElasticsearchDeleteIndexCommand extends Command
@@ -11,11 +11,13 @@ class ElasticsearchDeleteIndexCommand extends Command
 
     protected $description = 'Delete the configured Elasticsearch index.';
 
-    public function handle(ElasticsearchClient $client): int
+    public function handle(Client $client): int
     {
         $index = (string) ($this->argument('index') ?: config('elasticsearch.indexes.job_listings'));
 
-        $client->deleteIndex($index);
+        $client->indices()->delete([
+            'index' => $index,
+        ])->asArray();
 
         $this->info("Deleted index [{$index}].");
 
