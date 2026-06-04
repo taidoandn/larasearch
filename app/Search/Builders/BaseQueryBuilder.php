@@ -1,9 +1,102 @@
 <?php
 
-namespace App\Concerns;
+namespace App\Search\Builders;
 
-trait BuildsElasticsearchQueries
+class BaseQueryBuilder
 {
+    /** @var array<string, mixed> */
+    protected array $body = [];
+
+    public function paginate(int $page, int $perPage): static
+    {
+        $this->body['from'] = ($page - 1) * $perPage;
+        $this->body['size'] = $perPage;
+
+        return $this;
+    }
+
+    public function filterTerm(string $field, bool|int|float|string $value): array
+    {
+        return ['term' => [$field => $value]];
+    }
+
+    public function filterRange(
+        string $field,
+        int|float|string|null $gt = null,
+        int|float|string|null $gte = null,
+        int|float|string|null $lt = null,
+        int|float|string|null $lte = null,
+    ): ?array {
+        $range = array_filter([
+            'gt' => $gt,
+            'gte' => $gte,
+            'lt' => $lt,
+            'lte' => $lte,
+        ], fn (int|float|string|null $value): bool => $value !== null);
+
+        if ($range === []) {
+            return null;
+        }
+
+        return ['range' => [$field => $range]];
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $sort
+     */
+    public function sortBy(array $sort): static
+    {
+        $this->body['sort'] = $sort;
+
+        return $this;
+    }
+
+    /**
+     * @param  array<int, string>  $fields
+     */
+    public function withHighlight(array $fields): static
+    {
+        $this->body['highlight'] = [
+            'fields' => collect($fields)
+                ->mapWithKeys(fn (string $field): array => [$field => (object) []])
+                ->all(),
+        ];
+
+        return $this;
+    }
+
+    public function withTermsAggregation(string $name, string $field, int $size = 1000): static
+    {
+        $this->body['aggs'][$name] = $this->termsAggregation($field, $size);
+
+        return $this;
+    }
+
+    public function withSuggestion(string $name, string $field, string $prefix, int $size = 5): static
+    {
+        $this->body['suggest'][$name] = [
+            'prefix' => $prefix,
+            'completion' => [
+                'field' => $field,
+                'skip_duplicates' => true,
+                'size' => $size,
+            ],
+        ];
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function build(): array
+    {
+        return $this->body;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     protected function matchAllQuery(): array
     {
         return ['match_all' => (object) []];
@@ -40,14 +133,6 @@ trait BuildsElasticsearchQueries
     }
 
     /**
-     * @return array<string, array<string, bool|int|float|string>>
-     */
-    protected function termFilter(string $field, bool|int|float|string $value): array
-    {
-        return ['term' => [$field => $value]];
-    }
-
-    /**
      * @param  array<int, bool|int|float|string>  $values
      * @return array<string, mixed>|null
      */
@@ -62,7 +147,7 @@ trait BuildsElasticsearchQueries
         return [
             'bool' => [
                 'should' => array_map(
-                    fn (bool|int|float|string $value): array => $this->termFilter($field, $value),
+                    fn (bool|int|float|string $value): array => $this->filterTerm($field, $value),
                     $normalizedValues,
                 ),
                 'minimum_should_match' => 1,
@@ -77,33 +162,9 @@ trait BuildsElasticsearchQueries
     protected function allTermFilters(string $field, array $values): array
     {
         return array_map(
-            fn (bool|int|float|string $value): array => $this->termFilter($field, $value),
+            fn (bool|int|float|string $value): array => $this->filterTerm($field, $value),
             $this->filledScalarValues($values),
         );
-    }
-
-    /**
-     * @return array<string, mixed>|null
-     */
-    protected function rangeFilter(
-        string $field,
-        int|float|string|null $gt = null,
-        int|float|string|null $gte = null,
-        int|float|string|null $lt = null,
-        int|float|string|null $lte = null,
-    ): ?array {
-        $range = array_filter([
-            'gt' => $gt,
-            'gte' => $gte,
-            'lt' => $lt,
-            'lte' => $lte,
-        ], fn (int|float|string|null $value): bool => $value !== null);
-
-        if ($range === []) {
-            return null;
-        }
-
-        return ['range' => [$field => $range]];
     }
 
     /**

@@ -1,10 +1,10 @@
 <?php
 
-use App\Indexers\JobListingIndexer;
 use App\Jobs\SyncJobListingToElasticsearch;
 use App\Models\Category;
 use App\Models\JobListing;
 use App\Models\Skill;
+use App\Search\Indexers\JobListingIndexer;
 use Database\Seeders\JobMarketplaceSeeder;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;

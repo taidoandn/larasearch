@@ -8,7 +8,7 @@ use App\Models\JobListing;
 use App\Models\Location;
 use App\Models\Skill;
 use App\Models\User;
-use App\Searchers\JobListingSearcher;
+use App\Search\Searchers\JobListingSearcher;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia as Assert;
 

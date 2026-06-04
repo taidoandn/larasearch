@@ -1,36 +1,84 @@
-# Technical Reference — Search Contract & Elasticsearch Integration
+# Technical Reference - Search Contract & Elasticsearch Integration
 
-> Canonical technical reference for the Larasearch search contract, Elasticsearch read model, and search service responsibilities.
+> Canonical technical reference for the Larasearch search contract, Elasticsearch read model, and operational workflow.
 
 ## Canonical Rules
 
 - MySQL is the transactional source of truth.
-- Elasticsearch is the user-facing search read model.
-- Controllers and UI consume app-owned normalized job-listing search output.
-- Elasticsearch helper fields such as `skills_text` are internal implementation details and must not leak into controller or UI contracts.
+- Elasticsearch is the user-facing job search read model.
+- Application code reads and writes through the `job_listings_current` alias, not a concrete versioned index.
+- Controllers and UI consume app-owned normalized output. Raw Elasticsearch `hits`, `_source`, `_score`, and highlight arrays must not leak into page props.
+- Elasticsearch helper fields such as `skills_text`, `skill_slugs`, and `suggest` are internal implementation details.
 
-## Current Implementation Notes
+## Current Structure
 
-- The authenticated `/jobs` page is served by `JobsController`, enters through `resources/js/pages/jobs/index.tsx`, and delegates to `resources/js/features/jobs/screens/search-screen.tsx`.
-- The authenticated `/jobs/{job:slug}` detail page is served by `JobShowController`, enters through `resources/js/pages/jobs/show.tsx`, and delegates to `resources/js/features/jobs/screens/detail-screen.tsx`.
-- Query validation is handled by `SearchRequest`.
-- `JobListingSearcher` normalizes backend responses into the canonical search contract before the page consumes them.
-- The suggest endpoint is served by `JobSuggestController` and backed by `JobListingSearcher`.
-- The job detail page uses a separate documented payload from `JobShowController`.
+```text
+app/
+├── Search/
+│   ├── Client/ElasticsearchClient.php
+│   ├── Builders/BaseQueryBuilder.php
+│   ├── Builders/JobListingQueryBuilder.php
+│   ├── Indexers/BaseIndexer.php
+│   ├── Indexers/JobListingIndexer.php
+│   ├── Searchers/JobListingSearcher.php
+│   └── Utils/
+│       ├── SearchNormalizer.php
+│       └── SearchResponseFormatter.php
+├── Services/
+│   ├── JobListingSearchService.php
+│   └── JobSearchFilters.php
+├── Jobs/SyncJobListingToElasticsearch.php
+├── Observers/JobListingObserver.php
+└── Console/Commands/*JobListing*Command.php
+```
+
+| Component | Responsibility |
+| --- | --- |
+| `ElasticsearchClient` | Builds the official Elasticsearch PHP client from config/env only |
+| `BaseQueryBuilder` | Generic Elasticsearch DSL helpers |
+| `JobListingQueryBuilder` | Job-listing search, facets, sorting, visibility filters, and completion suggest request bodies |
+| `SearchNormalizer` | Generic input helpers: keyword, lists, slugs, enums, numeric values, pagination, default compaction |
+| `JobSearchFilters` | Job-listing filter defaults and domain normalization |
+| `JobListingSearcher` | Executes search/suggest API calls through the alias and returns normalized app payloads |
+| `SearchResponseFormatter` | Generic ES response helpers only; no job-listing-specific formatting |
+| `JobListingIndexer` | Create/delete/refresh/switch alias, index one, bulk index many, delete one, full reindex |
+| `JobListing::toSearchDocument()` | Maps the Eloquent model and loaded relations into the Elasticsearch document |
+| `SyncJobListingToElasticsearch` + observer | Queue after-commit incremental sync and delete jobs |
+
+## Request Flow
+
+### Search page
+
+1. Authenticated user requests `GET /jobs`.
+2. `SearchRequest` validates query params.
+3. `JobsController` delegates to `JobListingSearchService`.
+4. `JobSearchFilters::normalize()` sanitizes and normalizes the app filter shape.
+5. `JobListingSearcher` builds DSL through `JobListingQueryBuilder`.
+6. Elasticsearch is queried through `config('elasticsearch.aliases.job_listings')`.
+7. `JobListingSearcher` maps hits, facets, highlights, and pagination into the page contract.
+8. Inertia renders `resources/js/pages/jobs/index.tsx`.
+
+### Suggestions
+
+1. Authenticated user requests `GET /jobs/suggest?q=lar`.
+2. `JobSuggestController` validates the keyword.
+3. `JobListingSearchService::suggest()` delegates to `JobListingSearcher`.
+4. `JobListingQueryBuilder::suggestBody()` uses the `suggest` completion field.
+5. `JobListingSearcher` returns at most 5 unique `{ label, type }` suggestions.
 
 ## Search Request Contract
 
-### Supported params
+Supported params:
 
 ```text
 q=laravel backend
 skills[]=php
 skills[]=mysql
-location=da-nang
-category=backend
-job_type=full-time
-work_model=hybrid
-experience_level=senior
+location[]=da-nang
+category[]=backend
+job_type[]=full-time
+work_model[]=hybrid
+experience_level[]=senior
 salary_min=1000
 salary_max=3000
 sort=best_match
@@ -38,43 +86,38 @@ page=1
 per_page=20
 ```
 
-### Rules
+Rules:
 
 - Empty `q` means filtered browse, not an error.
-- `category` and `skills[]` are normalized to canonical slug values before Elasticsearch filtering and before search context is round-tripped back into `/jobs`.
-- Default hard filters are:
-  - `is_active = true`
-  - `published_at <= now`
-  - `expires_at` is null or in the future
-- Supported sorts for Search MVP:
-  - `best_match`
-  - `newest`
-  - `salary_desc`
-  - `salary_asc`
-- Pagination is page-based for the MVP.
-- `per_page` should be capped by the application to a reasonable maximum such as `50`.
-- Sorting should include a deterministic secondary sort such as `id desc` when primary values tie.
+- Slug filters are normalized with `SearchNormalizer::slugList()`.
+- Enum filters are normalized through the backing enums.
+- `salary_min` and `salary_max` are non-negative integers or `null`.
+- Supported sorts are `best_match`, `newest`, `salary_desc`, and `salary_asc`.
+- `page` defaults to `1`; `per_page` defaults to `20` and is capped at `50`.
+- Default hard filters are `is_active = true`, `published_at <= now`, and `expires_at` missing or in the future.
 
 ## Search Response Contract
 
-This is the single public result shape consumed by controllers and UI.
+The search response uses Laravel paginator-compatible keys plus search metadata.
 
 ```json
 {
-    "items": [
+    "data": [
         {
             "id": 1,
-            "slug": "senior-laravel-backend-engineer-acme-tech",
+            "slug": "senior-laravel-backend-engineer",
             "title": "Senior Laravel Backend Engineer",
+            "description": "Build scalable APIs with Laravel.",
             "application_url": "https://jobs.example.test/apply/senior-laravel-backend-engineer",
             "company": {
                 "name": "Acme Tech",
                 "slug": "acme-tech",
+                "logo_url": "https://cdn.example.test/acme-logo.png",
                 "website": "https://acme.example.test"
             },
             "primary_location": "Da Nang",
             "locations": ["Da Nang"],
-            "skills": ["PHP", "Laravel", "MySQL"],
+            "skills": ["Laravel", "PHP"],
             "salary": {
                 "min": 1500,
                 "max": 2500,
@@ -82,8 +125,11 @@ This is the single public result shape consumed by controllers and UI.
                 "is_visible": true
             },
             "job_type": "full-time",
+            "job_type_label": "Full-time",
             "work_model": "hybrid",
+            "work_model_label": "Hybrid",
             "experience_level": "senior",
+            "experience_level_label": "Senior",
             "published_at": "2026-04-01T09:00:00Z",
             "highlight": {
                 "title": null,
@@ -91,15 +137,12 @@ This is the single public result shape consumed by controllers and UI.
             }
         }
     ],
-    "pagination": {
-        "page": 1,
-        "per_page": 20,
-        "total": 142,
-        "from": 1,
-        "to": 20,
-        "total_pages": 8,
-        "has_more": true
-    },
+    "current_page": 1,
+    "per_page": 20,
+    "total": 142,
+    "from": 1,
+    "to": 20,
+    "last_page": 8,
     "facets": {
         "locations": [],
         "categories": [],
@@ -112,19 +155,15 @@ This is the single public result shape consumed by controllers and UI.
 }
 ```
 
-### Response notes
+Response notes:
 
-- `items` is always present, even when empty.
-- `pagination.from` and `pagination.to` describe the visible row range for the current page and can be used for UI copy such as `Showing 21 to 21 of 21 results`.
-- Facet items may include a human-facing `label` alongside the canonical `value`.
-- `facets` may be empty objects or empty arrays when not requested yet, but the top-level key should remain stable.
-- `highlight` is normalized application output, not raw Elasticsearch highlight payloads.
-- Backends must return this contract even when their internal query engines differ.
-- Salary range filters are overlap-based and should keep one-sided salary documents searchable when only `salary_min` or `salary_max` is present in the indexed document.
+- `data` is always present, even when empty.
+- `from` and `to` may be `null` when there are no results.
+- Facet items use `{ value, label, count }`.
+- `highlight` is normalized app output, not the raw Elasticsearch highlight payload.
+- Salary filters are overlap-based so one-sided salary documents remain searchable.
 
 ## Suggest Contract
-
-The suggest endpoint is served via a Laravel controller action for the Inertia search experience.
 
 ```text
 GET /jobs/suggest?q=lar
@@ -137,98 +176,41 @@ GET /jobs/suggest?q=lar
         { "label": "Laravel", "type": "skill" }
     ]
 }
-
 ```
 
-### Suggest notes
+Suggest notes:
 
 - `items` is capped at 5 suggestions.
-- The backend may fetch more than 5 Elasticsearch hits internally before deduplicating so duplicate-heavy hit sets can still fill the 5-item response.
-- Suggest labels should be relevant to the typed keyword rather than every metadata field on a matching job hit.
-- Suggest matching allows safe typo tolerance for near matches such as `laravl` -> `Laravel`.
-- Suggestion `type` currently supports `job_title`, `skill`, and `company`.
+- Supported `type` values are `job_title`, `skill`, and `company`.
+- Matching uses the completion field first and can fall back to hit parsing in tests/legacy-shaped responses.
+- Labels are deduplicated by `type:label`.
 
-## Job Detail Contract
+## Elasticsearch Document
 
-The dedicated `jobs.show` page uses a separate payload shape from the search results list.
-
-```json
-{
-    "job": {
-        "id": 1,
-        "slug": "senior-laravel-backend-engineer-acme-tech",
-        "title": "Senior Laravel Backend Engineer",
-        "application_url": "https://jobs.example.test/apply/senior-laravel-backend-engineer",
-        "company": {
-            "name": "Acme Tech",
-            "slug": "acme-tech",
-            "summary": "Remote-first product engineering team.",
-            "meta": "SaaS • 51-200 • VN",
-            "website": "https://acme.example.test"
-        },
-        "primary_location": "Da Nang",
-        "locations": ["Da Nang"],
-        "job_type": "full-time",
-        "work_model": "hybrid",
-        "skills": ["Laravel", "PHP"],
-        "summary_metrics": [],
-        "requirements": [],
-        "published_at": "2026-04-01T09:00:00Z"
-    },
-    "relatedJobs": [],
-    "searchContext": {
-        "index_query": {}
-    }
-}
-```
-
-## Naming Map
-
-| Relational source | Elasticsearch field | Public contract |
-| --- | --- | --- |
-| `job_listings.id` | `id` | `id` |
-| `job_listings.slug` | `slug` | `slug` |
-| `job_listings.title` | `title` | `title` |
-| `job_listings.description` | `description` | `highlight.description` source |
-| `job_listings.job_type` | `job_type` | `job_type` |
-| `job_listings.work_model` | `work_model` | `work_model` |
-| `job_listings.experience_level` | `experience_level` | `experience_level` |
-| `job_listings.salary_min` | `salary_min` | `salary.min` |
-| `job_listings.salary_max` | `salary_max` | `salary.max` |
-| `job_listings.salary_currency` | `salary_currency` | `salary.currency` |
-| `job_listings.salary_is_visible` | `salary_is_visible` | `salary.is_visible` |
-| `job_listings.published_at` | `published_at` | `published_at` |
-| `job_listings.expires_at` | `expires_at` | internal filter field |
-| `companies.name` | `company_name` | `company.name` |
-| `companies.slug` | `company_slug` | `company.slug` |
-| `locations.city_name` | `location_slugs` | filter/facet `value` |
-| `locations.display_name` | `location_labels` | `locations`, `primary_location`, facet `label` |
-| `categories.slug` | `category_slugs` | facet/filter `value` |
-| `categories.name` | `category_names` | facet `label` |
-| `skills.slug` | `skill_slugs` | facet/filter `value` |
-| `skills.name` | `skills` | `skills`, facet `label` |
-| n/a | `skills_text` | internal full-text helper only |
-
-## Elasticsearch Job Document
-
-This is the canonical read model for the `job_listings_current` alias.
+`JobListing::toSearchDocument()` owns the document shape. The mapping/settings live in `config/elasticsearch_indices.php`.
 
 ```json
 {
     "id": 123,
     "slug": "senior-backend-engineer-acme-tech",
+    "suggest": {
+        "input": ["Senior Backend Engineer", "Acme Tech", "Laravel", "PHP"]
+    },
     "title": "Senior Backend Engineer",
-    "description": "Build scalable APIs using Laravel and MySQL...",
+    "description": "Build scalable APIs using Laravel and MySQL.",
     "short_description": "Build scalable APIs with Laravel.",
+    "application_url": "https://jobs.example.test/apply/senior-backend-engineer",
     "company_name": "Acme Tech",
     "company_slug": "acme-tech",
+    "company_logo_url": "https://cdn.example.test/acme-logo.png",
+    "company_website": "https://acme.example.test",
     "location_slugs": ["da-nang"],
     "location_labels": ["Da Nang"],
     "category_slugs": ["backend"],
     "category_names": ["Backend"],
-    "skill_slugs": ["laravel", "php", "mysql", "redis"],
-    "skills": ["Laravel", "PHP", "MySQL", "Redis"],
-    "skills_text": "Laravel PHP MySQL Redis",
+    "skill_slugs": ["laravel", "php", "mysql"],
+    "skills": ["Laravel", "PHP", "MySQL"],
+    "skills_text": "Laravel PHP MySQL",
     "job_type": "full-time",
     "work_model": "hybrid",
     "experience_level": "senior",
@@ -243,379 +225,151 @@ This is the canonical read model for the `job_listings_current` alias.
 }
 ```
 
-## Elasticsearch Mapping (job_listings_v1)
+Field groups:
 
-```json
-{
-    "settings": {
-        "number_of_shards": 1,
-        "number_of_replicas": 0,
-        "analysis": {
-            "filter": {
-                "autocomplete_filter": {
-                    "type": "edge_ngram",
-                    "min_gram": 2,
-                    "max_gram": 20
-                }
-            },
-            "analyzer": {
-                "autocomplete_analyzer": {
-                    "type": "custom",
-                    "tokenizer": "standard",
-                    "filter": ["lowercase", "autocomplete_filter"]
-                },
-                "autocomplete_search_analyzer": {
-                    "type": "custom",
-                    "tokenizer": "standard",
-                    "filter": ["lowercase"]
-                }
-            }
-        }
-    },
-    "mappings": {
-        "properties": {
-            "id": { "type": "integer" },
-            "slug": { "type": "keyword" },
-            "title": {
-                "type": "text",
-                "fields": {
-                    "keyword": { "type": "keyword" },
-                    "autocomplete": {
-                        "type": "text",
-                        "analyzer": "autocomplete_analyzer",
-                        "search_analyzer": "autocomplete_search_analyzer"
-                    }
-                }
-            },
-            "description": { "type": "text" },
-            "short_description": { "type": "text" },
-            "company_name": {
-                "type": "text",
-                "fields": {
-                    "keyword": { "type": "keyword" },
-                    "autocomplete": {
-                        "type": "text",
-                        "analyzer": "autocomplete_analyzer",
-                        "search_analyzer": "autocomplete_search_analyzer"
-                    }
-                }
-            },
-            "company_slug": { "type": "keyword" },
-            "locations": { "type": "keyword" },
-            "location_labels": { "type": "keyword" },
-            "category_names": { "type": "keyword" },
-            "skills": { "type": "keyword" },
-            "skills_text": {
-                "type": "text",
-                "fields": {
-                    "autocomplete": {
-                        "type": "text",
-                        "analyzer": "autocomplete_analyzer",
-                        "search_analyzer": "autocomplete_search_analyzer"
-                    }
-                }
-            },
-            "job_type": { "type": "keyword" },
-            "work_model": { "type": "keyword" },
-            "experience_level": { "type": "keyword" },
-            "salary_min": { "type": "integer" },
-            "salary_max": { "type": "integer" },
-            "salary_currency": { "type": "keyword" },
-            "salary_is_visible": { "type": "boolean" },
-            "is_featured": { "type": "boolean" },
-            "is_active": { "type": "boolean" },
-            "published_at": { "type": "date" },
-            "expires_at": { "type": "date" }
-        }
-    }
-}
-```
+- Text search: `title`, `description`, `short_description`, `company_name`, `skills_text`.
+- Filters/facets: `location_slugs`, `category_slugs`, `skill_slugs`, `job_type`, `work_model`, `experience_level`.
+- Sort/range: `published_at`, `salary_min`, `salary_max`, `id`.
+- Autocomplete: `suggest` completion field.
+- Visibility: `is_active`, `published_at`, `expires_at`.
 
-## Search Architecture Responsibilities
+## Config
 
-| Component | Responsibility |
-| --- | --- |
-| `JobListingSearcher` | App-facing job listing search and suggestion service backed by Elasticsearch |
-| `JobListingIndexer` | App-facing job listing indexing service backed by Elasticsearch |
-| `JobSearchQueryBuilder` | Elasticsearch Query DSL construction only |
-| `JobIndexDocumentFactory` | Maps relational models into Elasticsearch documents |
-| `SearchResultMapper` | Converts backend responses into the normalized app contract |
-| `ElasticsearchClient` | Low-level Elasticsearch transport wrapper |
-| sync job + observer | After-commit incremental indexing lifecycle |
-
-## Elasticsearch Query Builder (Core Logic)
-
-```php
-class JobSearchQueryBuilder
-{
-    public function build(array $params): array
-    {
-        $query = trim((string) ($params['q'] ?? ''));
-
-        return [
-            'query' => [
-                'function_score' => [
-                    'query' => [
-                        'bool' => [
-                            'must' => $query === ''
-                                ? [['match_all' => (object) []]]
-                                : [[
-                                    'multi_match' => [
-                                        'query' => $query,
-                                        'fields' => [
-                                            'title^3',
-                                            'skills_text^2',
-                                            'company_name^2',
-                                            'description',
-                                        ],
-                                    ],
-                                ]],
-                            'filter' => [
-                                ['term' => ['is_active' => true]],
-                                ['range' => ['published_at' => ['lte' => 'now']]],
-                                [
-                                    'bool' => [
-                                        'should' => [
-                                            ['bool' => ['must_not' => [['exists' => ['field' => 'expires_at']]]]],
-                                            ['range' => ['expires_at' => ['gt' => 'now']]],
-                                        ],
-                                        'minimum_should_match' => 1,
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                    'functions' => [
-                        [
-                            'exp' => [
-                                'published_at' => [
-                                    'scale' => '7d',
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ];
-    }
-}
-```
-
-## Suggest Service (Skeleton)
-
-```php
-class JobSuggestService
-{
-    public function suggest(string $keyword): array
-    {
-        $response = app('elasticsearch')->search([
-            'index' => config('elasticsearch.aliases.job_listings'),
-            'body' => [
-                'size' => 5,
-                'query' => [
-                    'multi_match' => [
-                        'query' => $keyword,
-                        'type' => 'best_fields',
-                        'fields' => [
-                            'title.autocomplete^3',
-                            'skills_text.autocomplete^2',
-                            'company_name.autocomplete',
-                        ],
-                    ],
-                ],
-            ],
-        ]);
-
-        return [
-            'items' => collect($response['hits']['hits'] ?? [])
-                ->map(fn (array $hit) => $this->mapSuggestionHit($hit))
-                ->all(),
-        ];
-    }
-
-    protected function mapSuggestionHit(array $hit): array
-    {
-        return [
-            'label' => '...',
-            'type' => 'job_title',
-        ];
-    }
-}
-```
-
-## Index Alias & Zero-Downtime Reindex
-
-### Alias Flow
-
-```text
-Before:
-app -> job_listings_current -> job_listings_v1
-
-Reindex:
-create job_listings_v2
-bulk import data into job_listings_v2
-validate job_listings_v2
-switch alias job_listings_current -> job_listings_v2
-
-After:
-app -> job_listings_current -> job_listings_v2
-```
-
-### Config shape
+`config/elasticsearch.php` owns connection, auth, retry, SSL, queue, alias, index, and prefix settings.
 
 ```php
 return [
-    'host' => env('ELASTICSEARCH_HOST', 'http://elasticsearch:9200'),
+    'hosts' => ['http://elasticsearch:9200'],
     'indexes' => [
         'job_listings' => env('ELASTICSEARCH_JOB_LISTINGS_INDEX', 'job_listings_v1'),
+    ],
+    'index_prefixes' => [
+        'job_listings' => env('ELASTICSEARCH_JOB_LISTINGS_INDEX_PREFIX', 'job_listings_'),
     ],
     'aliases' => [
         'job_listings' => env('ELASTICSEARCH_JOB_LISTINGS_ALIAS', 'job_listings_current'),
     ],
+    'indices' => require config_path('elasticsearch_indices.php'),
 ];
 ```
 
-### Validation before alias switch
+`config/elasticsearch_indices.php` currently contains the static `job_listings` settings and mappings. It uses lowercase/asciifolding analyzers and a `completion` field for suggestions. ICU is not required by default.
 
-- Document count matches MySQL.
-- Sample queries return expected normalized results.
-- Latency is acceptable.
-- Mapping contains the expected fields.
+## Index Alias & Reindexing
+
+```text
+Before:
+app -> job_listings_current -> job_listings_20260401_120000
+
+Reindex:
+create job_listings_20260605_120000
+bulk import MySQL job data into job_listings_20260605_120000
+refresh job_listings_20260605_120000
+switch alias job_listings_current -> job_listings_20260605_120000
+
+After:
+app -> job_listings_current -> job_listings_20260605_120000
+```
+
+`JobListingIndexer::reindex()` performs this flow for job listings. `BaseIndexer::switchAlias()` updates the alias atomically through Elasticsearch `_aliases`.
 
 ## Operational Workflow
 
-This section is the source of truth for running, rebuilding, and testing Elasticsearch in this project.
+Run all PHP/Artisan commands through Sail.
 
-### 1. Start local search services
-
-Use this when starting local development, after Docker restarts, or before any Elasticsearch command/test run.
+### Start local services
 
 ```bash
 vendor/bin/sail up -d
 vendor/bin/sail artisan es:health --no-interaction
 ```
 
-- `vendor/bin/sail up -d`
-  Starts Laravel, MySQL, Redis, Elasticsearch, and the rest of the local stack.
-- `vendor/bin/sail artisan es:health --no-interaction`
-  Confirms the app can reach Elasticsearch and reports cluster status.
-- Why it matters:
-  Most failures in the search flow are not code failures; they are container or Elasticsearch readiness problems. Health-check first.
+`es:health` checks cluster reachability and prints the configured job listings alias.
 
-### 2. Day-to-day development flow
+### Data backfill only
 
-Use this when application code is unchanged at the mapping level and you only need the active alias to reflect current MySQL data.
+Use this when mappings did not change and the alias target only needs current MySQL data.
 
 ```bash
-vendor/bin/sail artisan es:index-job-listings --no-interaction
+vendor/bin/sail artisan es:job-listings:index --no-interaction
 ```
 
-- What it does:
-  Bulk indexes all job listings into the index behind `job_listings_current`.
-- When to use it:
-  After seeding, after large data imports, or when Elasticsearch drifted and you want to repopulate the active read model without changing mappings.
-- Why it matters:
-  Observer-driven sync handles normal writes, but bulk indexing is the safe recovery path for large backfills.
-
-### 3. Preferred rebuild flow after mapping or document-shape changes
-
-Use this whenever `config/job_listings_v1_mapping.json`, `JobListing::toSearchDocument()`, or sort/filter fields change.
+Use an explicit target index when validating a non-live index:
 
 ```bash
-vendor/bin/sail artisan es:reindex job_listings_v2_YYYYMMDDHHMMSS --no-interaction
+vendor/bin/sail artisan es:job-listings:index --index=job_listings_YYYYMMDD_HHMMSS --no-interaction
 ```
 
-- What it does:
-  Creates a new versioned index, bulk indexes all jobs into it, refreshes it, and then switches `job_listings_current` to the new index.
-- When to use it:
-  After mapping changes, field type changes, analyzer changes, or any change that requires a clean rebuild.
-- Why it matters:
-  Elasticsearch mappings are immutable in practice for this workflow. Reindexing to a fresh versioned index is the safe path.
+### Zero-downtime rebuild
 
-### 4. Manual create -> index -> swap flow
-
-Use this when you want to inspect the target index before the alias switch or debug one step at a time.
+Use this after mapping, analyzer, document shape, sort, or filter field changes.
 
 ```bash
-vendor/bin/sail artisan es:create-index job_listings_v2_YYYYMMDDHHMMSS --no-interaction
-vendor/bin/sail artisan es:index-job-listings --index=job_listings_v2_YYYYMMDDHHMMSS --no-interaction
-vendor/bin/sail artisan es:switch-alias job_listings_v2_YYYYMMDDHHMMSS --no-interaction
+vendor/bin/sail artisan es:job-listings:reindex job_listings_YYYYMMDD_HHMMSS --chunk=250 --no-interaction
 ```
 
-- `es:create-index <index>`
-  Creates a fresh versioned index using the current mapping file.
-- `es:index-job-listings --index=<index>`
-  Bulk loads MySQL job data into that specific target index without changing the app alias.
-- `es:switch-alias <index>`
-  Moves `job_listings_current` to the validated versioned index.
-- When to use it:
-  During debugging, staged rollout checks, or when you want explicit control over validation before the alias switch.
-- Why it matters:
-  This is the clearest way to verify each step independently.
+This creates the target index, bulk indexes all job listings in chunks, refreshes the index, and switches the alias.
 
-### 5. Local test flow
+### Manual create -> index -> swap
 
-Use these tests when changing Elasticsearch commands, document shape, query building, or normalization logic.
+Use this when each step needs inspection before alias switch.
 
 ```bash
-vendor/bin/sail artisan test --compact tests/Feature/Console/ElasticsearchCommandsTest.php
-vendor/bin/sail artisan test --compact tests/Feature/Search/SyncJobListingToElasticsearchTest.php
-vendor/bin/sail artisan test --compact tests/Unit/ElasticsearchSearchServiceTest.php
+vendor/bin/sail artisan es:job-listings:create-index job_listings_YYYYMMDD_HHMMSS --no-interaction
+vendor/bin/sail artisan es:job-listings:index --index=job_listings_YYYYMMDD_HHMMSS --no-interaction
+vendor/bin/sail artisan es:job-listings:switch-alias job_listings_YYYYMMDD_HHMMSS --no-interaction
 ```
 
-- `ElasticsearchCommandsTest.php`
-  Covers command-level behavior such as health, alias switching, and reindex orchestration.
-- `SyncJobListingToElasticsearchTest.php`
-  Covers document mapping and queue-driven sync behavior from Laravel to Elasticsearch.
-- `ElasticsearchSearchServiceTest.php`
-  Covers query construction, normalization, filters, facets, and sort semantics.
-- Why it matters:
-  These are the fast checks that catch most Elasticsearch regressions before a live run.
+### Cleanup old inactive indices
 
-### 6. Live Elasticsearch E2E flow
+```bash
+vendor/bin/sail artisan es:job-listings:cleanup-old-indices --keep=2 --no-interaction
+```
 
-Use this when you need to prove the real Dockerized Elasticsearch node can create, sync, and delete documents end-to-end.
+The cleanup command deletes inactive indices matching the configured `job_listings` prefix and never deletes the active alias target.
+
+### Queue worker
+
+Incremental sync is queued after database commit. Run a worker when testing observer-driven sync outside the test suite:
+
+```bash
+vendor/bin/sail artisan queue:work database --queue=default --tries=3 --timeout=60
+```
+
+### Command summary
+
+| Command | Use it when |
+| --- | --- |
+| `vendor/bin/sail artisan es:health --no-interaction` | Check cluster reachability and configured alias |
+| `vendor/bin/sail artisan es:job-listings:index --no-interaction` | Backfill the active job listings alias target |
+| `vendor/bin/sail artisan es:job-listings:reindex <index> --no-interaction` | Rebuild into a versioned index and switch alias |
+| `vendor/bin/sail artisan es:job-listings:create-index <index> --no-interaction` | Create a target job listings index manually |
+| `vendor/bin/sail artisan es:job-listings:delete-index <index> --no-interaction` | Delete a job listings index manually |
+| `vendor/bin/sail artisan es:job-listings:switch-alias <index> --no-interaction` | Point the alias at a validated target index |
+| `vendor/bin/sail artisan es:job-listings:cleanup-old-indices --keep=2 --no-interaction` | Remove inactive old versioned indices |
+
+## Test Workflow
+
+Fast local checks:
+
+```bash
+vendor/bin/sail artisan test --compact tests/Feature/Console/ElasticsearchCommandsTest.php tests/Feature/Console/ElasticsearchIndexJobListingsCommandTest.php tests/Feature/Console/ElasticsearchCleanupOldIndicesCommandTest.php
+vendor/bin/sail artisan test --compact tests/Unit/ElasticsearchSearchServiceTest.php tests/Unit/JobSuggestServiceTest.php tests/Unit/Search/JobListingQueryBuilderTest.php tests/Unit/SearchNormalizerTest.php tests/Unit/Search/SearchResponseFormatterTest.php
+vendor/bin/sail artisan test --compact tests/Feature/Search/SyncJobListingToElasticsearchTest.php tests/Feature/Search/JobListingObserverTest.php
+```
+
+Live Elasticsearch E2E:
 
 ```bash
 docker exec -e ENABLE_LIVE_ES_TESTS=true larasearch-laravel.test-1 php artisan test --compact tests/Feature/Search/JobListingElasticsearchE2ETest.php
 ```
 
-- What it does:
-  Runs the live Elasticsearch feature test file with `ENABLE_LIVE_ES_TESTS=true` inside the PHP container.
-- When to use it:
-  After mapping changes, alias/reindex flow changes, sync pipeline changes, or before considering the Elasticsearch stack operationally verified.
-- Why it matters:
-  `vendor/bin/sail artisan test ...` will skip these tests unless that environment variable is present in the PHP process. This invocation is the reliable project-specific way to run them.
-
-### 7. Practical sequence by scenario
-
-- Local startup:
-  `vendor/bin/sail up -d` -> `vendor/bin/sail artisan es:health --no-interaction`
-- Mapping or document change:
-  run `es:reindex <new-versioned-index>` or use the explicit create -> index -> swap sequence
-- Data drift only:
-  run `es:index-job-listings --no-interaction`
-- Debugging command/index state:
-  run `es:health`, then use manual create -> index -> swap so each step can be inspected
-- Final live verification:
-  run `JobListingElasticsearchE2ETest.php` with `ENABLE_LIVE_ES_TESTS=true`
-
-### 8. Command selection summary
-
-| Command | Use it when | Why it matters |
-| --- | --- | --- |
-| `vendor/bin/sail artisan es:health --no-interaction` | Before any ES workflow | Confirms Elasticsearch is reachable from Laravel |
-| `vendor/bin/sail artisan es:index-job-listings --no-interaction` | Active index needs a full backfill | Repopulates the alias target without changing mappings |
-| `vendor/bin/sail artisan es:reindex <index> --no-interaction` | Mapping/document shape changed | Preferred zero-downtime rebuild flow |
-| `vendor/bin/sail artisan es:create-index <index> --no-interaction` | You want manual control | Creates a fresh versioned target |
-| `vendor/bin/sail artisan es:index-job-listings --index=<index> --no-interaction` | You want to validate before swap | Loads data into a non-live target index |
-| `vendor/bin/sail artisan es:switch-alias <index> --no-interaction` | New versioned index is ready | Makes the app read from the validated index |
-| `docker exec -e ENABLE_LIVE_ES_TESTS=true larasearch-laravel.test-1 php artisan test --compact tests/Feature/Search/JobListingElasticsearchE2ETest.php` | Need real ES end-to-end verification | Proves live create/sync/delete behavior against Dockerized Elasticsearch |
+The live test is skipped unless `ENABLE_LIVE_ES_TESTS=true` is present in the PHP process.
 
 ## Consistency Model
 
 - Writes go to MySQL first.
+- Sync jobs run after database commit.
 - Search reads come from Elasticsearch.
-- Incremental indexing runs after database commit.
-- Rebuilds are performed with bulk DB -> ES indexing plus alias swap.
-- Temporary drift between MySQL and Elasticsearch is expected and should be treated as eventual consistency, not as a fallback reason to expose provider-specific behavior.
+- Rebuilds use bulk DB -> ES indexing plus alias swap.
+- Temporary drift between MySQL and Elasticsearch is expected operationally and should be repaired by queued sync or bulk backfill.

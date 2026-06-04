@@ -123,6 +123,13 @@ class JobListing extends Model
         return [
             'id' => $this->getKey(),
             'slug' => $this->slug,
+            'suggest' => [
+                'input' => array_values(array_unique(array_filter([
+                    $this->title,
+                    $this->company?->name,
+                    ...$skillNames,
+                ]))),
+            ],
             'title' => $this->title,
             'description' => $this->description,
             'short_description' => $this->short_description,

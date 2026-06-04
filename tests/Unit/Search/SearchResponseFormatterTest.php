@@ -1,25 +1,14 @@
 <?php
 
-use App\Concerns\FormatsElasticsearchResponses;
+use App\Search\Utils\SearchResponseFormatter;
 use Tests\TestCase;
 
 uses(TestCase::class);
 
-class ResponseFormatterHarness
-{
-    use FormatsElasticsearchResponses {
-        totalHits as public;
-        hits as public;
-        formatLengthAwareResults as public;
-        aggregationBuckets as public;
-        facetItems as public;
-    }
-}
-
 it('formats elasticsearch totals and paginator-compatible arrays', function () {
-    $formatter = new ResponseFormatterHarness;
+    $formatter = new SearchResponseFormatter;
 
-    $results = $formatter->formatLengthAwareResults(
+    $results = $formatter->lengthAwareResults(
         items: [['id' => 1], ['id' => 2]],
         total: 22,
         page: 2,
@@ -39,7 +28,7 @@ it('formats elasticsearch totals and paginator-compatible arrays', function () {
 });
 
 it('formats labeled facet buckets', function () {
-    $formatter = new ResponseFormatterHarness;
+    $formatter = new SearchResponseFormatter;
 
     $facets = $formatter->facetItems([
         [

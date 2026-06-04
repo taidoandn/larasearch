@@ -2,13 +2,13 @@
 
 namespace App\Console\Commands;
 
-use App\Indexers\JobListingIndexer;
 use App\Models\JobListing;
+use App\Search\Indexers\JobListingIndexer;
 use Illuminate\Console\Command;
 
-class ElasticsearchIndexJobListingsCommand extends Command
+class IndexJobListingsCommand extends Command
 {
-    protected $signature = 'es:index-job-listings {--chunk=250} {--index=}';
+    protected $signature = 'es:job-listings:index {--chunk=250} {--index=}';
 
     protected $description = 'Bulk index job listings to Elasticsearch in chunks.';
 

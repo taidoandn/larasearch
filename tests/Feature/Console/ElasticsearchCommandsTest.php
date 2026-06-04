@@ -1,9 +1,8 @@
 <?php
 
-use App\Indexers\JobListingIndexer;
 use App\Models\JobListing;
+use App\Search\Indexers\JobListingIndexer;
 use Elastic\Elasticsearch\Client;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Queue;
 
 it('shows the configured alias names in the health command output', function () {
@@ -30,8 +29,8 @@ it('creates and deletes the configured index', function () {
 
     app()->instance(Client::class, $client);
 
-    $this->artisan('es:create-index')->assertExitCode(0);
-    $this->artisan('es:delete-index')->assertExitCode(0);
+    $this->artisan('es:job-listings:create-index')->assertExitCode(0);
+    $this->artisan('es:job-listings:delete-index')->assertExitCode(0);
 
     expect((string) $http->requests[0]->getUri())->toContain('/job_listings_test')
         ->and($http->requests[0]->getMethod())->toBe('PUT')
@@ -44,7 +43,7 @@ it('switches the alias to the requested index', function () {
 
     app()->instance(Client::class, $client);
 
-    $this->artisan('es:switch-alias job_listings_v2')
+    $this->artisan('es:job-listings:switch-alias job_listings_v2')
         ->expectsOutputToContain('job_listings_current')
         ->assertExitCode(0);
 
@@ -57,26 +56,19 @@ it('reindexes job listings into a new index and switches the alias', function ()
 
     JobListing::factory()->count(3)->create();
 
-    $client = fakeElasticsearchClientWithResponses([
-        ['acknowledged' => true],
-        ['_shards' => ['successful' => 1]],
-        ['acknowledged' => true],
-    ], $http);
+    $client = fakeElasticsearchClient(['acknowledged' => true]);
 
     $searchService = Mockery::mock(JobListingIndexer::class);
-    $searchService->shouldReceive('bulkIndex')
+    $searchService->shouldReceive('reindex')
         ->once()
-        ->with(Mockery::on(fn (Collection $jobListings): bool => $jobListings->count() === 3), 'job_listings_v2')
+        ->with('job_listings_v2', 10, 'job_listings_current')
         ->andReturn(3);
 
     app()->instance(Client::class, $client);
     app()->instance(JobListingIndexer::class, $searchService);
 
-    $this->artisan('es:reindex job_listings_v2 --chunk=10')
+    $this->artisan('es:job-listings:reindex job_listings_v2 --chunk=10')
         ->expectsOutputToContain('Indexed 3 job listings')
         ->expectsOutputToContain('job_listings_current')
         ->assertExitCode(0);
-
-    expect(data_get($http->jsonBody(2), 'actions.1.add.index'))->toBe('job_listings_v2')
-        ->and(data_get($http->jsonBody(2), 'actions.1.add.alias'))->toBe('job_listings_current');
 });

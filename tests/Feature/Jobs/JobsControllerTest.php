@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\User;
-use App\Searchers\JobListingSearcher;
+use App\Search\Searchers\JobListingSearcher;
 
 it('renders the jobs index page with canonical job props', function () {
     $user = User::factory()->create();

@@ -18,7 +18,7 @@ class ElasticsearchHealthCommand extends Command
         $this->info('Elasticsearch is reachable.');
         $this->line('Cluster: '.($health['cluster_name'] ?? 'unknown'));
         $this->line('Status: '.($health['status'] ?? 'unknown'));
-        $this->line('Alias: '.config('elasticsearch.aliases.job_listings'));
+        $this->line('Job listings alias: '.config('elasticsearch.aliases.job_listings'));
 
         return self::SUCCESS;
     }

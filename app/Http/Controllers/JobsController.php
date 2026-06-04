@@ -3,20 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SearchRequest;
-use App\Searchers\JobListingSearcher;
-use App\Services\JobSearchFilters;
+use App\Services\JobListingSearchService;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class JobsController extends Controller
 {
-    public function __invoke(SearchRequest $request, JobListingSearcher $searcher): Response
+    public function __invoke(SearchRequest $request, JobListingSearchService $searchService): Response
     {
-        $filters = JobSearchFilters::normalize($request->validated());
+        $search = $searchService->search($request->validated());
 
         return Inertia::render('jobs/index', [
-            'results' => $searcher->search($filters),
-            'filters' => $filters,
+            'results' => $search['results'],
+            'filters' => $search['filters'],
         ]);
     }
 }

@@ -1,13 +1,13 @@
 <?php
 
-use App\Indexers\JobListingIndexer;
 use App\Jobs\SyncJobListingToElasticsearch;
 use App\Models\Category;
 use App\Models\Company;
 use App\Models\JobListing;
 use App\Models\Location;
 use App\Models\Skill;
-use App\Searchers\JobListingSearcher;
+use App\Search\Indexers\JobListingIndexer;
+use App\Search\Searchers\JobListingSearcher;
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Illuminate\Database\Eloquent\Collection;

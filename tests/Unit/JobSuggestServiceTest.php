@@ -1,6 +1,6 @@
 <?php
 
-use App\Searchers\JobListingSearcher;
+use App\Search\Searchers\JobListingSearcher;
 use Tests\TestCase;
 
 uses(TestCase::class);
@@ -26,9 +26,9 @@ it('returns normalized suggestions for partial keywords', function () {
     $body = $http->jsonBody();
 
     expect((string) $http->requests[0]->getUri())->toContain('/job_listings_current/_search')
-        ->and($body['query']['bool']['must'][0]['multi_match']['query'])->toBe('lar')
-        ->and($body['query']['bool']['must'][0]['multi_match']['fields'])->toContain('title.autocomplete^3')
-        ->and($body['query']['bool']['must'][0]['multi_match']['fuzziness'])->toBe('AUTO')
+        ->and($body['size'])->toBe(0)
+        ->and($body['suggest']['job_listing_suggest']['prefix'])->toBe('lar')
+        ->and($body['suggest']['job_listing_suggest']['completion']['field'])->toBe('suggest')
         ->and($body['query']['bool']['filter'][0])->toBe(['term' => ['is_active' => true]])
         ->and($results)->toBe([
             'items' => [

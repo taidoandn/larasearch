@@ -1,0 +1,108 @@
+<?php
+
+return [
+    'job_listings' => [
+        'settings' => [
+            'number_of_shards' => 1,
+            'number_of_replicas' => 0,
+            'analysis' => [
+                'filter' => [
+                    'autocomplete_filter' => [
+                        'type' => 'edge_ngram',
+                        'min_gram' => 2,
+                        'max_gram' => 20,
+                    ],
+                ],
+                'analyzer' => [
+                    'folding_text_analyzer' => [
+                        'type' => 'custom',
+                        'tokenizer' => 'standard',
+                        'filter' => ['lowercase', 'asciifolding'],
+                    ],
+                    'autocomplete_analyzer' => [
+                        'type' => 'custom',
+                        'tokenizer' => 'standard',
+                        'filter' => ['lowercase', 'asciifolding', 'autocomplete_filter'],
+                    ],
+                    'autocomplete_search_analyzer' => [
+                        'type' => 'custom',
+                        'tokenizer' => 'standard',
+                        'filter' => ['lowercase', 'asciifolding'],
+                    ],
+                ],
+            ],
+        ],
+        'mappings' => [
+            'properties' => [
+                'id' => ['type' => 'integer'],
+                'slug' => ['type' => 'keyword'],
+                'suggest' => [
+                    'type' => 'completion',
+                    'analyzer' => 'folding_text_analyzer',
+                    'search_analyzer' => 'folding_text_analyzer',
+                    'preserve_separators' => true,
+                    'preserve_position_increments' => true,
+                    'max_input_length' => 80,
+                ],
+                'title' => [
+                    'type' => 'text',
+                    'analyzer' => 'folding_text_analyzer',
+                    'fields' => [
+                        'keyword' => ['type' => 'keyword'],
+                        'autocomplete' => [
+                            'type' => 'text',
+                            'analyzer' => 'autocomplete_analyzer',
+                            'search_analyzer' => 'autocomplete_search_analyzer',
+                        ],
+                    ],
+                ],
+                'description' => ['type' => 'text', 'analyzer' => 'folding_text_analyzer'],
+                'short_description' => ['type' => 'text', 'analyzer' => 'folding_text_analyzer'],
+                'application_url' => ['type' => 'keyword', 'ignore_above' => 2048],
+                'company_name' => [
+                    'type' => 'text',
+                    'analyzer' => 'folding_text_analyzer',
+                    'fields' => [
+                        'keyword' => ['type' => 'keyword'],
+                        'autocomplete' => [
+                            'type' => 'text',
+                            'analyzer' => 'autocomplete_analyzer',
+                            'search_analyzer' => 'autocomplete_search_analyzer',
+                        ],
+                    ],
+                ],
+                'company_slug' => ['type' => 'keyword'],
+                'company_logo_url' => ['type' => 'keyword', 'ignore_above' => 2048],
+                'company_website' => ['type' => 'keyword', 'ignore_above' => 2048],
+                'location_slugs' => ['type' => 'keyword'],
+                'location_labels' => ['type' => 'keyword'],
+                'category_slugs' => ['type' => 'keyword'],
+                'category_names' => ['type' => 'keyword'],
+                'skill_slugs' => ['type' => 'keyword'],
+                'skills' => ['type' => 'keyword'],
+                'skills_text' => [
+                    'type' => 'text',
+                    'analyzer' => 'folding_text_analyzer',
+                    'fields' => [
+                        'autocomplete' => [
+                            'type' => 'text',
+                            'analyzer' => 'autocomplete_analyzer',
+                            'search_analyzer' => 'autocomplete_search_analyzer',
+                        ],
+                    ],
+                ],
+                'job_type' => ['type' => 'keyword'],
+                'work_model' => ['type' => 'keyword'],
+                'experience_level' => ['type' => 'keyword'],
+                'salary_min' => ['type' => 'integer'],
+                'salary_max' => ['type' => 'integer'],
+                'salary_currency' => ['type' => 'keyword'],
+                'salary_is_visible' => ['type' => 'boolean'],
+                'is_featured' => ['type' => 'boolean'],
+                'is_active' => ['type' => 'boolean'],
+                'published_at' => ['type' => 'date'],
+                'expires_at' => ['type' => 'date'],
+            ],
+        ],
+    ],
+];

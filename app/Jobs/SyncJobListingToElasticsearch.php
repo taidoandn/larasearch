@@ -2,8 +2,8 @@
 
 namespace App\Jobs;
 
-use App\Indexers\JobListingIndexer;
 use App\Models\JobListing;
+use App\Search\Indexers\JobListingIndexer;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -34,6 +34,6 @@ class SyncJobListingToElasticsearch implements ShouldQueue
             return;
         }
 
-        $indexer->index($jobListing);
+        $indexer->indexJobListing($jobListing);
     }
 }

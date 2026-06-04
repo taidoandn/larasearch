@@ -16,7 +16,7 @@ The short-term goal is to deliver a working MVP focused on **job search** with m
 | [erd.md](erd.md) | Entity-Relationship Diagram — text-based domain model with phase-based relationship maps and cardinality summary |
 | [schema.md](schema.md) | Database Schema — phased relational table definitions, column specs, indexes, and implementation notes |
 | [task.md](task.md) | Task Plan — phase-aligned execution checklist with milestone exit criteria and definition of done |
-| [reference.md](reference.md) | Technical Reference — Elasticsearch mapping examples, service skeletons, query DSL samples, alias flow patterns, and the canonical run/reindex/test workflow |
+| [reference.md](reference.md) | Technical Reference — current Laravel search structure, Elasticsearch document/mapping contract, command workflow, alias strategy, and verification flow |
 
 ---
 

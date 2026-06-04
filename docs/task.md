@@ -29,14 +29,14 @@
 
 ### Elasticsearch Client & Ops
 - [x] Install `elasticsearch/elasticsearch`
-- [x] Create `App\Services\ElasticsearchClient`
+- [x] Create `App\Search\Client\ElasticsearchClient`
 - [x] Add `es:health` artisan command
 - [x] Define alias strategy:
   - [x] `job_listings_v1` (versioned index)
   - [x] `job_listings_current` (alias used by app)
-- [x] Create `es:create-index` command
-- [x] Create `es:delete-index` command
-- [x] Create `es:switch-alias` command
+- [x] Create `es:job-listings:create-index` command
+- [x] Create `es:job-listings:delete-index` command
+- [x] Create `es:job-listings:switch-alias` command
 - [x] Support bulk indexing to an explicit versioned index before alias switch
 
 ### Phase 0 Schema & Models
@@ -52,13 +52,16 @@
 - [x] Seed at least 5k realistic jobs
 
 ### Search Architecture Scaffolding
-- [x] Create `JobListingSearcher`
-- [x] Create `JobListingIndexer`
+- [x] Create `App\Search\Searchers\JobListingSearcher`
+- [x] Create `App\Search\Indexers\JobListingIndexer`
+- [x] Create `App\Search\Builders\JobListingQueryBuilder`
+- [x] Create generic `App\Search\Utils\SearchNormalizer`
+- [x] Create domain `App\Services\JobSearchFilters`
 - [x] Register Elasticsearch client binding in service provider
 - [x] Create `SyncJobListingToElasticsearch` queued job
 - [x] Create `JobListingObserver`
 - [x] Dispatch sync only after DB commit
-- [x] Create bulk command `es:index-job-listings` with chunked progress
+- [x] Create bulk command `es:job-listings:index` with chunked progress
 - [x] Dispatch delete syncs before company cascade deletes so Elasticsearch does not retain stale listings
 - [ ] TODO later: reindex denormalized taxonomy/admin edits when category, skill, or job-listing pivot edits become part of the supported write flows
 
@@ -70,21 +73,21 @@ Authenticated users access the search experience in the current MVP scope.
 The canonical search payload and Elasticsearch document shape are defined in `docs/reference.md`.
 
 ### Elasticsearch Mapping & Indexing
-- [x] Create versioned ES mapping JSON file (e.g. `config/elasticsearch/job_listings_mapping.json`)
+- [x] Create static ES mapping/settings config in `config/elasticsearch_indices.php`
 - [x] Design ES document shape for `job_listings`
 - [x] Map text fields for title / description / company / skills
 - [x] Map keyword fields for filters and facets
 - [x] Map numeric/date fields for range and sort
-- [x] Add autocomplete analyzer (edge_ngram) for title, company, skills
+- [x] Add completion-backed suggestions and autocomplete analyzers
 - [x] Flatten categories, skills, location, company fields into document
-- [x] Implement `es:reindex` command with alias swap and validation
+- [x] Implement `es:job-listings:reindex` command with alias swap
 
 ### Core Search Features
 - [x] Implement keyword full-text search (multi_match)
 - [x] Implement filters: location, category, job type, salary range, work model, experience level, skills
 - [x] Implement aggregations/facets for filter counts
 - [x] Implement sorting: best match, newest, salary asc/desc
-- [x] Implement the canonical `items` / `pagination` / `facets` / `sort` result contract
+- [x] Implement the canonical paginator-style `data` / `current_page` / `facets` / `sort` result contract
 - [x] Implement highlighting for matched terms
 - [x] Add relevance boosting:
   - [x] Boost title field (highest)
@@ -96,9 +99,9 @@ The canonical search payload and Elasticsearch document shape are defined in `do
 
 ### Suggestions & Related Jobs
 - [x] Implement autocomplete/suggest endpoint
-- [x] Create `JobSuggestService`
+- [x] Serve suggestions through `JobSuggestController`, `JobListingSearchService`, and `JobListingSearcher`
 - [x] Add typo tolerance where safe
-- [x] Implement related jobs query (more-like-this or similar)
+- [x] Implement related jobs payload on the job detail page from visible relational listings
 
 ### Search UI (React + Inertia)
 - [x] Create jobs index page (`resources/js/pages/jobs/index.tsx` wrapper delegating to `resources/js/features/jobs/screens/search-screen.tsx`)

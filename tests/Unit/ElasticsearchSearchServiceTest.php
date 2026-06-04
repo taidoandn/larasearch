@@ -3,7 +3,7 @@
 use App\Enums\ExperienceLevel;
 use App\Enums\JobType;
 use App\Enums\WorkModel;
-use App\Searchers\JobListingSearcher;
+use App\Search\Searchers\JobListingSearcher;
 use Tests\TestCase;
 
 uses(TestCase::class);

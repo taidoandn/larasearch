@@ -1,7 +1,7 @@
 <?php
 
-use App\Indexers\JobListingIndexer;
 use App\Models\JobListing;
+use App\Search\Indexers\JobListingIndexer;
 use Illuminate\Support\Facades\Queue;
 
 it('indexes job listings in chunks', function () {
@@ -17,7 +17,7 @@ it('indexes job listings in chunks', function () {
 
     app()->instance(JobListingIndexer::class, $searchService);
 
-    $this->artisan('es:index-job-listings --chunk=2')
+    $this->artisan('es:job-listings:index --chunk=2')
         ->expectsOutputToContain('Indexed 3 job listings to [job_listings_current].')
         ->assertExitCode(0);
 });
@@ -36,7 +36,7 @@ it('indexes job listings to an explicit versioned index', function () {
 
     app()->instance(JobListingIndexer::class, $searchService);
 
-    $this->artisan('es:index-job-listings --chunk=2 --index=job_listings_v2')
+    $this->artisan('es:job-listings:index --chunk=2 --index=job_listings_v2')
         ->expectsOutputToContain('Indexed 3 job listings to [job_listings_v2].')
         ->assertExitCode(0);
 });

@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Concerns;
+namespace App\Search\Utils;
 
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 
-trait FormatsElasticsearchResponses
+class SearchResponseFormatter
 {
-    protected function totalHits(array $response): int
+    public function totalHits(array $response): int
     {
         return (int) data_get($response, 'hits.total.value', 0);
     }
@@ -15,7 +15,7 @@ trait FormatsElasticsearchResponses
     /**
      * @return array<int, array<string, mixed>>
      */
-    protected function hits(array $response): array
+    public function hits(array $response): array
     {
         /** @var array<int, array<string, mixed>> $hits */
         $hits = data_get($response, 'hits.hits', []);
@@ -28,7 +28,7 @@ trait FormatsElasticsearchResponses
      * @param  array<string, mixed>  $extra
      * @return array<string, mixed>
      */
-    protected function formatLengthAwareResults(array $items, int $total, int $page, int $perPage, array $extra = []): array
+    public function lengthAwareResults(array $items, int $total, int $page, int $perPage, array $extra = []): array
     {
         $paginator = new LengthAwarePaginator(
             items: $items,
@@ -47,7 +47,7 @@ trait FormatsElasticsearchResponses
      * @param  array<string, mixed>  $aggregations
      * @return array<int, array<string, mixed>>
      */
-    protected function aggregationBuckets(array $aggregations, string $name): array
+    public function aggregationBuckets(array $aggregations, string $name): array
     {
         /** @var array<int, array<string, mixed>> $buckets */
         $buckets = $aggregations[$name]['scope']['values']['buckets']
@@ -66,7 +66,7 @@ trait FormatsElasticsearchResponses
      * @param  array<int, array<string, mixed>>  $buckets
      * @return array<int, array<string, int|string>>
      */
-    protected function facetItems(array $buckets, ?string $labelField = null, ?string $lookupField = null): array
+    public function facetItems(array $buckets, ?string $labelField = null, ?string $lookupField = null): array
     {
         return array_map(
             fn (array $bucket): array => [
@@ -127,26 +127,5 @@ trait FormatsElasticsearchResponses
         }
 
         return $bucketKey;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    protected function stringList(mixed $values): array
-    {
-        if (! is_array($values)) {
-            return [];
-        }
-
-        return array_values(array_map(static fn (mixed $value): string => (string) $value, $values));
-    }
-
-    protected function firstString(mixed $values): ?string
-    {
-        if (! is_array($values) || $values === []) {
-            return null;
-        }
-
-        return (string) $values[0];
     }
 }
