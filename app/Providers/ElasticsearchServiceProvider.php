@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Contracts\SearchServiceInterface;
-use App\Services\JobListingSearchService;
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
 use Illuminate\Support\ServiceProvider;
@@ -20,7 +18,5 @@ class ElasticsearchServiceProvider extends ServiceProvider
                 ])
                 ->build();
         });
-
-        $this->app->bind(SearchServiceInterface::class, JobListingSearchService::class);
     }
 }

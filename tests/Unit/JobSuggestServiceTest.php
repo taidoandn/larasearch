@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\JobListingSearchService;
+use App\Searchers\JobListingSearcher;
 use Tests\TestCase;
 
 uses(TestCase::class);
@@ -22,7 +22,7 @@ it('returns normalized suggestions for partial keywords', function () {
         ],
     ], $http);
 
-    $results = (new JobListingSearchService($client))->suggest('lar');
+    $results = (new JobListingSearcher($client))->suggest('lar');
     $body = $http->jsonBody();
 
     expect((string) $http->requests[0]->getUri())->toContain('/job_listings_current/_search')
@@ -62,7 +62,7 @@ it('filters out suggestion labels that do not match and caps unique results', fu
         ],
     ], $http);
 
-    $results = (new JobListingSearchService($client))->suggest('lar');
+    $results = (new JobListingSearcher($client))->suggest('lar');
 
     expect($results['items'])->toHaveCount(5)
         ->and($results['items'])->toBe([
@@ -77,7 +77,7 @@ it('filters out suggestion labels that do not match and caps unique results', fu
 it('returns no suggestions for empty keywords', function () {
     $client = fakeElasticsearchClient([], $http);
 
-    expect((new JobListingSearchService($client))->suggest('   '))->toBe([
+    expect((new JobListingSearcher($client))->suggest('   '))->toBe([
         'items' => [],
     ])->and($http->requests)->toBe([]);
 });

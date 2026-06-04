@@ -1,6 +1,6 @@
 <?php
 
-use App\Contracts\SearchServiceInterface;
+use App\Indexers\JobListingIndexer;
 use App\Models\JobListing;
 use Elastic\Elasticsearch\Client;
 use Illuminate\Support\Collection;
@@ -63,14 +63,14 @@ it('reindexes job listings into a new index and switches the alias', function ()
         ['acknowledged' => true],
     ], $http);
 
-    $searchService = Mockery::mock(SearchServiceInterface::class);
-    $searchService->shouldReceive('bulkIndexJobListings')
+    $searchService = Mockery::mock(JobListingIndexer::class);
+    $searchService->shouldReceive('bulkIndex')
         ->once()
         ->with(Mockery::on(fn (Collection $jobListings): bool => $jobListings->count() === 3), 'job_listings_v2')
         ->andReturn(3);
 
     app()->instance(Client::class, $client);
-    app()->instance(SearchServiceInterface::class, $searchService);
+    app()->instance(JobListingIndexer::class, $searchService);
 
     $this->artisan('es:reindex job_listings_v2 --chunk=10')
         ->expectsOutputToContain('Indexed 3 job listings')

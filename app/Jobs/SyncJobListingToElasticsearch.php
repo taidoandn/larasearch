@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Contracts\SearchServiceInterface;
+use App\Indexers\JobListingIndexer;
 use App\Models\JobListing;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -18,10 +18,10 @@ class SyncJobListingToElasticsearch implements ShouldQueue
         $this->afterCommit();
     }
 
-    public function handle(SearchServiceInterface $searchService): void
+    public function handle(JobListingIndexer $indexer): void
     {
         if ($this->delete) {
-            $searchService->deleteJobListing($this->jobListingId);
+            $indexer->delete($this->jobListingId);
 
             return;
         }
@@ -34,6 +34,6 @@ class SyncJobListingToElasticsearch implements ShouldQueue
             return;
         }
 
-        $searchService->indexJobListing($jobListing);
+        $indexer->index($jobListing);
     }
 }

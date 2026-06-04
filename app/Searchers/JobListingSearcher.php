@@ -1,19 +1,17 @@
 <?php
 
-namespace App\Services;
+namespace App\Searchers;
 
 use App\Concerns\BuildsElasticsearchQueries;
 use App\Concerns\FormatsElasticsearchResponses;
-use App\Contracts\SearchServiceInterface;
 use App\Enums\ExperienceLevel;
 use App\Enums\JobType;
 use App\Enums\WorkModel;
-use App\Models\JobListing;
 use Elastic\Elasticsearch\Client;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
-class JobListingSearchService implements SearchServiceInterface
+class JobListingSearcher
 {
     use BuildsElasticsearchQueries;
     use FormatsElasticsearchResponses;
@@ -151,49 +149,6 @@ class JobListingSearchService implements SearchServiceInterface
         return [
             'items' => $this->collectSuggestions($this->hits($response), $keyword),
         ];
-    }
-
-    public function indexJobListing(JobListing $jobListing): void
-    {
-        $this->client->index([
-            'index' => $this->alias(),
-            'id' => (string) $jobListing->getKey(),
-            'body' => $jobListing->toSearchDocument(),
-        ])->asArray();
-    }
-
-    public function deleteJobListing(int $jobListingId): void
-    {
-        $this->client->delete([
-            'index' => $this->alias(),
-            'id' => (string) $jobListingId,
-        ])->asArray();
-    }
-
-    public function bulkIndexJobListings(iterable $jobListings, ?string $target = null): int
-    {
-        $operations = [];
-        $count = 0;
-        $index = $target ?? $this->alias();
-
-        foreach ($jobListings as $jobListing) {
-            $operations[] = [
-                'index' => [
-                    '_index' => $index,
-                    '_id' => $jobListing->getKey(),
-                ],
-            ];
-            $operations[] = $jobListing->toSearchDocument();
-            $count++;
-        }
-
-        if ($operations !== []) {
-            $this->client->bulk([
-                'body' => $operations,
-            ])->asArray();
-        }
-
-        return $count;
     }
 
     public function alias(): string

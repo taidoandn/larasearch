@@ -3,7 +3,7 @@
 use App\Enums\ExperienceLevel;
 use App\Enums\JobType;
 use App\Enums\WorkModel;
-use App\Services\JobListingSearchService;
+use App\Searchers\JobListingSearcher;
 use Tests\TestCase;
 
 uses(TestCase::class);
@@ -19,7 +19,7 @@ it('builds a filtered browse query and returns length aware paginator output', f
         'aggregations' => [],
     ], $http);
 
-    $results = (new JobListingSearchService($client))->search([
+    $results = (new JobListingSearcher($client))->search([
         'q' => '',
         'page' => 2,
         'per_page' => 20,
@@ -111,7 +111,7 @@ it('normalizes elasticsearch hits into the canonical job listing result items', 
         ],
     ], $http);
 
-    $results = (new JobListingSearchService($client))->search([
+    $results = (new JobListingSearcher($client))->search([
         'q' => 'laravel',
         'location' => ['da-nang'],
         'skills' => ['laravel'],
@@ -169,7 +169,7 @@ it('keeps selected filters scoped correctly for results and facets', function ()
         'aggregations' => [],
     ], $http);
 
-    (new JobListingSearchService($client))->search([
+    (new JobListingSearcher($client))->search([
         'location' => ["St. John's", 'Da Nang'],
         'skills' => ['laravel', 'php'],
         'category' => ['platform-engineering'],

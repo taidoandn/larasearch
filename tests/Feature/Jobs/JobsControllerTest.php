@@ -1,13 +1,12 @@
 <?php
 
-use App\Contracts\SearchServiceInterface;
 use App\Models\User;
-use App\Services\JobListingSearchService;
+use App\Searchers\JobListingSearcher;
 
 it('renders the jobs index page with canonical job props', function () {
     $user = User::factory()->create();
 
-    $searchService = Mockery::mock(SearchServiceInterface::class);
+    $searchService = Mockery::mock(JobListingSearcher::class);
     $searchService->shouldReceive('search')
         ->once()
         ->with([
@@ -73,7 +72,7 @@ it('renders the jobs index page with canonical job props', function () {
             'sort' => 'newest',
         ]);
 
-    app()->instance(SearchServiceInterface::class, $searchService);
+    app()->instance(JobListingSearcher::class, $searchService);
 
     $response = $this->actingAs($user)->get(route('jobs.index', [
         'q' => 'laravel',
@@ -105,7 +104,7 @@ it('renders the jobs index page with canonical job props', function () {
 it('preserves the active category filter when category facets are empty', function () {
     $user = User::factory()->create();
 
-    $searchService = Mockery::mock(SearchServiceInterface::class);
+    $searchService = Mockery::mock(JobListingSearcher::class);
     $searchService->shouldReceive('search')
         ->once()
         ->with([
@@ -141,7 +140,7 @@ it('preserves the active category filter when category facets are empty', functi
             'sort' => 'best_match',
         ]);
 
-    app()->instance(SearchServiceInterface::class, $searchService);
+    app()->instance(JobListingSearcher::class, $searchService);
 
     $response = $this->actingAs($user)->get(route('jobs.index', [
         'category' => 'platform-engineering',
@@ -182,7 +181,7 @@ it('rejects invalid enum-backed search filters', function () {
 it('renders normalized multi-select facet filters on the jobs index page', function () {
     $user = User::factory()->create();
 
-    $searchService = Mockery::mock(SearchServiceInterface::class);
+    $searchService = Mockery::mock(JobListingSearcher::class);
     $searchService->shouldReceive('search')
         ->once()
         ->with([
@@ -218,7 +217,7 @@ it('renders normalized multi-select facet filters on the jobs index page', funct
             'sort' => 'best_match',
         ]);
 
-    app()->instance(SearchServiceInterface::class, $searchService);
+    app()->instance(JobListingSearcher::class, $searchService);
 
     $response = $this->actingAs($user)->get(route('jobs.index', [
         'location' => ['Da Nang', 'Bangkok'],
@@ -242,7 +241,7 @@ it('renders normalized multi-select facet filters on the jobs index page', funct
 it('returns normalized job suggestions for authenticated users', function () {
     $user = User::factory()->create();
 
-    $suggestService = Mockery::mock(JobListingSearchService::class);
+    $suggestService = Mockery::mock(JobListingSearcher::class);
     $suggestService->shouldReceive('suggest')
         ->once()
         ->with('lar')
@@ -253,7 +252,7 @@ it('returns normalized job suggestions for authenticated users', function () {
             ],
         ]);
 
-    app()->instance(JobListingSearchService::class, $suggestService);
+    app()->instance(JobListingSearcher::class, $suggestService);
 
     $response = $this->actingAs($user)
         ->getJson(route('jobs.suggest', ['q' => 'lar']));

@@ -1,12 +1,13 @@
 <?php
 
-use App\Contracts\SearchServiceInterface;
+use App\Indexers\JobListingIndexer;
 use App\Jobs\SyncJobListingToElasticsearch;
 use App\Models\Category;
 use App\Models\Company;
 use App\Models\JobListing;
 use App\Models\Location;
 use App\Models\Skill;
+use App\Searchers\JobListingSearcher;
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Illuminate\Database\Eloquent\Collection;
@@ -152,7 +153,7 @@ it('creates a job listing, dispatches sync, and indexes the document in elastics
 
     expect($capturedJob)->toBeInstanceOf(SyncJobListingToElasticsearch::class);
 
-    $capturedJob->handle(app(SearchServiceInterface::class));
+    $capturedJob->handle(app(JobListingIndexer::class));
 
     $client->indices()->refresh([
         'index' => $index,
@@ -217,7 +218,7 @@ it('deletes a job listing, dispatches delete sync, and removes the document from
             && $job->afterCommit === true;
     });
 
-    $createJob->handle(app(SearchServiceInterface::class));
+    $createJob->handle(app(JobListingIndexer::class));
 
     $client->indices()->refresh([
         'index' => $index,
@@ -241,7 +242,7 @@ it('deletes a job listing, dispatches delete sync, and removes the document from
             && $job->afterCommit === true;
     });
 
-    $deleteJob->handle(app(SearchServiceInterface::class));
+    $deleteJob->handle(app(JobListingIndexer::class));
 
     $client->indices()->refresh([
         'index' => $index,
@@ -297,13 +298,13 @@ it('searches indexed job listings with normalized filters and facets', function 
         return $job->delete === false;
     });
 
-    $queuedJob->handle(app(SearchServiceInterface::class));
+    $queuedJob->handle(app(JobListingIndexer::class));
 
     $client->indices()->refresh([
         'index' => $index,
     ]);
 
-    $results = app(SearchServiceInterface::class)->search([
+    $results = app(JobListingSearcher::class)->search([
         'q' => "Laravel {$suffix}",
         'location' => Str::slug($location->city_name),
         'category' => $categories[0]->slug,

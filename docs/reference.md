@@ -6,7 +6,7 @@
 
 - MySQL is the transactional source of truth.
 - Elasticsearch is the user-facing search read model.
-- Controllers and UI consume an app-owned normalized contract.
+- Controllers and UI consume app-owned normalized job-listing search output.
 - Elasticsearch helper fields such as `skills_text` are internal implementation details and must not leak into controller or UI contracts.
 
 ## Current Implementation Notes
@@ -14,8 +14,8 @@
 - The authenticated `/jobs` page is served by `JobsController`, enters through `resources/js/pages/jobs/index.tsx`, and delegates to `resources/js/features/jobs/screens/search-screen.tsx`.
 - The authenticated `/jobs/{job:slug}` detail page is served by `JobShowController`, enters through `resources/js/pages/jobs/show.tsx`, and delegates to `resources/js/features/jobs/screens/detail-screen.tsx`.
 - Query validation is handled by `SearchRequest`.
-- `ElasticsearchSearchService` normalizes backend responses into the canonical search contract before the page consumes them.
-- The suggest endpoint is served by `JobSuggestController` and backed by `JobSuggestService`.
+- `JobListingSearcher` normalizes backend responses into the canonical search contract before the page consumes them.
+- The suggest endpoint is served by `JobSuggestController` and backed by `JobListingSearcher`.
 - The job detail page uses a separate documented payload from `JobShowController`.
 
 ## Search Request Contract
@@ -335,8 +335,8 @@ This is the canonical read model for the `job_listings_current` alias.
 
 | Component | Responsibility |
 | --- | --- |
-| `SearchServiceInterface` | App-facing contract for normalized search results and indexing operations |
-| `ElasticsearchSearchService` | Production search implementation backed by Elasticsearch |
+| `JobListingSearcher` | App-facing job listing search and suggestion service backed by Elasticsearch |
+| `JobListingIndexer` | App-facing job listing indexing service backed by Elasticsearch |
 | `JobSearchQueryBuilder` | Elasticsearch Query DSL construction only |
 | `JobIndexDocumentFactory` | Maps relational models into Elasticsearch documents |
 | `SearchResultMapper` | Converts backend responses into the normalized app contract |

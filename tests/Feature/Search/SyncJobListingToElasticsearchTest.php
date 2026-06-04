@@ -1,6 +1,6 @@
 <?php
 
-use App\Contracts\SearchServiceInterface;
+use App\Indexers\JobListingIndexer;
 use App\Jobs\SyncJobListingToElasticsearch;
 use App\Models\Category;
 use App\Models\JobListing;
@@ -59,21 +59,21 @@ it('sync job indexes the loaded job listing document', function () {
 
     $jobListing = JobListing::factory()->create();
 
-    $searchService = Mockery::mock(SearchServiceInterface::class);
+    $searchService = Mockery::mock(JobListingIndexer::class);
     $searchService->shouldReceive('indexJobListing')
         ->once()
         ->with(Mockery::on(fn (JobListing $listedJob): bool => $listedJob->is($jobListing)));
 
-    app()->instance(SearchServiceInterface::class, $searchService);
+    app()->instance(JobListingIndexer::class, $searchService);
 
     app(SyncJobListingToElasticsearch::class, ['jobListingId' => $jobListing->id])->handle($searchService);
 });
 
 it('sync job deletes the search document when requested', function () {
-    $searchService = Mockery::mock(SearchServiceInterface::class);
-    $searchService->shouldReceive('deleteJobListing')->once()->with(1234);
+    $searchService = Mockery::mock(JobListingIndexer::class);
+    $searchService->shouldReceive('delete')->once()->with(1234);
 
-    app()->instance(SearchServiceInterface::class, $searchService);
+    app()->instance(JobListingIndexer::class, $searchService);
 
     app(SyncJobListingToElasticsearch::class, ['jobListingId' => 1234, 'delete' => true])->handle($searchService);
 });

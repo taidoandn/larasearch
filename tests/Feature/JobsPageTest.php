@@ -1,6 +1,5 @@
 <?php
 
-use App\Contracts\SearchServiceInterface;
 use App\Enums\ExperienceLevel;
 use App\Enums\JobType;
 use App\Enums\WorkModel;
@@ -9,6 +8,7 @@ use App\Models\JobListing;
 use App\Models\Location;
 use App\Models\Skill;
 use App\Models\User;
+use App\Searchers\JobListingSearcher;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -24,7 +24,7 @@ test('guests are redirected to the login page for jobs', function () {
 
 test('authenticated users can visit the jobs index page', function () {
     $user = User::factory()->create();
-    $searchService = Mockery::mock(SearchServiceInterface::class);
+    $searchService = Mockery::mock(JobListingSearcher::class);
     $searchService->shouldReceive('search')
         ->once()
         ->andReturn([
@@ -46,7 +46,7 @@ test('authenticated users can visit the jobs index page', function () {
             'sort' => 'best_match',
         ]);
 
-    app()->instance(SearchServiceInterface::class, $searchService);
+    app()->instance(JobListingSearcher::class, $searchService);
 
     $response = $this->actingAs($user)->get(route('jobs.index'));
 

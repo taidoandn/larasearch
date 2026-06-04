@@ -52,9 +52,9 @@
 - [x] Seed at least 5k realistic jobs
 
 ### Search Architecture Scaffolding
-- [x] Create `SearchServiceInterface`
-- [x] Create `ElasticsearchSearchService`
-- [x] Register binding in service provider
+- [x] Create `JobListingSearcher`
+- [x] Create `JobListingIndexer`
+- [x] Register Elasticsearch client binding in service provider
 - [x] Create `SyncJobListingToElasticsearch` queued job
 - [x] Create `JobListingObserver`
 - [x] Dispatch sync only after DB commit

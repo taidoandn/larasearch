@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Contracts\SearchServiceInterface;
+use App\Indexers\JobListingIndexer;
 use App\Models\JobListing;
 use Elastic\Elasticsearch\Client;
 use Illuminate\Console\Command;
@@ -13,7 +13,7 @@ class ElasticsearchReindexCommand extends Command
 
     protected $description = 'Rebuild a versioned Elasticsearch index and switch the configured alias.';
 
-    public function handle(Client $client, SearchServiceInterface $searchService): int
+    public function handle(Client $client, JobListingIndexer $indexer): int
     {
         $index = (string) $this->argument('index');
         $alias = (string) ($this->option('alias') ?: config('elasticsearch.aliases.job_listings'));
@@ -27,8 +27,8 @@ class ElasticsearchReindexCommand extends Command
 
         JobListing::query()
             ->with(['company', 'primaryLocation', 'categories', 'skills'])
-            ->chunkById($chunkSize, function ($jobListings) use ($searchService, $index, &$indexed): void {
-                $indexed += $searchService->bulkIndexJobListings($jobListings, $index);
+            ->chunkById($chunkSize, function ($jobListings) use ($indexer, $index, &$indexed): void {
+                $indexed += $indexer->bulkIndex($jobListings, $index);
             });
 
         $client->indices()->refresh([

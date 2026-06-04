@@ -4,7 +4,7 @@
 
 **Goal:** Deliver the authenticated Search MVP end-to-end: Elasticsearch-backed job search, suggest, related jobs, and the React/Inertia jobs browsing experience with reliable reindex and verification flows.
 
-**Architecture:** MySQL remains the transactional source of truth while Elasticsearch serves as the read model behind `SearchServiceInterface`. The Search MVP is split into index/mapping operations, normalized search contracts, suggest/detail behavior, and UI orchestration so backend and frontend can evolve independently without leaking Elasticsearch internals into the page layer.
+**Architecture:** MySQL remains the transactional source of truth while Elasticsearch serves as the read model behind concrete job-listing searcher and indexer services. The Search MVP is split into index/mapping operations, normalized search contracts, suggest/detail behavior, and UI orchestration so backend and frontend can evolve independently without leaking Elasticsearch internals into the page layer.
 
 **Operational Notes:** The app reads through the `job_listings_current` alias and rebuilds search with versioned indices plus alias swap. Mapping or document-shape changes must be rolled out through `es:reindex` or the explicit create -> index -> switch flow documented in `docs/reference.md`.
 
@@ -60,7 +60,7 @@ Expected: Elasticsearch reachable, alias swapped to a fresh versioned index, liv
 ### Task 2: Canonical Search Service and Query Contract
 
 **Files:**
-- Modify: `app/Services/ElasticsearchSearchService.php`
+- Modify: `app/Searchers/JobListingSearcher.php`
 - Modify: `app/Http/Requests/SearchRequest.php`
 - Modify: `app/Http/Controllers/JobsController.php`
 - Create: `app/Services/JobSearchFilters.php`
