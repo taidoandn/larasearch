@@ -36,14 +36,6 @@ return [
             'properties' => [
                 'id' => ['type' => 'integer'],
                 'slug' => ['type' => 'keyword'],
-                'suggest' => [
-                    'type' => 'completion',
-                    'analyzer' => 'folding_text_analyzer',
-                    'search_analyzer' => 'folding_text_analyzer',
-                    'preserve_separators' => true,
-                    'preserve_position_increments' => true,
-                    'max_input_length' => 80,
-                ],
                 'title' => [
                     'type' => 'text',
                     'analyzer' => 'folding_text_analyzer',

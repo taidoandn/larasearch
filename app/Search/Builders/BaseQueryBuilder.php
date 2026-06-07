@@ -72,20 +72,6 @@ class BaseQueryBuilder
         return $this;
     }
 
-    public function withSuggestion(string $name, string $field, string $prefix, int $size = 5): static
-    {
-        $this->body['suggest'][$name] = [
-            'prefix' => $prefix,
-            'completion' => [
-                'field' => $field,
-                'skip_duplicates' => true,
-                'size' => $size,
-            ],
-        ];
-
-        return $this;
-    }
-
     /**
      * @return array<string, mixed>
      */

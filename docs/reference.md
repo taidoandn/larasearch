@@ -8,7 +8,7 @@
 - Elasticsearch is the user-facing job search read model.
 - Application code reads and writes through the `job_listings_current` alias, not a concrete versioned index.
 - Controllers and UI consume app-owned normalized output. Raw Elasticsearch `hits`, `_source`, `_score`, and highlight arrays must not leak into page props.
-- Elasticsearch helper fields such as `skills_text`, `skill_slugs`, and `suggest` are internal implementation details.
+- Elasticsearch helper fields such as `skills_text`, `skill_slugs`, and autocomplete subfields are internal implementation details.
 
 ## Current Structure
 
@@ -18,6 +18,7 @@ app/
 │   ├── Client/ElasticsearchClient.php
 │   ├── Builders/BaseQueryBuilder.php
 │   ├── Builders/JobListingQueryBuilder.php
+│   ├── Filters/JobListingFilters.php
 │   ├── Indexers/BaseIndexer.php
 │   ├── Indexers/JobListingIndexer.php
 │   ├── Searchers/JobListingSearcher.php
@@ -25,8 +26,7 @@ app/
 │       ├── SearchNormalizer.php
 │       └── SearchResponseFormatter.php
 ├── Services/
-│   ├── JobListingSearchService.php
-│   └── JobSearchFilters.php
+│   └── JobListingSearchService.php
 ├── Jobs/SyncJobListingToElasticsearch.php
 ├── Observers/JobListingObserver.php
 └── Console/Commands/*JobListing*Command.php
@@ -36,9 +36,9 @@ app/
 | --- | --- |
 | `ElasticsearchClient` | Builds the official Elasticsearch PHP client from config/env only |
 | `BaseQueryBuilder` | Generic Elasticsearch DSL helpers |
-| `JobListingQueryBuilder` | Job-listing search, facets, sorting, visibility filters, and completion suggest request bodies |
+| `JobListingQueryBuilder` | Job-listing search, facets, sorting, visibility filters, and multi-field suggest request bodies |
+| `JobListingFilters` | Job-listing filter defaults and domain normalization |
 | `SearchNormalizer` | Generic input helpers: keyword, lists, slugs, enums, numeric values, pagination, default compaction |
-| `JobSearchFilters` | Job-listing filter defaults and domain normalization |
 | `JobListingSearcher` | Executes search/suggest API calls through the alias and returns normalized app payloads |
 | `SearchResponseFormatter` | Generic ES response helpers only; no job-listing-specific formatting |
 | `JobListingIndexer` | Create/delete/refresh/switch alias, index one, bulk index many, delete one, full reindex |
@@ -52,7 +52,7 @@ app/
 1. Authenticated user requests `GET /jobs`.
 2. `SearchRequest` validates query params.
 3. `JobsController` delegates to `JobListingSearchService`.
-4. `JobSearchFilters::normalize()` sanitizes and normalizes the app filter shape.
+4. `JobListingFilters::normalize()` sanitizes and normalizes the app filter shape.
 5. `JobListingSearcher` builds DSL through `JobListingQueryBuilder`.
 6. Elasticsearch is queried through `config('elasticsearch.aliases.job_listings')`.
 7. `JobListingSearcher` maps hits, facets, highlights, and pagination into the page contract.
@@ -63,7 +63,7 @@ app/
 1. Authenticated user requests `GET /jobs/suggest?q=lar`.
 2. `JobSuggestController` validates the keyword.
 3. `JobListingSearchService::suggest()` delegates to `JobListingSearcher`.
-4. `JobListingQueryBuilder::suggestBody()` uses the `suggest` completion field.
+4. `JobListingQueryBuilder::suggestBody()` queries autocomplete subfields across title, skills, and company with visibility filters.
 5. `JobListingSearcher` returns at most 5 unique `{ label, type }` suggestions.
 
 ## Search Request Contract
@@ -182,7 +182,7 @@ Suggest notes:
 
 - `items` is capped at 5 suggestions.
 - Supported `type` values are `job_title`, `skill`, and `company`.
-- Matching uses the completion field first and can fall back to hit parsing in tests/legacy-shaped responses.
+- Matching uses a filtered multi-field autocomplete query across job title, skills, and company name.
 - Labels are deduplicated by `type:label`.
 
 ## Elasticsearch Document
@@ -193,9 +193,6 @@ Suggest notes:
 {
     "id": 123,
     "slug": "senior-backend-engineer-acme-tech",
-    "suggest": {
-        "input": ["Senior Backend Engineer", "Acme Tech", "Laravel", "PHP"]
-    },
     "title": "Senior Backend Engineer",
     "description": "Build scalable APIs using Laravel and MySQL.",
     "short_description": "Build scalable APIs with Laravel.",
@@ -230,7 +227,7 @@ Field groups:
 - Text search: `title`, `description`, `short_description`, `company_name`, `skills_text`.
 - Filters/facets: `location_slugs`, `category_slugs`, `skill_slugs`, `job_type`, `work_model`, `experience_level`.
 - Sort/range: `published_at`, `salary_min`, `salary_max`, `id`.
-- Autocomplete: `suggest` completion field.
+- Autocomplete: `title.autocomplete`, `skills_text.autocomplete`, and `company_name.autocomplete`.
 - Visibility: `is_active`, `published_at`, `expires_at`.
 
 ## Config
@@ -253,7 +250,7 @@ return [
 ];
 ```
 
-`config/elasticsearch_indices.php` currently contains the static `job_listings` settings and mappings. It uses lowercase/asciifolding analyzers and a `completion` field for suggestions. ICU is not required by default.
+`config/elasticsearch_indices.php` currently contains the static `job_listings` settings and mappings. It uses lowercase/asciifolding analyzers plus edge-ngram autocomplete subfields for suggestions. ICU is not required by default.
 
 ## Index Alias & Reindexing
 

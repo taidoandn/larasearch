@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\ExperienceLevel;
 use App\Enums\JobType;
 use App\Enums\WorkModel;
-use App\Services\JobSearchFilters;
+use App\Search\Filters\JobListingFilters;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
@@ -49,7 +49,7 @@ class SearchRequest extends FormRequest
             'experience_level.*' => ['string', Rule::enum(ExperienceLevel::class)],
             'salary_min' => ['nullable', 'integer', 'min:0'],
             'salary_max' => ['nullable', 'integer', 'min:0'],
-            'sort' => ['nullable', Rule::in(JobSearchFilters::SORT_OPTIONS)],
+            'sort' => ['nullable', Rule::in(JobListingFilters::SORT_OPTIONS)],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
         ];

@@ -34,6 +34,6 @@ class SyncJobListingToElasticsearch implements ShouldQueue
             return;
         }
 
-        $indexer->indexJobListing($jobListing);
+        $indexer->index($jobListing);
     }
 }

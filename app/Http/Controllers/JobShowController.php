@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\JobListing;
+use App\Search\Filters\JobListingFilters;
 use App\Services\JobDetailPresenter;
-use App\Services\JobSearchFilters;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,7 +21,7 @@ class JobShowController extends Controller
             'job' => $presenter->present($job),
             'relatedJobs' => $this->relatedJobsPayload($job, $presenter),
             'searchContext' => [
-                'index_query' => JobSearchFilters::compact($request->query()),
+                'index_query' => JobListingFilters::compact($request->query()),
             ],
         ]);
     }

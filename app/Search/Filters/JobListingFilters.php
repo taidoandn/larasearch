@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Services;
+namespace App\Search\Filters;
 
 use App\Enums\ExperienceLevel;
 use App\Enums\JobType;
 use App\Enums\WorkModel;
 use App\Search\Utils\SearchNormalizer;
 
-class JobSearchFilters
+class JobListingFilters
 {
     public const string DEFAULT_SORT = 'best_match';
 

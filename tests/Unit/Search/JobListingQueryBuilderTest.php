@@ -31,11 +31,22 @@ it('builds job listing search request bodies without executing elasticsearch cal
         ->and($body['aggs'])->toHaveKeys(['locations', 'categories', 'skills', 'job_types', 'work_models', 'experience_levels']);
 });
 
-it('builds a completion-backed suggestion request body', function () {
+it('builds a filtered multi-field suggestion request body', function () {
     $body = (new JobListingQueryBuilder)->suggestBody('lar');
 
-    expect($body['size'])->toBe(0)
-        ->and($body['suggest']['job_listing_suggest']['prefix'])->toBe('lar')
-        ->and($body['suggest']['job_listing_suggest']['completion']['field'])->toBe('suggest')
-        ->and($body['query']['bool']['filter'][0])->toBe(['term' => ['is_active' => true]]);
+    expect($body['size'])->toBe(5)
+        ->and($body['_source'])->toBe(['title', 'company_name', 'skills'])
+        ->and($body)->not->toHaveKey('suggest')
+        ->and($body['query']['bool']['filter'][0])->toBe(['term' => ['is_active' => true]])
+        ->and($body['query']['bool']['must'][0])->toBe([
+            'multi_match' => [
+                'query' => 'lar',
+                'fields' => [
+                    'title.autocomplete^3',
+                    'skills_text.autocomplete^2',
+                    'company_name.autocomplete^2',
+                ],
+                'type' => 'bool_prefix',
+            ],
+        ]);
 });

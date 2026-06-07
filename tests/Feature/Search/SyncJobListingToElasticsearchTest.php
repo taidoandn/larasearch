@@ -60,7 +60,7 @@ it('sync job indexes the loaded job listing document', function () {
     $jobListing = JobListing::factory()->create();
 
     $searchService = Mockery::mock(JobListingIndexer::class);
-    $searchService->shouldReceive('indexJobListing')
+    $searchService->shouldReceive('index')
         ->once()
         ->with(Mockery::on(fn (JobListing $listedJob): bool => $listedJob->is($jobListing)));
 

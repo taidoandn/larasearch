@@ -1,9 +1,9 @@
 <?php
 
-use App\Services\JobSearchFilters;
+use App\Search\Filters\JobListingFilters;
 
 it('slugifies category and skills during normalization', function () {
-    $filters = JobSearchFilters::normalize([
+    $filters = JobListingFilters::normalize([
         'category' => ['Platform Engineering', 'Developer Tools', 'Platform Engineering'],
         'skills' => ['Laravel', 'React Native', ''],
     ]);
@@ -13,7 +13,7 @@ it('slugifies category and skills during normalization', function () {
 });
 
 it('slugifies category and skills when compacting search context', function () {
-    $filters = JobSearchFilters::compact([
+    $filters = JobListingFilters::compact([
         'category' => ['Platform Engineering', 'Developer Tools'],
         'skills' => ['Laravel', 'React Native', ''],
         'page' => 0,
@@ -28,7 +28,7 @@ it('slugifies category and skills when compacting search context', function () {
 });
 
 it('normalizes multi-select categories and job types', function () {
-    $filters = JobSearchFilters::normalize([
+    $filters = JobListingFilters::normalize([
         'category' => ['Platform Engineering', 'Developer Tools', ''],
         'job_type' => ['full-time', 'contract', 'temporary', 'contract'],
     ]);
@@ -38,7 +38,7 @@ it('normalizes multi-select categories and job types', function () {
 });
 
 it('keeps normalized category and job type, work model and experience level filters when compacting search context', function () {
-    $filters = JobSearchFilters::compact([
+    $filters = JobListingFilters::compact([
         'category' => ['Platform Engineering', 'Developer Tools', 'Platform Engineering'],
         'job_type' => ['full-time', 'temporary', 'contract'],
         'work_model' => ['remote'],
@@ -56,7 +56,7 @@ it('keeps normalized category and job type, work model and experience level filt
 });
 
 it('normalizes multi-select work model and experience level filters', function () {
-    $filters = JobSearchFilters::normalize([
+    $filters = JobListingFilters::normalize([
         'work_model' => ['remote', 'hybrid', ''],
         'experience_level' => ['senior', 'mid', 'invalid-level'],
     ]);
@@ -66,7 +66,7 @@ it('normalizes multi-select work model and experience level filters', function (
 });
 
 it('keeps normalized multi-select filters when compacting search context', function () {
-    $filters = JobSearchFilters::compact([
+    $filters = JobListingFilters::compact([
         'work_model' => ['remote', 'hybrid', 'remote'],
         'experience_level' => ['senior', 'principal'],
         'page' => 1,

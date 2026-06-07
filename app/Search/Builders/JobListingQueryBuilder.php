@@ -15,6 +15,12 @@ class JobListingQueryBuilder extends BaseQueryBuilder
         'description',
     ];
 
+    private const array SUGGESTION_FIELDS = [
+        'title.autocomplete^3',
+        'skills_text.autocomplete^2',
+        'company_name.autocomplete^2',
+    ];
+
     /**
      * @param  array<string, mixed>  $filters
      * @return array<string, mixed>
@@ -60,21 +66,16 @@ class JobListingQueryBuilder extends BaseQueryBuilder
     public function suggestBody(string $keyword): array
     {
         return [
-            'size' => 0,
+            'size' => self::SUGGESTION_LIMIT,
             '_source' => ['title', 'company_name', 'skills'],
             'query' => [
                 'bool' => [
-                    'filter' => $this->visibilityFilters(),
-                ],
-            ],
-            'suggest' => [
-                'job_listing_suggest' => [
-                    'prefix' => $keyword,
-                    'completion' => [
-                        'field' => 'suggest',
-                        'skip_duplicates' => true,
-                        'size' => self::SUGGESTION_LIMIT,
+                    'must' => [
+                        $this->multiMatchQuery($keyword, self::SUGGESTION_FIELDS, [
+                            'type' => 'bool_prefix',
+                        ]),
                     ],
+                    'filter' => $this->visibilityFilters(),
                 ],
             ],
         ];

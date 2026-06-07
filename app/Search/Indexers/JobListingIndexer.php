@@ -17,11 +17,6 @@ class JobListingIndexer extends BaseIndexer
         ])->asArray();
     }
 
-    public function indexJobListing(JobListing $jobListing): void
-    {
-        $this->index($jobListing);
-    }
-
     public function delete(int $jobListingId): void
     {
         $this->client->delete([

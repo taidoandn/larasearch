@@ -26,10 +26,21 @@ it('returns normalized suggestions for partial keywords', function () {
     $body = $http->jsonBody();
 
     expect((string) $http->requests[0]->getUri())->toContain('/job_listings_current/_search')
-        ->and($body['size'])->toBe(0)
-        ->and($body['suggest']['job_listing_suggest']['prefix'])->toBe('lar')
-        ->and($body['suggest']['job_listing_suggest']['completion']['field'])->toBe('suggest')
+        ->and($body['size'])->toBe(5)
+        ->and($body['_source'])->toBe(['title', 'company_name', 'skills'])
+        ->and($body)->not->toHaveKey('suggest')
         ->and($body['query']['bool']['filter'][0])->toBe(['term' => ['is_active' => true]])
+        ->and($body['query']['bool']['must'][0])->toBe([
+            'multi_match' => [
+                'query' => 'lar',
+                'fields' => [
+                    'title.autocomplete^3',
+                    'skills_text.autocomplete^2',
+                    'company_name.autocomplete^2',
+                ],
+                'type' => 'bool_prefix',
+            ],
+        ])
         ->and($results)->toBe([
             'items' => [
                 ['label' => 'Senior Laravel Backend Engineer', 'type' => 'job_title'],

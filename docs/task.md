@@ -56,7 +56,7 @@
 - [x] Create `App\Search\Indexers\JobListingIndexer`
 - [x] Create `App\Search\Builders\JobListingQueryBuilder`
 - [x] Create generic `App\Search\Utils\SearchNormalizer`
-- [x] Create domain `App\Services\JobSearchFilters`
+- [x] Create domain `App\Search\Filters\JobListingFilters`
 - [x] Register Elasticsearch client binding in service provider
 - [x] Create `SyncJobListingToElasticsearch` queued job
 - [x] Create `JobListingObserver`
@@ -78,7 +78,7 @@ The canonical search payload and Elasticsearch document shape are defined in `do
 - [x] Map text fields for title / description / company / skills
 - [x] Map keyword fields for filters and facets
 - [x] Map numeric/date fields for range and sort
-- [x] Add completion-backed suggestions and autocomplete analyzers
+- [x] Add multi-field autocomplete suggestions and autocomplete analyzers
 - [x] Flatten categories, skills, location, company fields into document
 - [x] Implement `es:job-listings:reindex` command with alias swap
 

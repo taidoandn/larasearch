@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Search\Filters\JobListingFilters;
 use App\Search\Searchers\JobListingSearcher;
 
 class JobListingSearchService
@@ -16,7 +17,7 @@ class JobListingSearchService
      */
     public function search(array $input): array
     {
-        $filters = JobSearchFilters::normalize($input);
+        $filters = JobListingFilters::normalize($input);
 
         return [
             'filters' => $filters,

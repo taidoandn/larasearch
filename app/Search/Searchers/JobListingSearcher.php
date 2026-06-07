@@ -6,8 +6,8 @@ use App\Enums\ExperienceLevel;
 use App\Enums\JobType;
 use App\Enums\WorkModel;
 use App\Search\Builders\JobListingQueryBuilder;
+use App\Search\Filters\JobListingFilters;
 use App\Search\Utils\SearchNormalizer;
-use App\Services\JobSearchFilters;
 use Elastic\Elasticsearch\Client;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
@@ -29,7 +29,7 @@ class JobListingSearcher
      */
     public function search(array $params): array
     {
-        $filters = JobSearchFilters::normalize($params);
+        $filters = JobListingFilters::normalize($params);
 
         $response = $this->client->search([
             'index' => $this->alias(),
@@ -93,14 +93,8 @@ class JobListingSearcher
      */
     protected function formatSuggestions(array $response, string $keyword, int $limit = 5): array
     {
-        $hits = $this->suggestionHits($response);
-
-        if ($hits === []) {
-            $hits = $this->hits($response);
-        }
-
         return [
-            'items' => $this->collectSuggestions($hits, $keyword, $limit),
+            'items' => $this->collectSuggestions($this->hits($response), $keyword, $limit),
         ];
     }
 
@@ -265,23 +259,6 @@ class JobListingSearcher
         }
 
         return $bucketKey;
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    protected function suggestionHits(array $response): array
-    {
-        return collect((array) data_get($response, 'suggest.job_listing_suggest.0.options', []))
-            ->map(function (array $option): array {
-                if (isset($option['_source']) && is_array($option['_source'])) {
-                    return ['_source' => $option['_source']];
-                }
-
-                return ['_source' => ['title' => $option['text'] ?? '']];
-            })
-            ->values()
-            ->all();
     }
 
     /**
